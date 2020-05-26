@@ -5,24 +5,24 @@
     <string name="sign_in_with_email">sign in with email</string>
 
     <!-- Facebook application ID and custom URL scheme (app ID prefixed by 'fb'). -->
-    <string name="facebook_application_id" translatable="false">244121366690101</string>
-    <string name="facebook_login_protocol_scheme" translatable="false">fb244121366690101</string>
+    <string name="facebook_application_id">244121366690101</string>
+    <string name="fb_login_protocol_scheme">fb244121366690101</string>
+
 
     <!-- Twitter consumer key and secret -->
-    <string name="twitter_consumer_key" translatable="false">YOUR_CONSUMER_KEY</string>
-    <string name="twitter_consumer_secret" translatable="false">YOUR_CONSUMER_SECRET</string>
+    <string name="twitter_consumer_key" translatable="false">eKO72RVszf7YDNRsiXwO7UGY4</string>
+    <string name="twitter_consumer_secret" translatable="false">mvAuIyWHxll6TltoqIu1dWXbfHH6hGt1Tt8YDKsNMnuLnGZH5Q</string>
 
     <!-- Bottom Nav -->
     <string name="title_activity_bottom_nav">BottomNavActivity</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_mapView">Map View</string>
+    <string name="title_listRestaurant">List View</string>
+    <string name="title_workmates">Workmates</string>
     <string name="title_activity_google_maps">Map</string>
 
     <!-- Used in NavigationDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>

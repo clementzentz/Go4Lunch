@@ -3,23 +3,41 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_mapView">
+
+    <!-- Action back to destination which launched into this in_game_nav_graph-->
+    <action android:id="@+id/action_pop_out_of_game"
+        app:popUpTo="@id/navigation_drawer"
+        app:popUpToInclusive="true"  />
+
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="clement.zentz.go4lunch.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_mapView"
+        android:name="clement.zentz.go4lunch.ui.map.MapFragment"
+        android:label="@string/title_mapView"
+        tools:layout="@layout/fragment_map_restaurant" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="clement.zentz.go4lunch.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_listRestaurant"
+        android:name="clement.zentz.go4lunch.ui.listRestaurant.ListRestaurantFragment"
+        android:label="@string/title_listRestaurant"
+        tools:layout="@layout/fragment_list_restaurant" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="clement.zentz.go4lunch.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_workmates"
+        android:name="clement.zentz.go4lunch.ui.workmates.WorkmatesFragment"
+        android:label="@string/title_workmates"
+        tools:layout="@layout/fragment_workmates" />
+
+    <activity
+        android:id="@+id/navigation_bottom"
+        android:name="clement.zentz.go4lunch.BottomNavActivity"
+        tools:layout="@layout/bottom_nav_activity"/>
+
+    <activity
+        android:id="@+id/navigation_drawer"
+        android:name="clement.zentz.go4lunch.NavDrawerActivity"
+        android:label="@string/nav_app_bar_open_drawer_description"
+        tools:layout="@layout/nav_drawer_activity"/>
+
 </navigation>

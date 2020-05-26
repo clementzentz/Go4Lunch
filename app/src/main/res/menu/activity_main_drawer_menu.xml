@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <item android:title="Configuration">
-        <menu>
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/nav_drawer_lunch_item"
@@ -20,7 +18,4 @@
                     android:icon="@drawable/ic_settings_black_24dp"
                     android:title="LOGOUT" />
             </group>
-        </menu>
-    </item>
-
 </menu>

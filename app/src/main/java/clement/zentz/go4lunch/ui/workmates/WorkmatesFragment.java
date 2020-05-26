@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.ui.home;
+package clement.zentz.go4lunch.ui.workmates;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,17 +12,17 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import clement.zentz.go4lunch.R;
 
-public class HomeFragment extends Fragment {
+public class WorkmatesFragment extends Fragment {
 
-    private HomeViewModel homeViewModel;
+    private WorkmatesViewModel mWorkmatesViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
             ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel =
-                ViewModelProviders.of(this).get(HomeViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_home, container, false);
-        final TextView textView = root.findViewById(R.id.text_home);
-        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        mWorkmatesViewModel =
+                ViewModelProviders.of(this).get(WorkmatesViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_workmates, container, false);
+        final TextView textView = root.findViewById(R.id.text_notifications);
+        mWorkmatesViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
