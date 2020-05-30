@@ -5,12 +5,6 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_mapView">
 
-    <!-- Action back to destination which launched into this in_game_nav_graph-->
-    <action android:id="@+id/action_pop_out_of_game"
-        app:popUpTo="@id/navigation_drawer"
-        app:popUpToInclusive="true"  />
-
-
     <fragment
         android:id="@+id/navigation_mapView"
         android:name="clement.zentz.go4lunch.ui.map.MapFragment"
@@ -28,16 +22,5 @@
         android:name="clement.zentz.go4lunch.ui.workmates.WorkmatesFragment"
         android:label="@string/title_workmates"
         tools:layout="@layout/fragment_workmates" />
-
-    <activity
-        android:id="@+id/navigation_bottom"
-        android:name="clement.zentz.go4lunch.BottomNavActivity"
-        tools:layout="@layout/bottom_nav_activity"/>
-
-    <activity
-        android:id="@+id/navigation_drawer"
-        android:name="clement.zentz.go4lunch.NavDrawerActivity"
-        android:label="@string/nav_app_bar_open_drawer_description"
-        tools:layout="@layout/nav_drawer_activity"/>
 
 </navigation>
