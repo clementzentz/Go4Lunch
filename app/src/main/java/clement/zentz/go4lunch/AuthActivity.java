@@ -253,3 +253,5 @@ public class AuthActivity extends AppCompatActivity {
 //retrofit
 //coordinator layout + scrolling activity pour afficher détail restau
 //détail = navigation drawer + new activity pour restaut
+//firestore
+//google cloud quota

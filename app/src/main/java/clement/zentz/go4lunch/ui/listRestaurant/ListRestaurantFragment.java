@@ -10,24 +10,46 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.Restaurant;
+import clement.zentz.go4lunch.util.ListRestaurantAdapter;
 
 public class ListRestaurantFragment extends Fragment {
 
     private ListRestaurantViewModel mListRestaurantViewModel;
+    private RecyclerView recyclerView;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
-        mListRestaurantViewModel =
-                ViewModelProviders.of(this).get(ListRestaurantViewModel.class);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mListRestaurantViewModel = ViewModelProviders.of(this).get(ListRestaurantViewModel.class);
         View root = inflater.inflate(R.layout.fragment_list_restaurant, container, false);
-        final TextView textView = root.findViewById(R.id.text_dashboard);
+        /*final TextView textView = root.findViewById(R.id.text_dashboard);*/
+        recyclerView = root.findViewById(R.id.list_restaurant_rv);
+        setUpRecyclerView();
         mListRestaurantViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                textView.setText(s);
+                /*textView.setText(s)*/;
             }
         });
+
         return root;
+    }
+
+    private void setUpRecyclerView(){
+        //fake restaurant test
+        Restaurant restaurant = new Restaurant(
+                "la pachanga",
+                "brazilian", "5 rue des Peupliers",
+                "open until 2:00 am",
+                "120m",
+                null,
+                3,
+                1);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        ListRestaurantAdapter adapter = new ListRestaurantAdapter(restaurant);
+        recyclerView.setAdapter(adapter);
     }
 }

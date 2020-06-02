@@ -38,9 +38,6 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".GoogleMapsActivity"
-            android:label="@string/title_activity_google_maps" />
-        <activity
             android:name=".BottomNavActivity"
             android:label="@string/title_activity_bottom_nav"
             android:theme="@style/AppTheme" />
@@ -51,7 +48,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--<activity android:name=".NavDrawerActivity" />-->
     </application>
 
 </manifest>
