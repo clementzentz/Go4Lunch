@@ -1,10 +1,11 @@
 package clement.zentz.go4lunch.ui.listRestaurant;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -13,11 +14,12 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import clement.zentz.go4lunch.DetailRestaurant;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.Restaurant;
-import clement.zentz.go4lunch.util.ListRestaurantAdapter;
+import clement.zentz.go4lunch.util.BottomActivityToAdapter;
 
-public class ListRestaurantFragment extends Fragment {
+public class ListRestaurantFragment extends Fragment implements BottomActivityToAdapter {
 
     private ListRestaurantViewModel mListRestaurantViewModel;
     private RecyclerView recyclerView;
@@ -26,8 +28,10 @@ public class ListRestaurantFragment extends Fragment {
         mListRestaurantViewModel = ViewModelProviders.of(this).get(ListRestaurantViewModel.class);
         View root = inflater.inflate(R.layout.fragment_list_restaurant, container, false);
         /*final TextView textView = root.findViewById(R.id.text_dashboard);*/
+
         recyclerView = root.findViewById(R.id.list_restaurant_rv);
         setUpRecyclerView();
+
         mListRestaurantViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -49,7 +53,12 @@ public class ListRestaurantFragment extends Fragment {
                 3,
                 1);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        ListRestaurantAdapter adapter = new ListRestaurantAdapter(restaurant);
+        ListRestaurantAdapter adapter = new ListRestaurantAdapter(restaurant, this);
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public void launchDetailRestaurantActivity() {
+        startActivity(new Intent(getContext(), DetailRestaurant.class));
     }
 }

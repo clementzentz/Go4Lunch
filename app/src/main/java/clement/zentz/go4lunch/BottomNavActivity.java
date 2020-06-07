@@ -20,8 +20,6 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import java.util.Objects;
-
 public class BottomNavActivity extends AppCompatActivity {
 
     @Override
