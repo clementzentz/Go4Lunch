@@ -35,6 +35,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 public class AuthActivity extends AppCompatActivity {
 
+    //firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private FirebaseAuth.AuthStateListener authStateListener;
@@ -95,6 +96,8 @@ public class AuthActivity extends AppCompatActivity {
         }
     }
 
+
+    //GOOGLE SIGN IN
     private void initializeGoogleSignIn(){
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -118,7 +121,32 @@ public class AuthActivity extends AppCompatActivity {
         });
     }
 
+    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask){
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            Toast.makeText(this, "Signed In Successfully", Toast.LENGTH_LONG).show();
+            FirebaseGoogleAuth(account);
+        }catch (ApiException e){
+            Toast.makeText(this, "Sign In Failed", Toast.LENGTH_LONG).show();
+            FirebaseGoogleAuth(null);
+        }
+    }
 
+    private void FirebaseGoogleAuth(GoogleSignInAccount account){
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        mAuth.signInWithCredential(authCredential).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()){
+                Toast.makeText(AuthActivity.this, "Successful", Toast.LENGTH_LONG).show();
+                FirebaseUser user = mAuth.getCurrentUser();
+                updateUI(user);
+            }else {
+                Toast.makeText(AuthActivity.this, "Failed", Toast.LENGTH_LONG).show();
+                updateUI(null);
+            }
+        });
+    }
+
+    //FACEBOOK LOGIN
     private void initializeFacebookLogin() {
         // Initialize Facebook Login button
         FacebookSdk.sdkInitialize(getApplicationContext());
@@ -166,34 +194,6 @@ public class AuthActivity extends AppCompatActivity {
         };
     }
 
-    private void handleGoogleSignInResult(Task<GoogleSignInAccount> completedTask){
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            Toast.makeText(this, "Signed In Successfully", Toast.LENGTH_LONG).show();
-            FirebaseGoogleAuth(account);
-        }catch (ApiException e){
-            Toast.makeText(this, "Sign In Failed", Toast.LENGTH_LONG).show();
-            FirebaseGoogleAuth(null);
-        }
-    }
-
-    private void FirebaseGoogleAuth(GoogleSignInAccount account){
-        AuthCredential authCredential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-        mAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(AuthActivity.this, "Successful", Toast.LENGTH_LONG).show();
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    updateUI(user);
-                }else {
-                    Toast.makeText(AuthActivity.this, "Failed", Toast.LENGTH_LONG).show();
-                    updateUI(null);
-                }
-            }
-        });
-    }
-
     private void handleFacebookAccessToken(AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
 
@@ -212,7 +212,6 @@ public class AuthActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                         updateUI(null);
                     }
-
                     // ...
                 });
     }

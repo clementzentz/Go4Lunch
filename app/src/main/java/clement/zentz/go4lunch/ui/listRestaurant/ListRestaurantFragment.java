@@ -17,26 +17,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import clement.zentz.go4lunch.DetailRestaurant;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.Restaurant;
+import clement.zentz.go4lunch.ui.map.MapViewModel;
 import clement.zentz.go4lunch.util.BottomActivityToAdapter;
 
 public class ListRestaurantFragment extends Fragment implements BottomActivityToAdapter {
 
     private ListRestaurantViewModel mListRestaurantViewModel;
+
     private RecyclerView recyclerView;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mListRestaurantViewModel = ViewModelProviders.of(this).get(ListRestaurantViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_list_restaurant, container, false);
-        /*final TextView textView = root.findViewById(R.id.text_dashboard);*/
 
         recyclerView = root.findViewById(R.id.list_restaurant_rv);
         setUpRecyclerView();
 
-        mListRestaurantViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                /*textView.setText(s)*/;
-            }
+        mListRestaurantViewModel.getText().observe(getViewLifecycleOwner(), s -> {
         });
 
         return root;

@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "886938277994",
-    "firebase_url": "https://go4lunch-477e8.firebaseio.com",
-    "project_id": "go4lunch-477e8",
-    "storage_bucket": "go4lunch-477e8.appspot.com"
+    "project_number": "551365638681",
+    "firebase_url": "https://go4lunch-279614.firebaseio.com",
+    "project_id": "go4lunch-279614",
+    "storage_bucket": "go4lunch-279614.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:886938277994:android:824b7e4496914cfc771213",
+        "mobilesdk_app_id": "1:551365638681:android:65a75c0c5f23efcc010888",
         "android_client_info": {
           "package_name": "clement.zentz.go4lunch"
         }
       },
       "oauth_client": [
         {
-          "client_id": "886938277994-g9ul44j3rfk14ao5prhtcb4j3teun5le.apps.googleusercontent.com",
+          "client_id": "551365638681-uvbuc4i2vkj6pvp6ecemdqdknt163vj6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "clement.zentz.go4lunch",
@@ -23,20 +23,20 @@
           }
         },
         {
-          "client_id": "886938277994-ts1vdt33g6ajgpnmdske5qlb8rtfqkf7.apps.googleusercontent.com",
+          "client_id": "551365638681-b8l4irdcav2p3hjosp083dcmuqg95ge8.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCPyyxypi98CCym2IMvOe123_WBm0fdlB4"
+          "current_key": "AIzaSyDuMrzkmop9VQBWkCzsdNPJ_-tkdQ3Xfu4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "886938277994-ts1vdt33g6ajgpnmdske5qlb8rtfqkf7.apps.googleusercontent.com",
+              "client_id": "551365638681-b8l4irdcav2p3hjosp083dcmuqg95ge8.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
