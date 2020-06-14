@@ -29,7 +29,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.service.GooglePlacesApi;
+import clement.zentz.go4lunch.service.ServiceGenerator;
+import clement.zentz.go4lunch.service.responses.NearbySearchRestaurantResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener, OnMapReadyCallback {
@@ -45,11 +55,11 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location mLastKnownLocation;
     private static final float DEFAULT_ZOOM = 15; //zoom streets lvl
-    private static final LatLng mDefaultLocation = new LatLng(-34, 141);
+    private static final LatLng mDefaultLocation = new LatLng(48.801659, 2.334064);
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
 
         //setup location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
@@ -61,11 +71,14 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         });
 
         configureGoogleMap();
+
+        getNearbyRestaurant();
+
         return root;
     }
 
     //google map
-    private void configureGoogleMap(){
+    private void configureGoogleMap() {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -89,7 +102,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 //        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        getLocationPermission();
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
         mMap.setOnMyLocationButtonClickListener(this);
@@ -115,7 +127,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         return false;
     }
 
-    private void getLocationPermission(){
+    private void getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
          * device. The result of the permission request is handled by a callback,
@@ -143,7 +155,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                 mLastKnownLocation = null;
                 getLocationPermission();
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
@@ -184,13 +196,37 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                     }
                 });
             }
-        } catch(SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
+    }
+
+    private void getNearbyRestaurant(){
+        GooglePlacesApi googlePlacesApi = ServiceGenerator.getGooglePlaceApi();
+        Call<NearbySearchRestaurantResponse> responseCall = googlePlacesApi.nearbySearchRestaurant(getString(R.string.google_maps_key), mLastKnownLocation, 1000, "restaurant");
+        responseCall.enqueue(new Callback<NearbySearchRestaurantResponse>() {
+            @Override
+            public void onResponse(Call<NearbySearchRestaurantResponse> call, Response<NearbySearchRestaurantResponse> response) {
+                Log.d(TAG, "onResponse: server response: "+ response.toString());
+                if (response.code() == 200){
+                    Log.d(TAG, "onResponse: "+ response.body().toString());
+                    List<Restaurant> restaurantList = new ArrayList<>(response.body().getRestaurants());
+                    for (Restaurant restaurant : restaurantList){
+                        Log.d(TAG, "onResponse: "+ restaurant.getName());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<NearbySearchRestaurantResponse> call, Throwable t) {
+                Log.d(TAG, "onFailure: failed to load restaurant nearby.");
+            }
+        });
     }
 
     @Override
     public void onPause() {
         super.onPause();
     }
+
 }
