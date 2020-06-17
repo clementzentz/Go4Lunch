@@ -1,11 +1,14 @@
 package clement.zentz.go4lunch.models.restaurant;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 //class Result
-public class Restaurant {
+public class Restaurant implements Parcelable {
 
     @SerializedName("business_status")
     @Expose
@@ -55,6 +58,45 @@ public class Restaurant {
     @SerializedName("price_level")
     @Expose
     private Integer priceLevel;
+
+    protected Restaurant(Parcel in) {
+        businessStatus = in.readString();
+        icon = in.readString();
+        id = in.readString();
+        name = in.readString();
+        placeId = in.readString();
+        if (in.readByte() == 0) {
+            rating = null;
+        } else {
+            rating = in.readDouble();
+        }
+        reference = in.readString();
+        scope = in.readString();
+        types = in.createStringArrayList();
+        if (in.readByte() == 0) {
+            userRatingsTotal = null;
+        } else {
+            userRatingsTotal = in.readInt();
+        }
+        vicinity = in.readString();
+        if (in.readByte() == 0) {
+            priceLevel = null;
+        } else {
+            priceLevel = in.readInt();
+        }
+    }
+
+    public static final Creator<Restaurant> CREATOR = new Creator<Restaurant>() {
+        @Override
+        public Restaurant createFromParcel(Parcel in) {
+            return new Restaurant(in);
+        }
+
+        @Override
+        public Restaurant[] newArray(int size) {
+            return new Restaurant[size];
+        }
+    };
 
     public String getBusinessStatus() {
         return businessStatus;
@@ -184,4 +226,39 @@ public class Restaurant {
         this.priceLevel = priceLevel;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(businessStatus);
+        parcel.writeString(icon);
+        parcel.writeString(id);
+        parcel.writeString(name);
+        parcel.writeString(placeId);
+        if (rating == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeDouble(rating);
+        }
+        parcel.writeString(reference);
+        parcel.writeString(scope);
+        parcel.writeStringList(types);
+        if (userRatingsTotal == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(userRatingsTotal);
+        }
+        parcel.writeString(vicinity);
+        if (priceLevel == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(priceLevel);
+        }
+    }
 }

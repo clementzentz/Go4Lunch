@@ -14,7 +14,7 @@ public class NearbySearchRestaurantResponse {
     @SerializedName("next_page_token")
     @Expose
     private String nextPageToken;
-    @SerializedName("mRestaurants")
+    @SerializedName("results")
     @Expose
     private List<Restaurant> mRestaurants = null;
     @SerializedName("status")

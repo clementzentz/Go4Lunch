@@ -4,16 +4,19 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.List;
+
+import clement.zentz.go4lunch.models.restaurant.Restaurant;
+
 public class MapViewModel extends ViewModel {
 
-    private MutableLiveData<String> mText;
+    private MutableLiveData<List<Restaurant>> mListMutableLiveData = new MutableLiveData<>();
 
-    public MapViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is map fragment");
+    public LiveData<List<Restaurant>> getListMutableLiveData() {
+        return mListMutableLiveData;
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public void  setListMutableLiveData(List<Restaurant> listLiveData) {
+        mListMutableLiveData.setValue(listLiveData);
     }
 }
