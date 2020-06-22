@@ -14,19 +14,18 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.DetailRestaurant;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.ui.map.MapViewModel;
-import clement.zentz.go4lunch.util.BottomActivityToAdapter;
+import clement.zentz.go4lunch.ui.sharedViewModel.SharedViewModel;
+import clement.zentz.go4lunch.util.MainActivityToAdapter;
 
-public class ListRestaurantFragment extends Fragment implements BottomActivityToAdapter {
+public class ListRestaurantFragment extends Fragment implements MainActivityToAdapter {
 
     private ListRestaurantViewModel mListRestaurantViewModel;
-    private MapViewModel mMapViewModel;
+    private SharedViewModel mSharedViewModel;
     private List<Restaurant> mRestaurantList;
 
     private RecyclerView recyclerView;
@@ -34,20 +33,31 @@ public class ListRestaurantFragment extends Fragment implements BottomActivityTo
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mListRestaurantViewModel = ViewModelProviders.of(this).get(ListRestaurantViewModel.class);
-        mMapViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
+
+        mSharedViewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
 
         View root = inflater.inflate(R.layout.fragment_list_restaurant, container, false);
 
         //recyclerview
         recyclerView = root.findViewById(R.id.list_restaurant_rv);
-        setUpRecyclerView();
-
-        mMapViewModel.getListMutableLiveData().observe(getViewLifecycleOwner(), restaurants -> {
-            mRestaurantList = restaurants;
-            adapter.notifyDataSetChanged();
-        });
 
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        subscribeObservers();
+    }
+
+    private void subscribeObservers(){
+        mSharedViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                mRestaurantList = restaurants;
+                setUpRecyclerView();
+            }
+        });
     }
 
     private void setUpRecyclerView(){

@@ -1,5 +1,5 @@
 package clement.zentz.go4lunch.util;
 
-public interface BottomActivityToAdapter {
+public interface MainActivityToAdapter {
     void launchDetailRestaurantActivity();
 }

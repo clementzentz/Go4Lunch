@@ -10,13 +10,4 @@ import clement.zentz.go4lunch.models.restaurant.Restaurant;
 
 public class MapViewModel extends ViewModel {
 
-    private MutableLiveData<List<Restaurant>> mListMutableLiveData = new MutableLiveData<>();
-
-    public LiveData<List<Restaurant>> getListMutableLiveData() {
-        return mListMutableLiveData;
-    }
-
-    public void  setListMutableLiveData(List<Restaurant> listLiveData) {
-        mListMutableLiveData.setValue(listLiveData);
-    }
 }

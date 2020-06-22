@@ -11,9 +11,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -27,18 +29,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.service.GooglePlacesApi;
-import clement.zentz.go4lunch.service.ServiceGenerator;
-import clement.zentz.go4lunch.service.responses.NearbySearchRestaurantResponse;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import clement.zentz.go4lunch.ui.sharedViewModel.SharedViewModel;
+import clement.zentz.go4lunch.util.Constants;
 
 public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener, OnMapReadyCallback {
@@ -46,6 +42,10 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private static final String TAG = "MapFragment";
 
     private MapViewModel mMapViewModel;
+    private SharedViewModel mSharedViewModel;
+
+    private List<Restaurant> mRestaurantList;
+
     //google map
     private GoogleMap map;
     private boolean locationPermissionGranted;
@@ -55,7 +55,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private static final float DEFAULT_ZOOM = 15; //zoom streets lvl
     private static final LatLng defaultLocation = new LatLng(48.801659, 2.334064);
 
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -63,20 +62,42 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         mMapViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_map_restaurant, container, false);
+        mSharedViewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
 
-        mMapViewModel.getListMutableLiveData().observe(getViewLifecycleOwner(), s -> {
-        });
+        View root = inflater.inflate(R.layout.fragment_map_restaurant, container, false);
 
         configureGoogleMap();
 
         return root;
     }
 
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        subscribeObservers();
+    }
+
+    private void subscribeObservers(){
+        mSharedViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                mRestaurantList = restaurants;
+                for (Restaurant restaurant : mRestaurantList) {
+                    Log.d(TAG, "onResponse: " + restaurant.getName());
+                    map.addMarker(new MarkerOptions()
+                            .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                            .title(restaurant.getName())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                }
+            }
+        });
+    }
+
     //google map
     private void configureGoogleMap() {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map_fragment);
         mapFragment.getMapAsync(this);
     }
 
@@ -187,7 +208,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                                     new LatLng(lastKnownLocation.getLatitude(),
                                             lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
-                            getNearbyRestaurant();
+                            nearbySearchRestaurantsApi();
                         }
                     } else {
                         Log.d(TAG, "Current location is null. Using defaults.");
@@ -204,42 +225,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
     }
 
-    private void getNearbyRestaurant() {
-        GooglePlacesApi googlePlacesApi = ServiceGenerator.getGooglePlaceApi();
-        Call<NearbySearchRestaurantResponse> responseCall = googlePlacesApi.nearbySearchRestaurant(
-                getString(R.string.google_maps_key),
-                String.format("%s,%s", lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()),
-                "1000",
-                "restaurant");
-        responseCall.enqueue(new Callback<NearbySearchRestaurantResponse>() {
-            @Override
-            public void onResponse(Call<NearbySearchRestaurantResponse> call, Response<NearbySearchRestaurantResponse> response) {
-                Log.d(TAG, "onResponse: server response: " + response.toString());
-                if (response.code() == 200) {
-                    Log.d(TAG, "onResponse: " + response.body().toString());
-                    List<Restaurant> restaurantList = new ArrayList<>(response.body().getRestaurants());
-
-                    for (Restaurant restaurant : restaurantList) {
-                        Log.d(TAG, "onResponse: " + restaurant.getName());
-                        map.addMarker(new MarkerOptions()
-                                .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                .title(restaurant.getName())
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                    }
-                } else {
-                    try {
-                        Log.d(TAG, "onResponse: " + response.errorBody().string());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<NearbySearchRestaurantResponse> call, Throwable t) {
-                Log.d(TAG, "onFailure: failed to load restaurant nearby.");
-            }
-        });
+    private void nearbySearchRestaurantsApi() {
+        mSharedViewModel.nearbySearchRestaurants(String.valueOf(lastKnownLocation.getLatitude()+", "+lastKnownLocation.getLongitude()), String.valueOf(Constants.RADIUS), Constants.PLACES_TYPE);
     }
 
     private void getLastKnownLocation() {

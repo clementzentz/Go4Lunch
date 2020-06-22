@@ -15,12 +15,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-public class BottomNavActivity extends AppCompatActivity {
+//bottom nav + nav drawer activity
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,11 @@ public class BottomNavActivity extends AppCompatActivity {
                 R.id.navigation_mapView, R.id.navigation_listRestaurant, R.id.navigation_workmates)
                 /*.setDrawerLayout(drawer)*/
                 .build();
+
+        //manage frag
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        fragmentManager.findFragmentById(R.id.map_fragment);
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);

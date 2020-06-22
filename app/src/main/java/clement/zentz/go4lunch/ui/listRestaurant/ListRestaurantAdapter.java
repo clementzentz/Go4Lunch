@@ -12,23 +12,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.util.BottomActivityToAdapter;
+import clement.zentz.go4lunch.util.MainActivityToAdapter;
 
 public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAdapter.ListRestaurantViewHolder> {
 
-    public BottomActivityToAdapter mBottomActivityToAdapter;
+    public MainActivityToAdapter mMainActivityToAdapter;
     private List<Restaurant> mRestaurantList;
 
     private Context mContext;
 
-    public ListRestaurantAdapter(Context context,BottomActivityToAdapter bottomActivityToAdapter, List<Restaurant> restaurants) {
-
-        mBottomActivityToAdapter = bottomActivityToAdapter;
+    public ListRestaurantAdapter(Context context, MainActivityToAdapter mainActivityToAdapter, List<Restaurant> restaurants) {
+        mContext = context;
+        mMainActivityToAdapter = mainActivityToAdapter;
         mRestaurantList = restaurants;
     }
 
@@ -66,7 +65,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         public ListRestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            itemView.setOnClickListener(view -> mBottomActivityToAdapter.launchDetailRestaurantActivity());
+            itemView.setOnClickListener(view -> mMainActivityToAdapter.launchDetailRestaurantActivity());
 
             restaurantName = itemView.findViewById(R.id.restaurant_name_txt);
             restaurantTypeAddress = itemView.findViewById(R.id.restaurant_type_address_txt);
