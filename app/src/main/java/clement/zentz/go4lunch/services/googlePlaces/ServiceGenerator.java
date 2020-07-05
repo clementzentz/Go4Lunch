@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.service;
+package clement.zentz.go4lunch.services.googlePlaces;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

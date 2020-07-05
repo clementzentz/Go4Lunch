@@ -30,6 +30,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.facebook.FacebookSdk;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import clement.zentz.go4lunch.models.workmate.Workmate;
+import clement.zentz.go4lunch.util.Constants;
+
 public class AuthActivity extends AppCompatActivity {
 
     //firebase
@@ -77,17 +80,24 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void updateUI(FirebaseUser user) {
+
+        Intent intent = new Intent(this, MainActivity.class);
+
         if (isGoogleSignIn){
             // Check for existing Google Sign In account, if the user is already signed in
             // the GoogleSignInAccount will be non-null.
             GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
             if (account != null){
                 //get account info here
-                startActivity(new Intent(this, MainActivity.class));
+                Workmate workmate = new Workmate(account.getId(), account.getDisplayName(), account.getEmail(), account.getPhotoUrl().toString(), null, null);
+                intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, workmate);
+                startActivity(intent);
             }
         }
         else if(user != null){
-            startActivity(new Intent(this, MainActivity.class));
+            Workmate workmate = new Workmate(user.getUid(), user.getDisplayName(), user.getEmail(), user.getPhotoUrl().toString(), null, null);
+            intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, workmate);
+            startActivity(intent);
         }else {
             Toast.makeText(getApplicationContext(),"Sorry we cannot find your account.", Toast.LENGTH_LONG).show();
         }

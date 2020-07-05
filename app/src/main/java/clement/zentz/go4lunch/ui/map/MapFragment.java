@@ -11,11 +11,9 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -33,7 +31,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.ui.sharedViewModel.SharedViewModel;
+import clement.zentz.go4lunch.ui.sharedViewModel.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,
@@ -41,8 +39,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
     private static final String TAG = "MapFragment";
 
-    private MapViewModel mMapViewModel;
-    private SharedViewModel mSharedViewModel;
+    private GooglePlacesViewModel mGooglePlacesViewModel;
 
     private List<Restaurant> mRestaurantList;
 
@@ -52,17 +49,15 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastKnownLocation;
-    private static final float DEFAULT_ZOOM = 15; //zoom streets lvl
+    private static final float DEFAULT_ZOOM = 13; //zoom
     private static final LatLng defaultLocation = new LatLng(48.801659, 2.334064);
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
         //setup location
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
-        mMapViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
-        mSharedViewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
+        mGooglePlacesViewModel = ViewModelProviders.of(getActivity()).get(GooglePlacesViewModel.class);
 
         View root = inflater.inflate(R.layout.fragment_map_restaurant, container, false);
 
@@ -71,25 +66,17 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         return root;
     }
 
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        subscribeObservers();
-    }
-
     private void subscribeObservers(){
-        mSharedViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                mRestaurantList = restaurants;
-                for (Restaurant restaurant : mRestaurantList) {
-                    Log.d(TAG, "onResponse: " + restaurant.getName());
-                    map.addMarker(new MarkerOptions()
-                            .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                            .title(restaurant.getName())
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                }
+        mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), restaurants -> {
+
+            mRestaurantList = restaurants;
+
+            for (Restaurant restaurant : mRestaurantList) {
+                Log.d(TAG, "onResponse: " + restaurant.getName());
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                        .title(restaurant.getName())
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
             }
         });
     }
@@ -116,15 +103,12 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
         map.setOnMyLocationButtonClickListener(this);
         map.setOnMyLocationClickListener(this);
-        // Add a marker in Sydney and move the camera
-//        LatLng sydney = new LatLng(-34, 151);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
         getDeviceLocation();
+
+        subscribeObservers();
     }
 
     @Override
@@ -226,7 +210,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     }
 
     private void nearbySearchRestaurantsApi() {
-        mSharedViewModel.nearbySearchRestaurants(String.valueOf(lastKnownLocation.getLatitude()+", "+lastKnownLocation.getLongitude()), String.valueOf(Constants.RADIUS), Constants.PLACES_TYPE);
+        mGooglePlacesViewModel.nearbySearchRestaurants(lastKnownLocation.getLatitude() + ", " + lastKnownLocation.getLongitude(), String.valueOf(Constants.RADIUS), Constants.PLACES_TYPE);
     }
 
     private void getLastKnownLocation() {
@@ -246,7 +230,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             // Logic to handle location object
-                            lastKnownLocation = new Location(location);
+                            lastKnownLocation = location;
                         }
                     });
         }

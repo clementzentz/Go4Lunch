@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.service.responses;
+package clement.zentz.go4lunch.services.googlePlaces.responses;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

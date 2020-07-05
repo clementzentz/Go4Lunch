@@ -1,5 +1,6 @@
 package clement.zentz.go4lunch.models.restaurant;
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -59,6 +60,8 @@ public class Restaurant implements Parcelable {
     @Expose
     private Integer priceLevel;
 
+    private boolean isReserved;
+
     protected Restaurant(Parcel in) {
         businessStatus = in.readString();
         icon = in.readString();
@@ -83,6 +86,11 @@ public class Restaurant implements Parcelable {
             priceLevel = null;
         } else {
             priceLevel = in.readInt();
+        }
+
+        isReserved = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            isReserved = in.readBoolean();
         }
     }
 
@@ -226,6 +234,14 @@ public class Restaurant implements Parcelable {
         this.priceLevel = priceLevel;
     }
 
+    public boolean isReserved(){
+        return isReserved;
+    }
+
+    public void setIsReserved(boolean reserved){
+        isReserved = reserved;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -259,6 +275,10 @@ public class Restaurant implements Parcelable {
         } else {
             parcel.writeByte((byte) 1);
             parcel.writeInt(priceLevel);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            parcel.writeBoolean(isReserved);
         }
     }
 }

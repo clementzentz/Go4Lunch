@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.service;
+package clement.zentz.go4lunch.services.googlePlaces;
 
 import android.util.Log;
 
@@ -13,29 +13,29 @@ import java.util.concurrent.TimeUnit;
 
 import clement.zentz.go4lunch.AppExecutors;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.service.responses.NearbySearchRestaurantResponse;
+import clement.zentz.go4lunch.services.googlePlaces.responses.NearbySearchRestaurantResponse;
 import retrofit2.Call;
 import retrofit2.Response;
 
 import static clement.zentz.go4lunch.util.Constants.API_KEY;
 import static clement.zentz.go4lunch.util.Constants.NETWORK_TIMEOUT;
 
-public class GooglePlaceAPIClient {
+public class GooglePlacesAPIClient {
 
-    private static final String TAG = "GooglePlaceAPIClient";
+    private static final String TAG = "GooglePlacesAPIClient";
 
-    private static GooglePlaceAPIClient instance;
+    private static GooglePlacesAPIClient instance;
     private MutableLiveData<List<Restaurant>> mRestaurants;
     private RetrieveRestaurantsRunnable mRetrieveRestaurantsRunnable;
 
-    public static GooglePlaceAPIClient getInstance(){
+    public static GooglePlacesAPIClient getInstance(){
         if (instance == null){
-            instance = new GooglePlaceAPIClient();
+            instance = new GooglePlacesAPIClient();
         }
         return instance;
     }
 
-    private GooglePlaceAPIClient(){
+    private GooglePlacesAPIClient(){
         mRestaurants = new MutableLiveData<>();
     }
 

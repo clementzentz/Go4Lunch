@@ -1,6 +1,6 @@
-package clement.zentz.go4lunch.service;
+package clement.zentz.go4lunch.services.googlePlaces;
 
-import clement.zentz.go4lunch.service.responses.NearbySearchRestaurantResponse;
+import clement.zentz.go4lunch.services.googlePlaces.responses.NearbySearchRestaurantResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;

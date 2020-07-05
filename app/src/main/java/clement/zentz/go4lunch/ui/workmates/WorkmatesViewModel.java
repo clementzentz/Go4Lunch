@@ -4,16 +4,17 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import clement.zentz.go4lunch.models.workmate.Workmate;
+
 public class WorkmatesViewModel extends ViewModel {
 
-    private MutableLiveData<String> mText;
+    private MutableLiveData<Workmate> currentUser = new MutableLiveData<>();
 
-    public WorkmatesViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is workmates fragment");
+    public LiveData<Workmate> getCurrentUser(){
+        return currentUser;
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public void setCurrentUser(Workmate workmate){
+        currentUser.setValue(workmate);
     }
 }
