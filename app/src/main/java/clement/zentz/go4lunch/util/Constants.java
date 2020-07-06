@@ -17,9 +17,10 @@ public class Constants {
     public static final int MAX_HEIGHT_PHOTO = 100;
 
     //Intent
-    public static final String LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_INTENT = "restaurant1";
+    public static final String LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_ASK_INTENT = "ask";
+    public static final String LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_RESPONSE_INTENT = "response";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
 
     //RequestCode
-    public static final int LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE = 2;
+    public static final int LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE = 1;
 }

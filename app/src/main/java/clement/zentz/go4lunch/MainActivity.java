@@ -7,17 +7,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.Timestamp;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -26,7 +24,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.ui.sharedViewModel.GooglePlacesViewModel;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
@@ -112,10 +109,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE && resultCode == RESULT_OK){
-            mRestaurant = data.getParcelableExtra(Constants.LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_INTENT);
-            if (mRestaurant.isReserved()){
-                currentUser.setRestaurantId(mRestaurant.getId());
+        if (requestCode == Constants.LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE) {
+            if (resultCode == RESULT_OK){
+                mRestaurant = data.getParcelableExtra(Constants.LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_RESPONSE_INTENT);
+                if (mRestaurant.isReserved()){
+                    currentUser.setRestaurantId(mRestaurant.getId());
+                    currentUser.setTimestamp(Timestamp.now());
+                    mWorkmatesViewModel.setCurrentUser(currentUser);
+                }
             }
         }
     }

@@ -60,7 +60,8 @@ public class Restaurant implements Parcelable {
     @Expose
     private Integer priceLevel;
 
-    private boolean isReserved;
+    private boolean isReserved = false;
+
 
     protected Restaurant(Parcel in) {
         businessStatus = in.readString();
@@ -87,11 +88,7 @@ public class Restaurant implements Parcelable {
         } else {
             priceLevel = in.readInt();
         }
-
-        isReserved = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            isReserved = in.readBoolean();
-        }
+        isReserved = in.readByte() != 0;
     }
 
     public static final Creator<Restaurant> CREATOR = new Creator<Restaurant>() {
@@ -276,9 +273,6 @@ public class Restaurant implements Parcelable {
             parcel.writeByte((byte) 1);
             parcel.writeInt(priceLevel);
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            parcel.writeBoolean(isReserved);
-        }
+        parcel.writeByte((byte) (isReserved ? 1 : 0));
     }
 }

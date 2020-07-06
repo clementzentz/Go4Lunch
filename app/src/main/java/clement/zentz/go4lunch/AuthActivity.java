@@ -89,13 +89,25 @@ public class AuthActivity extends AppCompatActivity {
             GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
             if (account != null){
                 //get account info here
-                Workmate workmate = new Workmate(account.getId(), account.getDisplayName(), account.getEmail(), account.getPhotoUrl().toString(), null, null);
+                Workmate workmate = new Workmate(
+                        account.getId(),
+                        account.getDisplayName(),
+                        account.getEmail(),
+                        account.getPhotoUrl().toString(),
+                        null,
+                        null);
                 intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, workmate);
                 startActivity(intent);
             }
         }
         else if(user != null){
-            Workmate workmate = new Workmate(user.getUid(), user.getDisplayName(), user.getEmail(), user.getPhotoUrl().toString(), null, null);
+            Workmate workmate = new Workmate(
+                    user.getUid(),
+                    user.getDisplayName(),
+                    user.getEmail(),
+                    user.getPhotoUrl().toString(),
+                    null,
+                    null);
             intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, workmate);
             startActivity(intent);
         }else {

@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -67,29 +67,33 @@ public class WorkmatesFragment extends Fragment{
         mWorkmatesViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> {
             currentUser = workmate;
             Log.d(TAG, "subscribeObserver: "+currentUser.toString());
-            addOnceCurrentUserToFirestore();
+            addAndUpdateCurrentUserToFirestore();
         });
     }
 
-    private void addOnceCurrentUserToFirestore(){
+    private void addAndUpdateCurrentUserToFirestore(){
         // Create a new association between workmate and restaurant
-        Map<String, Object> workmate = new HashMap<>();
-        workmate.put("workmate_id", currentUser.getWorkmateId());
-        workmate.put("workmate_name", currentUser.getWorkmateName());
-        workmate.put("workmate_email", currentUser.getEmail());
-        workmate.put("workmate_photo_url", currentUser.getPhotoUrl());
-        workmate.put("restaurant_id", currentUser.getRestaurantId());
-        workmate.put("timestamp", currentUser.getTimestamp());
+        Map<String, Object> user = new HashMap<>();
+        user.put("workmate_id", this.currentUser.getWorkmateId());
+        user.put("workmate_name", this.currentUser.getWorkmateName());
+        user.put("workmate_email", this.currentUser.getEmail());
+        user.put("workmate_photo_url", this.currentUser.getPhotoUrl());
+        user.put("restaurant_id", this.currentUser.getRestaurantId());
+        user.put("timestamp", this.currentUser.getTimestamp());
         // Add a new document with a generated ID
-        db.collection("workmates")
-                .add(workmate)
-                .addOnSuccessListener(documentReference -> Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId()))
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
+        db.collection("workmates").document(this.currentUser.getWorkmateId())
+                .set(user)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
+    }
+
+    private void updateCurrentUserRestaurantIdAndTimestampToFirestore(String restaurantId, Timestamp timestamp){
+        DocumentReference currentUser = db.collection("workmates").document(this.currentUser.getWorkmateId());
+
+        currentUser
+                .update("restaurant_id", restaurantId, "timestamp", timestamp)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully updated!"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error updating document", e));
     }
 
     private void getAllWorkmatesFromFirestore(){

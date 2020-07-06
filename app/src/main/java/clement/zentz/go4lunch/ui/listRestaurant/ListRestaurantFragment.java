@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import clement.zentz.go4lunch.MainActivity;
 import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
@@ -55,7 +56,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void launchDetailRestaurantActivity(Restaurant currentRestaurant) {
         Intent intent = new Intent(getActivity(), RestaurantDetails.class);
-        intent.putExtra(Constants.LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_INTENT, currentRestaurant);
-        startActivityForResult(intent, Constants.LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE);
+        intent.putExtra(Constants.LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_ASK_INTENT, currentRestaurant);
+        getActivity().startActivityForResult(intent, Constants.LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE);
     }
 }
