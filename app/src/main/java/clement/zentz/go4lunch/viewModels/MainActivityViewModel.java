@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.ui.workmates;
+package clement.zentz.go4lunch.viewModels;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import clement.zentz.go4lunch.models.workmate.Workmate;
 
-public class WorkmatesViewModel extends ViewModel {
+public class MainActivityViewModel extends ViewModel {
 
     private MutableLiveData<Workmate> currentUser = new MutableLiveData<>();
 

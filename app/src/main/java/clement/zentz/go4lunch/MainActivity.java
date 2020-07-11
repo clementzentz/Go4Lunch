@@ -9,13 +9,12 @@ import android.widget.TextView;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.Timestamp;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -24,22 +23,21 @@ import androidx.navigation.ui.NavigationUI;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.ui.workmates.WorkmatesViewModel;
+import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 //bottom nav + nav drawer activity
 public class MainActivity extends AppCompatActivity {
 
     private Workmate currentUser;
-    private Restaurant mRestaurant;
-    private WorkmatesViewModel mWorkmatesViewModel;
+    private MainActivityViewModel mMainActivityViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bottom_nav_activity);
 
-        mWorkmatesViewModel = ViewModelProviders.of(this).get(WorkmatesViewModel.class);
+        mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
 
         getIncomingIntentFromAuthActivity();
 
@@ -56,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
     }
+
+
 
     //configure nav drawer
     private void configureNavDrawer(){
@@ -102,22 +102,7 @@ public class MainActivity extends AppCompatActivity {
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             configureNavDrawer();
-            mWorkmatesViewModel.setCurrentUser(currentUser);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE) {
-            if (resultCode == RESULT_OK){
-                mRestaurant = data.getParcelableExtra(Constants.LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_RESPONSE_INTENT);
-                if (mRestaurant.isReserved()){
-                    currentUser.setRestaurantId(mRestaurant.getId());
-                    currentUser.setTimestamp(Timestamp.now());
-                    mWorkmatesViewModel.setCurrentUser(currentUser);
-                }
-            }
+            mMainActivityViewModel.setCurrentUser(currentUser);
         }
     }
 }

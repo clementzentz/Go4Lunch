@@ -31,7 +31,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.ui.sharedViewModel.GooglePlacesViewModel;
+import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,

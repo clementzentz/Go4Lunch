@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.ui.sharedViewModel;
+package clement.zentz.go4lunch.viewModels;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;

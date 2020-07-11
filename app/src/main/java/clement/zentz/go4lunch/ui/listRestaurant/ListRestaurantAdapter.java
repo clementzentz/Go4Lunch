@@ -20,7 +20,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
     public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
     private List<Restaurant> mRestaurantList;
 
-    public ListRestaurantAdapter( ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
+    public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
     }
 
