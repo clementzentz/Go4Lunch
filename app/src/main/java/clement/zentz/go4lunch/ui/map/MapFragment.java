@@ -11,9 +11,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -57,13 +59,18 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         //setup location
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
-        mGooglePlacesViewModel = ViewModelProviders.of(getActivity()).get(GooglePlacesViewModel.class);
-
         View root = inflater.inflate(R.layout.fragment_map_restaurant, container, false);
 
         configureGoogleMap();
 
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
     }
 
     private void subscribeObservers(){

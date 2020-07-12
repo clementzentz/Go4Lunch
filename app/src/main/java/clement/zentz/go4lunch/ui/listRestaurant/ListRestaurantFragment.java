@@ -38,14 +38,10 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        mGooglePlacesViewModel = ViewModelProviders.of(getActivity()).get(GooglePlacesViewModel.class);
-
         View root = inflater.inflate(R.layout.fragment_list_restaurant, container, false);
 
         //recyclerview
         recyclerView = root.findViewById(R.id.list_restaurant_rv);
-
-        subscribeGooglePlaceObserver();
 
         return root;
     }
@@ -53,6 +49,9 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
+        subscribeGooglePlaceObserver();
+
         mMainActivityViewModel = new ViewModelProvider(requireActivity()).get(MainActivityViewModel.class);
         subscribeCurrentUserObserver();
         setUpRecyclerView();
@@ -60,6 +59,10 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
 
     private void subscribeGooglePlaceObserver(){
         mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), restaurants -> adapter.setRestaurantList(restaurants));
+    }
+
+    private void subscribeCurrentUserObserver(){
+        mMainActivityViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
     }
 
     private void setUpRecyclerView(){
@@ -74,9 +77,5 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
         intent.putExtra(Constants.LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT, currentRestaurant);
         intent.putExtra(Constants.MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT, currentUser);
         startActivity(intent);
-    }
-
-    private void subscribeCurrentUserObserver(){
-        mMainActivityViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
     }
 }

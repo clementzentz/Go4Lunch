@@ -3,16 +3,22 @@ package clement.zentz.go4lunch;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
@@ -28,7 +34,6 @@ public class RestaurantDetails extends AppCompatActivity {
     private FloatingActionButton fab;
     private Workmate currentUser;
     private FirebaseFirestore db;
-    private MainActivityViewModel mMainActivityViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +51,7 @@ public class RestaurantDetails extends AppCompatActivity {
 
         fab.setOnClickListener(view -> {
             currentUser.setRestaurantId(currentRestaurant.getId());
+            currentUser.setTimestamp(Timestamp.now());
             addOrUpdateCurrentUserToFirestore();
         });
     }
@@ -75,28 +81,5 @@ public class RestaurantDetails extends AppCompatActivity {
                 .set(user)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
-    }
-
-//    private void updateCurrentUserRestaurantIdAndTimestampToFirestore(String restaurantId, Timestamp timestamp){
-//        DocumentReference currentUser = db.collection("workmates").document(this.currentUser.getWorkmateId());
-//
-//        currentUser
-//                .update("restaurant_id", restaurantId, "timestamp", timestamp)
-//                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully updated!"))
-//                .addOnFailureListener(e -> Log.w(TAG, "Error updating document", e));
-//    }
-
-    private void getAllWorkmatesFromFirestore(){
-        db.collection("workmates")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Log.d(TAG, document.getId() + " => " + document.getData());
-                        }
-                    } else {
-                        Log.w(TAG, "Error getting documents.", task.getException());
-                    }
-                });
     }
 }

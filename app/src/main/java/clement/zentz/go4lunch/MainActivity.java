@@ -2,14 +2,22 @@ package clement.zentz.go4lunch;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -21,6 +29,11 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
@@ -29,8 +42,13 @@ import clement.zentz.go4lunch.util.Constants;
 //bottom nav + nav drawer activity
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
+
     private Workmate currentUser;
     private MainActivityViewModel mMainActivityViewModel;
+
+    private FirebaseFirestore db;
+    private List<Workmate> mWorkmates = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.bottom_nav_activity);
 
         mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+
+        setupFirestore();
+
+        getAllWorkmatesFromFirestore();
 
         getIncomingIntentFromAuthActivity();
 
@@ -104,5 +126,38 @@ public class MainActivity extends AppCompatActivity {
             configureNavDrawer();
             mMainActivityViewModel.setCurrentUser(currentUser);
         }
+    }
+
+    private void setupFirestore(){
+        db = FirebaseFirestore.getInstance();
+    }
+
+    private void getAllWorkmatesFromFirestore(){
+
+        Map<String, Object> currentUserFromFirestore = new HashMap<>();
+
+        db.collection("workmates")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                currentUserFromFirestore.putAll(document.getData());
+                                mWorkmates.add(new Workmate(
+                                        (String)currentUserFromFirestore.get("workmate_id"),
+                                        (String)currentUserFromFirestore.get("workmate_name"),
+                                        (String)currentUserFromFirestore.get("workmate_email"),
+                                        (String)currentUserFromFirestore.get("workmate_photo_url"),
+                                        (String)currentUserFromFirestore.get("restaurant_id"),
+                                        (Timestamp)currentUserFromFirestore.get("timestamp")));
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+        mMainActivityViewModel.setWorkmates(mWorkmates);
     }
 }
