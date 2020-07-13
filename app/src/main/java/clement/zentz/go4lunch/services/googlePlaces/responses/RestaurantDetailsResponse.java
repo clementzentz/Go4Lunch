@@ -1,22 +1,19 @@
 package clement.zentz.go4lunch.services.googlePlaces.responses;
 
+import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 
-public class NearbySearchRestaurantResponse {
+public class RestaurantDetailsResponse {
 
     @SerializedName("html_attributions")
     @Expose
     private List<Object> htmlAttributions = null;
-    @SerializedName("next_page_token")
+    @SerializedName("result")
     @Expose
-    private String nextPageToken;
-    @SerializedName("results")
-    @Expose
-    private List<Restaurant> mRestaurants = null;
+    private Restaurant result;
     @SerializedName("status")
     @Expose
     private String status;
@@ -29,20 +26,12 @@ public class NearbySearchRestaurantResponse {
         this.htmlAttributions = htmlAttributions;
     }
 
-    public String getNextPageToken() {
-        return nextPageToken;
+    public Restaurant getResult() {
+        return result;
     }
 
-    public void setNextPageToken(String nextPageToken) {
-        this.nextPageToken = nextPageToken;
-    }
-
-    public List<Restaurant> getResult() {
-        return mRestaurants;
-    }
-
-    public void setRestaurants(List<Restaurant> restaurants) {
-        this.mRestaurants = restaurants;
+    public void setResult(Restaurant result) {
+        this.result = result;
     }
 
     public String getStatus() {

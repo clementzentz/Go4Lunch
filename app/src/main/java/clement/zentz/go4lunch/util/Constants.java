@@ -1,8 +1,10 @@
 package clement.zentz.go4lunch.util;
 
+import android.content.Context;
+
 import clement.zentz.go4lunch.R;
 
-public class Constants {
+public abstract class Constants  {
     //api
     public static final int NETWORK_TIMEOUT = 5000;
     public static final String API_KEY = "AIzaSyB-Enm6PIJRhyaQuTuMswPetf12jOI-_Iw";
@@ -19,10 +21,5 @@ public class Constants {
     //Intent
     public static final String LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT = "currentRestaurant";
     public static final String MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT = "currentUser";
-    public static final String LIST_RESTAURANT_FRAGMENT_TO_RESTAURANT_DETAILS_RESPONSE_INTENT = "response";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
-
-    //RequestCode
-    public static final int LIST_RESTAURANT_FRAGMENT_AND_RESTAURANT_DETAILS_REQUEST_CODE = 1;
-
 }

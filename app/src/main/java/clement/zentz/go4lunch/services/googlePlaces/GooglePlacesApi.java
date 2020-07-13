@@ -1,6 +1,7 @@
 package clement.zentz.go4lunch.services.googlePlaces;
 
 import clement.zentz.go4lunch.services.googlePlaces.responses.NearbySearchRestaurantResponse;
+import clement.zentz.go4lunch.services.googlePlaces.responses.RestaurantDetailsResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -24,6 +25,10 @@ public interface GooglePlacesApi {
             @Query("type") String type //type of searched elements
     );
 
-//    @GET("/users/{user}/repos")
-//    List<Workmate> getWorkmates(@Path("user") String user);
+    @GET("details/json")
+    Call<RestaurantDetailsResponse> requestRestaurantDetails(
+            @Query("key") String key,
+            @Query("place_id") String placeId,
+            @Query("type") String type
+    );
 }

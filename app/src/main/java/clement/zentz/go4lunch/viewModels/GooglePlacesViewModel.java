@@ -20,7 +20,15 @@ public class GooglePlacesViewModel extends ViewModel {
         return mGooglePlacesRepository.getRestaurants();
     }
 
+    public LiveData<Restaurant> getRestaurantDetails(){
+        return mGooglePlacesRepository.getRestaurantDetails();
+    }
+
     public void nearbySearchRestaurants(String location, String radius, String type){
         mGooglePlacesRepository.nearbySearchRestaurantsApi(location, radius, type);
+    }
+
+    public void restaurantDetails(String placeId, String type){
+        mGooglePlacesRepository.restaurantDetailsApi(placeId, type);
     }
 }

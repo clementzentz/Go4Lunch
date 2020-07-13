@@ -1,6 +1,5 @@
 package clement.zentz.go4lunch.models.restaurant;
 
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,12 +7,23 @@ import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-//class Result
 public class Restaurant implements Parcelable {
 
+    @SerializedName("address_components")
+    @Expose
+    private List<AddressComponent> addressComponents = null;
+    @SerializedName("adr_address")
+    @Expose
+    private String adrAddress;
     @SerializedName("business_status")
     @Expose
     private String businessStatus;
+    @SerializedName("formatted_address")
+    @Expose
+    private String formattedAddress;
+    @SerializedName("formatted_phone_number")
+    @Expose
+    private String formattedPhoneNumber;
     @SerializedName("geometry")
     @Expose
     private Geometry geometry;
@@ -23,6 +33,9 @@ public class Restaurant implements Parcelable {
     @SerializedName("id")
     @Expose
     private String id;
+    @SerializedName("international_phone_number")
+    @Expose
+    private String internationalPhoneNumber;
     @SerializedName("name")
     @Expose
     private String name;
@@ -38,37 +51,55 @@ public class Restaurant implements Parcelable {
     @SerializedName("plus_code")
     @Expose
     private PlusCode plusCode;
+    @SerializedName("price_level")
+    @Expose
+    private Integer priceLevel;
     @SerializedName("rating")
     @Expose
     private Double rating;
     @SerializedName("reference")
     @Expose
     private String reference;
+    @SerializedName("reviews")
+    @Expose
+    private List<Review> reviews = null;
     @SerializedName("scope")
     @Expose
     private String scope;
     @SerializedName("types")
     @Expose
     private List<String> types = null;
+    @SerializedName("url")
+    @Expose
+    private String url;
     @SerializedName("user_ratings_total")
     @Expose
     private Integer userRatingsTotal;
+    @SerializedName("utc_offset")
+    @Expose
+    private Integer utcOffset;
     @SerializedName("vicinity")
     @Expose
     private String vicinity;
-    @SerializedName("price_level")
+    @SerializedName("website")
     @Expose
-    private Integer priceLevel;
-
-    private boolean isReserved = false;
-
+    private String website;
 
     protected Restaurant(Parcel in) {
+        adrAddress = in.readString();
         businessStatus = in.readString();
+        formattedAddress = in.readString();
+        formattedPhoneNumber = in.readString();
         icon = in.readString();
         id = in.readString();
+        internationalPhoneNumber = in.readString();
         name = in.readString();
         placeId = in.readString();
+        if (in.readByte() == 0) {
+            priceLevel = null;
+        } else {
+            priceLevel = in.readInt();
+        }
         if (in.readByte() == 0) {
             rating = null;
         } else {
@@ -77,18 +108,19 @@ public class Restaurant implements Parcelable {
         reference = in.readString();
         scope = in.readString();
         types = in.createStringArrayList();
+        url = in.readString();
         if (in.readByte() == 0) {
             userRatingsTotal = null;
         } else {
             userRatingsTotal = in.readInt();
         }
-        vicinity = in.readString();
         if (in.readByte() == 0) {
-            priceLevel = null;
+            utcOffset = null;
         } else {
-            priceLevel = in.readInt();
+            utcOffset = in.readInt();
         }
-        isReserved = in.readByte() != 0;
+        vicinity = in.readString();
+        website = in.readString();
     }
 
     public static final Creator<Restaurant> CREATOR = new Creator<Restaurant>() {
@@ -103,12 +135,44 @@ public class Restaurant implements Parcelable {
         }
     };
 
+    public List<AddressComponent> getAddressComponents() {
+        return addressComponents;
+    }
+
+    public void setAddressComponents(List<AddressComponent> addressComponents) {
+        this.addressComponents = addressComponents;
+    }
+
+    public String getAdrAddress() {
+        return adrAddress;
+    }
+
+    public void setAdrAddress(String adrAddress) {
+        this.adrAddress = adrAddress;
+    }
+
     public String getBusinessStatus() {
         return businessStatus;
     }
 
     public void setBusinessStatus(String businessStatus) {
         this.businessStatus = businessStatus;
+    }
+
+    public String getFormattedAddress() {
+        return formattedAddress;
+    }
+
+    public void setFormattedAddress(String formattedAddress) {
+        this.formattedAddress = formattedAddress;
+    }
+
+    public String getFormattedPhoneNumber() {
+        return formattedPhoneNumber;
+    }
+
+    public void setFormattedPhoneNumber(String formattedPhoneNumber) {
+        this.formattedPhoneNumber = formattedPhoneNumber;
     }
 
     public Geometry getGeometry() {
@@ -133,6 +197,14 @@ public class Restaurant implements Parcelable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getInternationalPhoneNumber() {
+        return internationalPhoneNumber;
+    }
+
+    public void setInternationalPhoneNumber(String internationalPhoneNumber) {
+        this.internationalPhoneNumber = internationalPhoneNumber;
     }
 
     public String getName() {
@@ -175,6 +247,14 @@ public class Restaurant implements Parcelable {
         this.plusCode = plusCode;
     }
 
+    public Integer getPriceLevel() {
+        return priceLevel;
+    }
+
+    public void setPriceLevel(Integer priceLevel) {
+        this.priceLevel = priceLevel;
+    }
+
     public Double getRating() {
         return rating;
     }
@@ -189,6 +269,14 @@ public class Restaurant implements Parcelable {
 
     public void setReference(String reference) {
         this.reference = reference;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 
     public String getScope() {
@@ -207,12 +295,28 @@ public class Restaurant implements Parcelable {
         this.types = types;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public Integer getUserRatingsTotal() {
         return userRatingsTotal;
     }
 
     public void setUserRatingsTotal(Integer userRatingsTotal) {
         this.userRatingsTotal = userRatingsTotal;
+    }
+
+    public Integer getUtcOffset() {
+        return utcOffset;
+    }
+
+    public void setUtcOffset(Integer utcOffset) {
+        this.utcOffset = utcOffset;
     }
 
     public String getVicinity() {
@@ -223,20 +327,12 @@ public class Restaurant implements Parcelable {
         this.vicinity = vicinity;
     }
 
-    public Integer getPriceLevel() {
-        return priceLevel;
+    public String getWebsite() {
+        return website;
     }
 
-    public void setPriceLevel(Integer priceLevel) {
-        this.priceLevel = priceLevel;
-    }
-
-    public boolean isReserved(){
-        return isReserved;
-    }
-
-    public void setIsReserved(boolean reserved){
-        isReserved = reserved;
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     @Override
@@ -246,11 +342,21 @@ public class Restaurant implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(adrAddress);
         parcel.writeString(businessStatus);
+        parcel.writeString(formattedAddress);
+        parcel.writeString(formattedPhoneNumber);
         parcel.writeString(icon);
         parcel.writeString(id);
+        parcel.writeString(internationalPhoneNumber);
         parcel.writeString(name);
         parcel.writeString(placeId);
+        if (priceLevel == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeInt(priceLevel);
+        }
         if (rating == null) {
             parcel.writeByte((byte) 0);
         } else {
@@ -260,19 +366,20 @@ public class Restaurant implements Parcelable {
         parcel.writeString(reference);
         parcel.writeString(scope);
         parcel.writeStringList(types);
+        parcel.writeString(url);
         if (userRatingsTotal == null) {
             parcel.writeByte((byte) 0);
         } else {
             parcel.writeByte((byte) 1);
             parcel.writeInt(userRatingsTotal);
         }
-        parcel.writeString(vicinity);
-        if (priceLevel == null) {
+        if (utcOffset == null) {
             parcel.writeByte((byte) 0);
         } else {
             parcel.writeByte((byte) 1);
-            parcel.writeInt(priceLevel);
+            parcel.writeInt(utcOffset);
         }
-        parcel.writeByte((byte) (isReserved ? 1 : 0));
+        parcel.writeString(vicinity);
+        parcel.writeString(website);
     }
 }

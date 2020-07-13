@@ -2,29 +2,22 @@ package clement.zentz.go4lunch;
 
 import android.os.Bundle;
 import android.util.Log;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
-import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
+import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
 public class RestaurantDetails extends AppCompatActivity {
 
@@ -35,9 +28,13 @@ public class RestaurantDetails extends AppCompatActivity {
     private Workmate currentUser;
     private FirebaseFirestore db;
 
+    private GooglePlacesViewModel mGooglePlacesViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mGooglePlacesViewModel = new  ViewModelProvider(this).get(GooglePlacesViewModel.class);
 
         setContentView(R.layout.activity_detail_restaurant);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -47,12 +44,25 @@ public class RestaurantDetails extends AppCompatActivity {
 
         getIncomingIntent();
 
+        mGooglePlacesViewModel.restaurantDetails(currentRestaurant.getPlaceId(), Constants.PLACES_TYPE);
+
+        subscribeRestaurantDetailsObserver();
+
         setupFirestore();
 
         fab.setOnClickListener(view -> {
-            currentUser.setRestaurantId(currentRestaurant.getId());
+            currentUser.setRestaurantId(currentRestaurant.getPlaceId());
             currentUser.setTimestamp(Timestamp.now());
             addOrUpdateCurrentUserToFirestore();
+        });
+    }
+
+    private void subscribeRestaurantDetailsObserver(){
+        mGooglePlacesViewModel.getRestaurantDetails().observe(this, new Observer<Restaurant>() {
+            @Override
+            public void onChanged(Restaurant restaurant) {
+                currentRestaurant = restaurant;
+            }
         });
     }
 

@@ -27,7 +27,15 @@ public class GooglePlacesRepository {
         return mGooglePlacesAPIClient.getRestaurants();
     }
 
+    public LiveData<Restaurant> getRestaurantDetails(){
+        return mGooglePlacesAPIClient.getRestaurantDetails();
+    }
+
     public void nearbySearchRestaurantsApi(String location, String radius, String type){
         mGooglePlacesAPIClient.nearbySearchRestaurantApi(location, radius, type);
+    }
+
+    public void restaurantDetailsApi(String restaurantId, String type){
+        mGooglePlacesAPIClient.restaurantDetailsApi(restaurantId, type);
     }
 }
