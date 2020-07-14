@@ -7,12 +7,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
 
 public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAdapter.ListRestaurantViewHolder> {
@@ -43,16 +47,12 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             }
         });
 
-//        RequestOptions requestOptions = new RequestOptions().placeholder(R.drawable.ic_launcher_background);
-//
-//        Glide.with(holder.itemView.getContext())
-//                .setDefaultRequestOptions(requestOptions)
-//                .load(Constants.BASE_URL_PHOTO_PLACE
-//                        +"&key="+Constants.API_KEY
-//                        +"&photoreference="+mRestaurantList.get(position).getPhotos().get(0).getPhotoReference()
-//                        +"&maxwidth="+Constants.MAX_WIDTH_PHOTO
-//                        +"&maxheight"+Constants.MAX_HEIGHT_PHOTO)
-//                .into(holder.restaurantPhoto);
+        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+                + "maxwidth="+Constants.MAX_WIDTH_PHOTO
+                + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
+                + "&photoreference=" + String.valueOf(mRestaurantList.get(position).getPhotos().get(0).getPhotoReference())
+                + "&key=" + Constants.API_KEY)
+                .into(holder.restaurantPhoto);
     }
 
     @Override

@@ -8,6 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
@@ -29,6 +31,8 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
 
         holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+" is eating at "+mWorkmateList.get(position).getRestaurantId());
+
+        Picasso.get().load(mWorkmateList.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
     }
 
     @Override

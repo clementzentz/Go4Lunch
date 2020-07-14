@@ -13,6 +13,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         nameUser.setText(currentUser.getWorkmateName());
         emailUser.setText(currentUser.getEmail());
+        Picasso.get().load(currentUser.getPhotoUrl()).into(imageUser);
 
         drawer.addDrawerListener(new ActionBarDrawerToggle(this, drawer, toolbar, R.string.app_name, R.string.app_name));
 

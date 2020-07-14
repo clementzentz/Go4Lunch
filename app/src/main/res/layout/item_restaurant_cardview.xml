@@ -38,7 +38,7 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 android:textStyle="italic"/>
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <ImageView
                 android:id="@+id/restaurant_photo"
                 android:layout_width="100dp"
                 android:layout_height="match_parent"
