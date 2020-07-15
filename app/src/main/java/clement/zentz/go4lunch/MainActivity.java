@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
+import clement.zentz.go4lunch.viewModels.FirebaseViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 //bottom nav + nav drawer activity
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private Workmate currentUser;
-    private MainActivityViewModel mMainActivityViewModel;
+    private FirebaseViewModel mFirebaseViewModel;
 
     private FirebaseFirestore db;
     private List<Workmate> mWorkmates = new ArrayList<>();
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bottom_nav_activity);
 
-        mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        mFirebaseViewModel = new ViewModelProvider(this).get(FirebaseViewModel.class);
 
         setupFirestore();
 
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         View navHeader = navigationView.getHeaderView(0);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.restaurant_details_toolbar);
 
         //nav header
         ImageView imageUser = navHeader.findViewById(R.id.user_img);
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             configureNavDrawer();
-            mMainActivityViewModel.setCurrentUser(currentUser);
+            mFirebaseViewModel.setCurrentUser(currentUser);
         }
     }
 
@@ -151,6 +151,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
                 });
-        mMainActivityViewModel.setWorkmates(mWorkmates);
+        mFirebaseViewModel.setWorkmates(mWorkmates);
     }
 }

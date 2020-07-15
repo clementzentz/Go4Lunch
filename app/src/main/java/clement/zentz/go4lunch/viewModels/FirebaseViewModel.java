@@ -8,7 +8,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.models.workmate.Workmate;
 
-public class MainActivityViewModel extends ViewModel {
+public class FirebaseViewModel extends ViewModel {
 
     private MutableLiveData<Workmate> currentUser = new MutableLiveData<>();
 

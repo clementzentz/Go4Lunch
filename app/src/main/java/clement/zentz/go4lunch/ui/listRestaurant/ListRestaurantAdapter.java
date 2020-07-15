@@ -7,7 +7,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
@@ -16,6 +15,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
 
@@ -23,6 +23,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
     private List<Restaurant> mRestaurantList;
+    private List<Workmate> mWorkmateList;
 
     public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
@@ -37,6 +38,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     @Override
     public void onBindViewHolder(@NonNull ListRestaurantAdapter.ListRestaurantViewHolder holder, int position) {
+
         holder.restaurantName.setText(mRestaurantList.get(position).getName());
 
         holder.restaurantTypeAddress.setText(mRestaurantList.get(position).getVicinity());
@@ -48,11 +50,18 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         });
 
         Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
-                + "maxwidth="+Constants.MAX_WIDTH_PHOTO
+                + "key=" + Constants.API_KEY
+                + "&maxwidth="+Constants.MAX_WIDTH_PHOTO
                 + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
-                + "&photoreference=" + String.valueOf(mRestaurantList.get(position).getPhotos().get(0).getPhotoReference())
-                + "&key=" + Constants.API_KEY)
+                + "&photoreference=" + (mRestaurantList.get(position).getPhotos().get(0).getPhotoReference()))
                 .into(holder.restaurantPhoto);
+
+        int count = 0;
+        for (Workmate workmate : mWorkmateList){
+            if (mRestaurantList.get(position).getPlaceId().equals(workmate.getRestaurantId())){
+                holder.workmatesCount.setText("("+ (count += 1) +")");
+            }
+        }
     }
 
     @Override
@@ -69,12 +78,18 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         notifyDataSetChanged();
     }
 
+    public void setWorkmatesList(List<Workmate> workmates){
+        mWorkmateList = workmates;
+        notifyDataSetChanged();
+    }
+
     //ViewHolder
     static class ListRestaurantViewHolder extends RecyclerView.ViewHolder{
 
         TextView restaurantName;
         TextView restaurantTypeAddress;
         ImageView restaurantPhoto;
+        TextView workmatesCount;
 
         public ListRestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -82,6 +97,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             restaurantName = itemView.findViewById(R.id.restaurant_name_txt);
             restaurantTypeAddress = itemView.findViewById(R.id.restaurant_type_address_txt);
             restaurantPhoto = itemView.findViewById(R.id.restaurant_photo);
+            workmatesCount = itemView.findViewById(R.id.workmates_count_txt);
         }
     }
 }

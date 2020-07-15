@@ -21,5 +21,6 @@ public abstract class Constants  {
     //Intent
     public static final String LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT = "currentRestaurant";
     public static final String MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT = "currentUser";
+    public static final String ALL_WORKMATES_INTENT = "allWorkmates";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
 }

@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
+import clement.zentz.go4lunch.viewModels.FirebaseViewModel;
 
 public class WorkmatesFragment extends Fragment{
 
@@ -22,13 +22,14 @@ public class WorkmatesFragment extends Fragment{
     private RecyclerView recyclerView;
     private WorkmatesAdapter adapter;
 
-    private MainActivityViewModel mMainActivityViewModel;
+    private FirebaseViewModel mFirebaseViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
             ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_workmates, container, false);
 
         recyclerView = root.findViewById(R.id.workmates_rv);
+        setupRecyclerView();
 
         return root;
     }
@@ -36,13 +37,12 @@ public class WorkmatesFragment extends Fragment{
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mMainActivityViewModel = new ViewModelProvider(requireActivity()).get(MainActivityViewModel.class);
+        mFirebaseViewModel = new ViewModelProvider(requireActivity()).get(FirebaseViewModel.class);
         subscribeWorkmatesObserver();
-        setupRecyclerView();
     }
 
     private void subscribeWorkmatesObserver(){
-        mMainActivityViewModel.getWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmateList(workmates));
+        mFirebaseViewModel.getWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmateList(workmates));
     }
 
     private void setupRecyclerView(){
