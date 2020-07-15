@@ -2,7 +2,6 @@ package clement.zentz.go4lunch;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -10,9 +9,7 @@ import android.widget.TextView;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -26,12 +23,11 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.viewModels.FirebaseViewModel;
+import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
+import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 //bottom nav + nav drawer activity
@@ -40,7 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private Workmate currentUser;
-    private FirebaseViewModel mFirebaseViewModel;
+    private MainActivityViewModel mMainActivityViewModel;
+
+    private FirestoreViewModel mFirestoreViewModel;
 
     private FirebaseFirestore db;
     private List<Workmate> mWorkmates = new ArrayList<>();
@@ -50,11 +48,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bottom_nav_activity);
 
-        mFirebaseViewModel = new ViewModelProvider(this).get(FirebaseViewModel.class);
+        mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
-        setupFirestore();
-
-        getAllWorkmatesFromFirestore();
+        mFirestoreViewModel.requestAllFirestoreWorkmates();
 
         getIncomingIntentFromAuthActivity();
 
@@ -71,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
     }
-
-
 
     //configure nav drawer
     private void configureNavDrawer(){
@@ -120,37 +115,7 @@ public class MainActivity extends AppCompatActivity {
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             configureNavDrawer();
-            mFirebaseViewModel.setCurrentUser(currentUser);
+            mMainActivityViewModel.setCurrentUser(currentUser);
         }
-    }
-
-    private void setupFirestore(){
-        db = FirebaseFirestore.getInstance();
-    }
-
-    private void getAllWorkmatesFromFirestore(){
-
-        Map<String, Object> currentUserFromFirestore = new HashMap<>();
-
-        db.collection("workmates")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Log.d(TAG, document.getId() + " => " + document.getData());
-                            currentUserFromFirestore.putAll(document.getData());
-                            mWorkmates.add(new Workmate(
-                                    (String)currentUserFromFirestore.get("workmate_id"),
-                                    (String)currentUserFromFirestore.get("workmate_name"),
-                                    (String)currentUserFromFirestore.get("workmate_email"),
-                                    (String)currentUserFromFirestore.get("workmate_photo_url"),
-                                    (String)currentUserFromFirestore.get("restaurant_id"),
-                                    (Timestamp)currentUserFromFirestore.get("timestamp")));
-                        }
-                    } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
-                    }
-                });
-        mFirebaseViewModel.setWorkmates(mWorkmates);
     }
 }

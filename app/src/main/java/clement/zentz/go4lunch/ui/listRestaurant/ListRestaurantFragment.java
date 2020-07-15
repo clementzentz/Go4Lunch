@@ -2,11 +2,9 @@ package clement.zentz.go4lunch.ui.listRestaurant;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,15 +22,17 @@ import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
+import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
-import clement.zentz.go4lunch.viewModels.FirebaseViewModel;
+import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
 
 public class ListRestaurantFragment extends Fragment implements ListRestaurantFragmentToListRestaurantAdapter {
 
     private GooglePlacesViewModel mGooglePlacesViewModel;
-    private FirebaseViewModel mFirebaseViewModel;
+    private MainActivityViewModel mMainActivityViewModel;
+    private FirestoreViewModel mFirestoreViewModel;
 
     private RecyclerView recyclerView;
     private ListRestaurantAdapter adapter;
@@ -56,8 +56,9 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mFirebaseViewModel = new ViewModelProvider(requireActivity()).get(FirebaseViewModel.class);
+        mMainActivityViewModel = new ViewModelProvider(requireActivity()).get(MainActivityViewModel.class);
         mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
+        mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
 
         subscribeFirebaseObserver();
         subscribeGooglePlaceObserver();
@@ -73,9 +74,9 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     }
 
     private void subscribeFirebaseObserver(){
-        mFirebaseViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
+        mMainActivityViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
 
-        mFirebaseViewModel.getWorkmates().observe(getViewLifecycleOwner(), new Observer<List<Workmate>>() {
+        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmates) {
                 adapter.setWorkmatesList(workmates);

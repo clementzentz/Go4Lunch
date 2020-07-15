@@ -34,7 +34,7 @@ import java.util.List;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.viewModels.FirebaseViewModel;
+import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
@@ -44,7 +44,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private static final String TAG = "MapFragment";
 
     private GooglePlacesViewModel mGooglePlacesViewModel;
-    private FirebaseViewModel mFirebaseViewModel;
+    private FirestoreViewModel mFirestoreViewModel;
 
     private List<Restaurant> mRestaurantList;
     private List<Workmate> mWorkmateList;
@@ -75,7 +75,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         super.onViewCreated(view, savedInstanceState);
         mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
 
-        mFirebaseViewModel = new ViewModelProvider(requireActivity()).get(FirebaseViewModel.class);
+        mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
+
         subscribeFirestoreObserver();
     }
 
@@ -102,8 +103,11 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     }
 
     private void subscribeFirestoreObserver(){
-        mFirebaseViewModel.getWorkmates().observe(getViewLifecycleOwner(), workmates -> {
-            mWorkmateList = workmates;
+        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), new Observer<List<Workmate>>() {
+            @Override
+            public void onChanged(List<Workmate> workmates) {
+                mWorkmateList = workmates;
+            }
         });
     }
 

@@ -1,7 +1,6 @@
 package clement.zentz.go4lunch;
 
 import android.os.Bundle;
-import android.util.Log;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -14,14 +13,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
+import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
 public class RestaurantDetails extends AppCompatActivity {
@@ -36,16 +34,16 @@ public class RestaurantDetails extends AppCompatActivity {
     private WorkmatesAdapter adapter;
 
     private Workmate currentUser;
-    private FirebaseFirestore db;
-
 
     private GooglePlacesViewModel mGooglePlacesViewModel;
+    private FirestoreViewModel mFirestoreViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mGooglePlacesViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
+        mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
         setContentView(R.layout.activity_detail_restaurant);
         Toolbar toolbar = findViewById(R.id.restaurant_details_toolbar);
@@ -58,16 +56,17 @@ public class RestaurantDetails extends AppCompatActivity {
 
         getIncomingIntent();
 
+        toolbar.setTitle(currentRestaurant.getName());
+
         mGooglePlacesViewModel.restaurantDetails(currentRestaurant.getPlaceId(), Constants.PLACES_TYPE);
 
         subscribeGooglePlacesObserver();
 
-        setupFirestore();
-
         fab.setOnClickListener(view -> {
             currentUser.setRestaurantId(currentRestaurant.getPlaceId());
             currentUser.setTimestamp(Timestamp.now());
-            addOrUpdateCurrentUserToFirestore();
+            mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
+            adapter.notifyDataSetChanged();
         });
     }
 
@@ -98,25 +97,5 @@ public class RestaurantDetails extends AppCompatActivity {
             currentUser = getIntent().getParcelableExtra(Constants.MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT);
             allWorkmates = getIntent().getParcelableArrayListExtra(Constants.ALL_WORKMATES_INTENT);
         }
-    }
-
-    private void setupFirestore(){
-        db = FirebaseFirestore.getInstance();
-    }
-
-    private void addOrUpdateCurrentUserToFirestore(){
-        // Create a new association between workmate and restaurant
-        Map<String, Object> user = new HashMap<>();
-        user.put("workmate_id", this.currentUser.getWorkmateId());
-        user.put("workmate_name", this.currentUser.getWorkmateName());
-        user.put("workmate_email", this.currentUser.getEmail());
-        user.put("workmate_photo_url", this.currentUser.getPhotoUrl());
-        user.put("restaurant_id", this.currentUser.getRestaurantId());
-        user.put("timestamp", this.currentUser.getTimestamp());
-        // Add a new document with a generated ID
-        db.collection("workmates").document(this.currentUser.getWorkmateId())
-                .set(user)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
-                .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
     }
 }

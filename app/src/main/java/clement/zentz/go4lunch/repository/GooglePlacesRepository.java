@@ -9,7 +9,7 @@ import clement.zentz.go4lunch.services.googlePlaces.GooglePlacesAPIClient;
 
 public class GooglePlacesRepository {
 
-    private  static GooglePlacesRepository instance;
+    private static GooglePlacesRepository instance;
     private GooglePlacesAPIClient mGooglePlacesAPIClient;
 
     public static GooglePlacesRepository getInstance(){

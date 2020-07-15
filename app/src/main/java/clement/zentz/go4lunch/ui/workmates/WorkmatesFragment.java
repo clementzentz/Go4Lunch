@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.viewModels.FirebaseViewModel;
+import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 
 public class WorkmatesFragment extends Fragment{
 
@@ -22,7 +22,7 @@ public class WorkmatesFragment extends Fragment{
     private RecyclerView recyclerView;
     private WorkmatesAdapter adapter;
 
-    private FirebaseViewModel mFirebaseViewModel;
+    private FirestoreViewModel mFirestoreViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
             ViewGroup container, Bundle savedInstanceState) {
@@ -37,12 +37,12 @@ public class WorkmatesFragment extends Fragment{
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mFirebaseViewModel = new ViewModelProvider(requireActivity()).get(FirebaseViewModel.class);
+        mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
         subscribeWorkmatesObserver();
     }
 
     private void subscribeWorkmatesObserver(){
-        mFirebaseViewModel.getWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmateList(workmates));
+        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmateList(workmates));
     }
 
     private void setupRecyclerView(){
