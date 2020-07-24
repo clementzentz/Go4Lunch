@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,6 +21,7 @@ public class FirestoreApi {
     private static final String TAG = "FirestoreApi";
 
     private MutableLiveData<List<Workmate>> allWorkmates;
+    private MutableLiveData<List<Workmate>> workmatesWithCustomQuery;
 
     private FirebaseFirestore db;
     private static FirestoreApi instance;
@@ -29,6 +29,7 @@ public class FirestoreApi {
     public FirestoreApi(){
         db = FirebaseFirestore.getInstance();
         allWorkmates = new MutableLiveData<>();
+        workmatesWithCustomQuery = new MutableLiveData<>();
     }
 
     public static FirestoreApi getInstance(){
@@ -42,11 +43,15 @@ public class FirestoreApi {
         return allWorkmates;
     }
 
+    public LiveData<List<Workmate>> receiveWorkmatesWithCustomQuery(){
+        return workmatesWithCustomQuery;
+    }
+
     public void requestAllFirestoreWorkmates(){
 
-        List<Workmate> mWorkmates = new ArrayList<>();
+        List<Workmate> workmateList = new ArrayList<>();
 
-        Map<String, Object> currentUserFromFirestore = new HashMap<>();
+        Map<String, Object> currentFirestoreWorkmate = new HashMap<>();
 
         db.collection("workmates")
                 .get()
@@ -54,20 +59,49 @@ public class FirestoreApi {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d(TAG, document.getId() + " => " + document.getData());
-                            currentUserFromFirestore.putAll(document.getData());
-                            mWorkmates.add(new Workmate(
-                                    (String)currentUserFromFirestore.get("workmate_id"),
-                                    (String)currentUserFromFirestore.get("workmate_name"),
-                                    (String)currentUserFromFirestore.get("workmate_email"),
-                                    (String)currentUserFromFirestore.get("workmate_photo_url"),
-                                    (String)currentUserFromFirestore.get("restaurant_id"),
-                                    (Timestamp)currentUserFromFirestore.get("timestamp")));
+                            currentFirestoreWorkmate.putAll(document.getData());
+                            workmateList.add(new Workmate(
+                                    (String)currentFirestoreWorkmate.get("workmate_id"),
+                                    (String)currentFirestoreWorkmate.get("workmate_name"),
+                                    (String)currentFirestoreWorkmate.get("workmate_email"),
+                                    (String)currentFirestoreWorkmate.get("workmate_photo_url"),
+                                    (String)currentFirestoreWorkmate.get("restaurant_id"),
+                                    (Timestamp)currentFirestoreWorkmate.get("timestamp")));
                         }
+                        allWorkmates.postValue(workmateList);
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
                 });
-        allWorkmates.postValue(mWorkmates);
+    }
+
+    public void requestWorkmatesWithCustomQuery(String key, String value){
+
+        List<Workmate> workmateList1 = new ArrayList<>();
+
+        Map<String, Object> currentFirestoreWorkmate = new HashMap<>();
+
+        db.collection("workmates")
+                .whereEqualTo(key, value)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Log.d(TAG, document.getId() + " => " + document.getData());
+                            currentFirestoreWorkmate.putAll(document.getData());
+                            workmateList1.add(new Workmate(
+                                    (String)currentFirestoreWorkmate.get("workmate_id"),
+                                    (String)currentFirestoreWorkmate.get("workmate_name"),
+                                    (String)currentFirestoreWorkmate.get("workmate_email"),
+                                    (String)currentFirestoreWorkmate.get("workmate_photo_url"),
+                                    (String)currentFirestoreWorkmate.get("restaurant_id"),
+                                    (Timestamp)currentFirestoreWorkmate.get("timestamp")));
+                        }
+                        workmatesWithCustomQuery.postValue(workmateList1);
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){

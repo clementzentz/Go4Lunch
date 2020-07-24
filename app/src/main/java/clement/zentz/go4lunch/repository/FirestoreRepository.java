@@ -27,8 +27,16 @@ public class FirestoreRepository {
         return mFirestoreApi.receiveAllFirestoreWorkmates();
     }
 
+    public LiveData<List<Workmate>> receiveWorkmatesWithCustomQuery(){
+        return mFirestoreApi.receiveWorkmatesWithCustomQuery();
+    }
+
     public void requestAllFirestoreWorkmates(){
         mFirestoreApi.requestAllFirestoreWorkmates();
+    }
+
+    public void requestWorkmatesWithCustomQuery(String key, String value){
+        mFirestoreApi.requestWorkmatesWithCustomQuery(key, value);
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){

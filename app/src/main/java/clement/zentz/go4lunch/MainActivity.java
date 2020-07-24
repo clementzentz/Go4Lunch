@@ -9,13 +9,13 @@ import android.widget.TextView;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -40,8 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirestoreViewModel mFirestoreViewModel;
 
-    private FirebaseFirestore db;
-    private List<Workmate> mWorkmates = new ArrayList<>();
+    private List<Workmate> workmatesListFromCustomQuery = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
         getIncomingIntentFromAuthActivity();
 
+        subscribeObserver();
+
         BottomNavigationView bottomNavView = findViewById(R.id.bottom_nav_view);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         // Passing each menu ID as a set of Ids because each
@@ -67,6 +68,18 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
+    }
+
+    private void subscribeObserver(){
+        mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(this, new Observer<List<Workmate>>() {
+            @Override
+            public void onChanged(List<Workmate> workmateList) {
+                workmatesListFromCustomQuery = workmateList;
+                if (!workmatesListFromCustomQuery.isEmpty()){
+                    mMainActivityViewModel.setCurrentUser(workmatesListFromCustomQuery.get(0));
+                }
+            }
+        });
     }
 
     //configure nav drawer
@@ -94,7 +107,10 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()){
                 case R.id.nav_drawer_lunch_item :
-                    startActivity(new Intent(getApplicationContext(), RestaurantDetails.class));
+                    Intent intent = new Intent(this, RestaurantDetails.class);
+                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT , workmatesListFromCustomQuery.get(0));
+                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT , workmatesListFromCustomQuery.get(0).getRestaurantId());
+                    startActivity(intent);
                     break;
                 case R.id.nav_drawer_settings_item :
                     startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
@@ -111,11 +127,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mFirestoreViewModel.requestWorkmatesWithCustomQuery("workmate_id" , currentUser.getWorkmateId());
+    }
+
     private void getIncomingIntentFromAuthActivity(){
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             configureNavDrawer();
-            mMainActivityViewModel.setCurrentUser(currentUser);
         }
     }
 }

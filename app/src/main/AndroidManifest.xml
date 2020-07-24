@@ -45,7 +45,7 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_bottom_nav"
             android:theme="@style/AppTheme" />
-        <activity android:name=".AuthActivity">
+        <activity android:name=".AuthActivity" android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

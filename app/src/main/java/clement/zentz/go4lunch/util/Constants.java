@@ -19,8 +19,9 @@ public abstract class Constants  {
     public static final int MAX_HEIGHT_PHOTO = 100;
 
     //Intent
-    public static final String LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT = "currentRestaurant";
-    public static final String MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT = "currentUser";
-    public static final String ALL_WORKMATES_INTENT = "allWorkmates";
+    public static final String RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT = "currentRestaurant";
+    public static final String RESTAURANT_DETAILS_CURRENT_USER_INTENT = "currentUser";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
+
+    //Firestore
 }

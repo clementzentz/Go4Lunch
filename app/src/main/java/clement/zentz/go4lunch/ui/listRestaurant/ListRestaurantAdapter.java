@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
@@ -27,6 +28,8 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
+        mWorkmateList = new ArrayList<>();
+        mRestaurantList = new ArrayList<>();
     }
 
     @NonNull

@@ -1,7 +1,6 @@
 package clement.zentz.go4lunch.viewModels;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.List;
@@ -21,8 +20,16 @@ public class FirestoreViewModel extends ViewModel {
         return mFirestoreRepository.receiveAllFirestoreWorkmates();
     }
 
+    public LiveData<List<Workmate>> receiveWorkmatesWithCustomQuery(){
+        return mFirestoreRepository.receiveWorkmatesWithCustomQuery();
+    }
+
     public void requestAllFirestoreWorkmates(){
         mFirestoreRepository.requestAllFirestoreWorkmates();
+    }
+
+    public void requestWorkmatesWithCustomQuery(String key, String value){
+        mFirestoreRepository.requestWorkmatesWithCustomQuery(key, value);
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){

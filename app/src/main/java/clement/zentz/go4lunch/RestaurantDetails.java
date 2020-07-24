@@ -1,9 +1,13 @@
 package clement.zentz.go4lunch;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -26,47 +30,57 @@ public class RestaurantDetails extends AppCompatActivity {
 
     private static final String TAG = "RestaurantDetails";
 
-    private List<Workmate> allWorkmates;
+    //observers
+    private List<Workmate> allWorkmates = new ArrayList<>();
+    private List<Restaurant> allRestaurants = new ArrayList<>();
     private List<Workmate> currentRestaurantWorkmates = new ArrayList<>();
-    private Restaurant currentRestaurant;
+    private Restaurant restaurantWithDetails;
 
+    //recyclerView
     private RecyclerView recyclerView;
+    private  ImageView restaurantImg;
+    private FloatingActionButton fab;
     private WorkmatesAdapter adapter;
 
+    //getIntent
     private Workmate currentUser;
+    private String restaurantId;
 
+    //viewModels
     private GooglePlacesViewModel mGooglePlacesViewModel;
     private FirestoreViewModel mFirestoreViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_detail_restaurant);
 
         mGooglePlacesViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
-        setContentView(R.layout.activity_detail_restaurant);
         Toolbar toolbar = findViewById(R.id.restaurant_details_toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
+        restaurantImg = findViewById(R.id.restaurant_detail_img);
 
         recyclerView = findViewById(R.id.restaurantDetail_workmates_rv);
         setupRecyclerView();
 
         getIncomingIntent();
 
-        toolbar.setTitle(currentRestaurant.getName());
-
-        mGooglePlacesViewModel.restaurantDetails(currentRestaurant.getPlaceId(), Constants.PLACES_TYPE);
-
         subscribeGooglePlacesObserver();
+        subscribeFirestoreObservers();
+
+        mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE);
+
+//        toolbar.setTitle(restaurantWithDetails.getName());
 
         fab.setOnClickListener(view -> {
-            currentUser.setRestaurantId(currentRestaurant.getPlaceId());
+            currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
             currentUser.setTimestamp(Timestamp.now());
             mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
-            adapter.notifyDataSetChanged();
+            mFirestoreViewModel.requestAllFirestoreWorkmates();
         });
     }
 
@@ -74,15 +88,21 @@ public class RestaurantDetails extends AppCompatActivity {
         mGooglePlacesViewModel.getRestaurantDetails().observe(this, new Observer<Restaurant>() {
             @Override
             public void onChanged(Restaurant restaurant) {
-                currentRestaurant = restaurant;
-                for (Workmate workmate : allWorkmates){
-                    if (workmate.getRestaurantId().equals(currentRestaurant.getPlaceId())){
-                        currentRestaurantWorkmates.add(workmate);
-                    }
+                restaurantWithDetails = restaurant;
+
+                if (restaurantWithDetails != null){
+                    Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+                            + "key=" + Constants.API_KEY
+                            + "&maxwidth=200"
+                            + "&maxheight=200"
+                            + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
+                            .into(restaurantImg);
                 }
-                adapter.setWorkmateList(currentRestaurantWorkmates);
             }
         });
+    }
+
+    private void subscribeFirestoreObservers(){
     }
 
     private void setupRecyclerView(){
@@ -92,10 +112,13 @@ public class RestaurantDetails extends AppCompatActivity {
     }
 
     private void getIncomingIntent(){
-        if (getIntent().hasExtra(Constants.LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT)){
-            currentRestaurant = getIntent().getParcelableExtra(Constants.LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT);
-            currentUser = getIntent().getParcelableExtra(Constants.MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT);
-            allWorkmates = getIntent().getParcelableArrayListExtra(Constants.ALL_WORKMATES_INTENT);
+        if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT) && getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT)){
+            restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT);
+            currentUser = getIntent().getParcelableExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT);
+            if (currentUser.getRestaurantId() == null){
+                fab.setVisibility(View.GONE);
+                Toast.makeText(this, "pas de restaurant enregistré :(", Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

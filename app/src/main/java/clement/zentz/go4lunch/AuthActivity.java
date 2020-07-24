@@ -90,7 +90,7 @@ public class AuthActivity extends AppCompatActivity {
             if (account != null){
                 //get account info here
                 Workmate workmate = new Workmate(
-                        account.getId(),
+                        account.getIdToken(),
                         account.getDisplayName(),
                         account.getEmail(),
                         account.getPhotoUrl().toString(),

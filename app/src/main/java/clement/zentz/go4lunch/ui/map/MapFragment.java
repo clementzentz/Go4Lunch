@@ -1,6 +1,7 @@
 package clement.zentz.go4lunch.ui.map;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -26,12 +27,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
@@ -39,15 +43,18 @@ import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener, OnMapReadyCallback {
+        GoogleMap.OnMyLocationClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = "MapFragment";
 
     private GooglePlacesViewModel mGooglePlacesViewModel;
     private FirestoreViewModel mFirestoreViewModel;
 
-    private List<Restaurant> mRestaurantList;
-    private List<Workmate> mWorkmateList;
+    private List<Restaurant> mRestaurantList = new ArrayList<>();
+    private List<Workmate> mWorkmateList = new ArrayList<>();
+
+    private List<Workmate> workmatesListFromCustomQuery = new ArrayList<>();
+    private Workmate currentUser;
 
     //google map
     private GoogleMap map;
@@ -74,39 +81,59 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
-
         mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
-
-        subscribeFirestoreObserver();
     }
 
     private void subscribeGooglePlacesObserver(){
-        mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), restaurants -> {
-            mRestaurantList = restaurants;
+        mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                mRestaurantList = restaurants;
 
-            for (Restaurant restaurant : mRestaurantList) {
-                for (Workmate workmate : mWorkmateList){
-                    if (!workmate.getRestaurantId().equals(restaurant.getPlaceId())){
-                        map.addMarker(new MarkerOptions()
-                                .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                .title(restaurant.getName())
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                    }else{
-                        map.addMarker(new MarkerOptions()
-                                .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                .title(restaurant.getName())
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                if (!mRestaurantList.isEmpty() && !mWorkmateList.isEmpty()){
+                    for (Restaurant restaurant : mRestaurantList) {
+                        for (Workmate workmate : mWorkmateList){
+                            if (!workmate.getRestaurantId().equals(restaurant.getPlaceId())){
+                                map.addMarker(new MarkerOptions()
+                                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                                        .title(restaurant.getName())
+                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                            }else{
+                                map.addMarker(new MarkerOptions()
+                                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                                        .title(restaurant.getName())
+                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                            }
+                        }
                     }
                 }
             }
         });
     }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Intent intent = new Intent(getContext(), RestaurantDetails.class);
+        String markerTitle = marker.getTitle();
+        for (Restaurant restaurant: mRestaurantList){
+            if (restaurant.getName().equals(markerTitle)){
+                intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT, restaurant.getPlaceId());
+                intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT, currentUser);
+                startActivity(intent);
+            }
+        }
+        return false;
+    }
+
     private void subscribeFirestoreObserver(){
-        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), new Observer<List<Workmate>>() {
-            @Override
-            public void onChanged(List<Workmate> workmates) {
-                mWorkmateList = workmates;
+        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> {
+            mWorkmateList = workmates;
+        });
+
+        mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(getViewLifecycleOwner(), workmateList -> {
+            workmatesListFromCustomQuery = workmateList;
+            if (!workmatesListFromCustomQuery.isEmpty()){
+                currentUser = workmatesListFromCustomQuery.get(0);
             }
         });
     }
@@ -129,15 +156,21 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
         map = googleMap;
 
         map.setOnMyLocationButtonClickListener(this);
         map.setOnMyLocationClickListener(this);
 
+        map.setOnMarkerClickListener(this);
+
         updateLocationUI();
+
+        getLastKnownLocation();
 
         getDeviceLocation();
 
+        subscribeFirestoreObserver();
         subscribeGooglePlacesObserver();
     }
 
@@ -178,6 +211,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
             if (locationPermissionGranted) {
                 map.setMyLocationEnabled(true);
                 map.getUiSettings().setMyLocationButtonEnabled(true);
+
             } else {
                 map.setMyLocationEnabled(false);
                 map.getUiSettings().setMyLocationButtonEnabled(false);
@@ -267,16 +301,5 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                         }
                     });
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getLastKnownLocation();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
     }
 }

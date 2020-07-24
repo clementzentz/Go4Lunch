@@ -14,8 +14,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.RestaurantDetails;
@@ -38,7 +36,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     private ListRestaurantAdapter adapter;
 
     private Workmate currentUser;
-    private List<Workmate> allWorkmates = new ArrayList<>();
+    private Restaurant currentRestaurantWithDetails;
 
     private static final String TAG = "ListRestaurantFragment";
 
@@ -80,7 +78,6 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
             @Override
             public void onChanged(List<Workmate> workmates) {
                 adapter.setWorkmatesList(workmates);
-                allWorkmates.addAll(workmates);
             }
         });
     }
@@ -94,9 +91,8 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void launchDetailRestaurantActivity(Restaurant currentRestaurant) {
         Intent intent = new Intent(getActivity(), RestaurantDetails.class);
-        intent.putExtra(Constants.LIST_RESTAURANT_CURRENT_RESTAURANT_ASK_INTENT, currentRestaurant);
-        intent.putExtra(Constants.MAIN_ACTIVITY_CURRENT_USER_ASK_INTENT, currentUser);
-        intent.putExtra(Constants.ALL_WORKMATES_INTENT, (Serializable) allWorkmates);
+        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT, currentRestaurant.getPlaceId());
+        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT, currentUser);
         startActivity(intent);
     }
 }
