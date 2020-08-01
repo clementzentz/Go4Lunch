@@ -1,8 +1,12 @@
 package clement.zentz.go4lunch;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -31,9 +35,6 @@ public class RestaurantDetails extends AppCompatActivity {
     private static final String TAG = "RestaurantDetails";
 
     //observers
-    private List<Workmate> allWorkmates = new ArrayList<>();
-    private List<Restaurant> allRestaurants = new ArrayList<>();
-    private List<Workmate> currentRestaurantWorkmates = new ArrayList<>();
     private Restaurant restaurantWithDetails;
 
     //recyclerView
@@ -41,6 +42,11 @@ public class RestaurantDetails extends AppCompatActivity {
     private  ImageView restaurantImg;
     private FloatingActionButton fab;
     private WorkmatesAdapter adapter;
+
+    //toolbar
+    private Toolbar toolbar;
+    private TextView restaurantDetailsName;
+    private TextView restaurantDetailsAddress;
 
     //getIntent
     private Workmate currentUser;
@@ -58,11 +64,18 @@ public class RestaurantDetails extends AppCompatActivity {
         mGooglePlacesViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
-        Toolbar toolbar = findViewById(R.id.restaurant_details_toolbar);
+        toolbar = findViewById(R.id.restaurant_details_toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        restaurantDetailsName = findViewById(R.id.restaurant_details_name_txt);
+        restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
 
         fab = findViewById(R.id.fab);
         restaurantImg = findViewById(R.id.restaurant_detail_img);
+        ImageButton restaurantDetailsCallBtn = findViewById(R.id.restaurant_details_call_btn);
+        ImageButton restaurantDetailsStarsBtn = findViewById(R.id.restaurant_details_stars_btn);
+        ImageButton restaurantDetailsWebsiteBtn = findViewById(R.id.restaurant_details_website_btn);
 
         recyclerView = findViewById(R.id.restaurantDetail_workmates_rv);
         setupRecyclerView();
@@ -74,14 +87,44 @@ public class RestaurantDetails extends AppCompatActivity {
 
         mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE);
 
-//        toolbar.setTitle(restaurantWithDetails.getName());
-
         fab.setOnClickListener(view -> {
             currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
             currentUser.setTimestamp(Timestamp.now());
             mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
             mFirestoreViewModel.requestAllFirestoreWorkmates();
         });
+
+        restaurantDetailsCallBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                if (restaurantWithDetails.getFormattedPhoneNumber()!= null){
+                    callIntent.setData(Uri.parse(restaurantWithDetails.getFormattedPhoneNumber()));
+                }
+//                startActivity(callIntent);
+            }
+        });
+
+        restaurantDetailsStarsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        restaurantDetailsWebsiteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        boolean result = super.onSupportNavigateUp();
+        finish();
+        return result;
     }
 
     private void subscribeGooglePlacesObserver(){
@@ -91,18 +134,32 @@ public class RestaurantDetails extends AppCompatActivity {
                 restaurantWithDetails = restaurant;
 
                 if (restaurantWithDetails != null){
+
                     Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
                             + "key=" + Constants.API_KEY
                             + "&maxwidth=200"
                             + "&maxheight=200"
                             + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
                             .into(restaurantImg);
+
+                    restaurantDetailsName.setText(restaurantWithDetails.getName());
+                    restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
                 }
             }
         });
     }
 
     private void subscribeFirestoreObservers(){
+        mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(this, new Observer<List<Workmate>>() {
+            @Override
+            public void onChanged(List<Workmate> workmateList) {
+                List<Workmate> workmatesWithCurrentRestaurantId = new ArrayList<>();
+                workmatesWithCurrentRestaurantId.addAll(workmateList);
+                if (!workmatesWithCurrentRestaurantId.isEmpty()){
+                    adapter.setWorkmateList(workmatesWithCurrentRestaurantId);
+                }
+            }
+        });
     }
 
     private void setupRecyclerView(){
@@ -115,6 +172,9 @@ public class RestaurantDetails extends AppCompatActivity {
         if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT) && getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT)){
             restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT);
             currentUser = getIntent().getParcelableExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT);
+
+            mFirestoreViewModel.requestWorkmatesWithCustomQuery("restaurant_id", restaurantId);
+
             if (currentUser.getRestaurantId() == null){
                 fab.setVisibility(View.GONE);
                 Toast.makeText(this, "pas de restaurant enregistré :(", Toast.LENGTH_LONG).show();

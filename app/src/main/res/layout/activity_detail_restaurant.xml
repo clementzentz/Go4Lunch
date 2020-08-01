@@ -29,17 +29,44 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/logo_resto"
-                    android:layout_marginBottom="?attr/actionBarSize"
+                    android:layout_marginBottom="80dp"
                     android:cropToPadding="true"
-                    android:layout_gravity="top"/>
+                    android:layout_gravity="top"
+                    app:layout_collapseMode="pin"/>
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/restaurant_details_toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
+                    android:layout_height="80dp"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/AppTheme.PopupOverlay"
-                    android:layout_gravity="bottom"/>
+                    android:layout_gravity="bottom">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/restaurant_details_name_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_margin="4dp"/>
+
+                    <TextView
+                        android:id="@+id/restaurant_details_address_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="French restaurant - 12 rue du Faubourg Poissonière"
+                        app:layout_constraintTop_toBottomOf="@id/restaurant_details_name_txt"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_margin="4dp"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.appcompat.widget.Toolbar>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -53,6 +80,6 @@
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_baseline_check_circle_24"/>
+        android:foreground="@drawable/ic_baseline_check_circle_24"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

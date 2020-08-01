@@ -42,10 +42,17 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Workmate> workmatesListFromCustomQuery = new ArrayList<>();
 
+    //View
+    private Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.bottom_nav_activity);
+        setContentView(R.layout.main_activity);
+
+        toolbar = findViewById(R.id.main_activity_toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle(getString(R.string.app_name));
 
         mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
@@ -88,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         View navHeader = navigationView.getHeaderView(0);
-        Toolbar toolbar = findViewById(R.id.restaurant_details_toolbar);
 
         //nav header
         ImageView imageUser = navHeader.findViewById(R.id.user_img);
@@ -100,9 +106,6 @@ public class MainActivity extends AppCompatActivity {
         Picasso.get().load(currentUser.getPhotoUrl()).into(imageUser);
 
         drawer.addDrawerListener(new ActionBarDrawerToggle(this, drawer, toolbar, R.string.app_name, R.string.app_name));
-
-//        setSupportActionBar(toolbar);
-//        toolbar.setTitle("User Profile");
 
         navigationView.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()){
@@ -138,5 +141,9 @@ public class MainActivity extends AppCompatActivity {
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             configureNavDrawer();
         }
+    }
+
+    private void setupPlaceAutocomplete(){
+
     }
 }
