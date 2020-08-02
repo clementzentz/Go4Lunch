@@ -1,8 +1,14 @@
 package clement.zentz.go4lunch;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -13,8 +19,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,6 +35,7 @@ import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
+import clement.zentz.go4lunch.util.PermissionRationaleDialogFragment;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
@@ -39,7 +48,7 @@ public class RestaurantDetails extends AppCompatActivity {
 
     //recyclerView
     private RecyclerView recyclerView;
-    private  ImageView restaurantImg;
+    private ImageView restaurantImg;
     private FloatingActionButton fab;
     private WorkmatesAdapter adapter;
 
@@ -97,11 +106,18 @@ public class RestaurantDetails extends AppCompatActivity {
         restaurantDetailsCallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent callIntent = new Intent(Intent.ACTION_CALL);
-                if (restaurantWithDetails.getFormattedPhoneNumber()!= null){
-                    callIntent.setData(Uri.parse(restaurantWithDetails.getFormattedPhoneNumber()));
+                if (ActivityCompat.checkSelfPermission(RestaurantDetails.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+                    Intent callIntent = new Intent(Intent.ACTION_CALL);
+                    if (restaurantWithDetails.getFormattedPhoneNumber() != null) {
+                        callIntent.setData(Uri.parse("tel:+"+restaurantWithDetails.getFormattedPhoneNumber()));
+                        startActivity(callIntent);
+                    }
+                }else if(ActivityCompat.shouldShowRequestPermissionRationale(RestaurantDetails.this, Manifest.permission.CALL_PHONE)){
+                    PermissionRationaleDialogFragment permissionRationaleDialogFragment = new PermissionRationaleDialogFragment();
+                    permissionRationaleDialogFragment.show(getSupportFragmentManager() , TAG);
+                }else{
+                    ActivityCompat.requestPermissions(RestaurantDetails.this, new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
                 }
-//                startActivity(callIntent);
             }
         });
 

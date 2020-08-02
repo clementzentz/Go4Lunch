@@ -23,5 +23,6 @@ public abstract class Constants  {
     public static final String RESTAURANT_DETAILS_CURRENT_USER_INTENT = "currentUser";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
 
-    //Firestore
+    //request_code
+    public static final int CALL_PERMISSION_REQUEST_CODE = 2;
 }
