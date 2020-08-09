@@ -30,16 +30,20 @@ public class FirestoreRepository {
     public LiveData<List<Workmate>> receiveWorkmatesWithCustomQuery(){
         return mFirestoreApi.receiveWorkmatesWithCustomQuery();
     }
-
-    public void requestAllFirestoreWorkmates(){
+    
+    public void requestAllFirestoreWorkmates() {
         mFirestoreApi.requestAllFirestoreWorkmates();
     }
 
-    public void requestWorkmatesWithCustomQuery(String key, String value){
-        mFirestoreApi.requestWorkmatesWithCustomQuery(key, value);
+    public void requestDataWithCustomQuery(String key, String value, String collection){
+        mFirestoreApi.requestDataWithCustomQuery(key, value, collection);
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){
        mFirestoreApi.addOrUpdateFirestoreCurrentUser(currentUser);
+    }
+
+    public void addOrUpdateRestaurantRating(String restaurantId, float rating){
+        mFirestoreApi.addOrUpdateRestaurantRating(restaurantId, rating);
     }
 }

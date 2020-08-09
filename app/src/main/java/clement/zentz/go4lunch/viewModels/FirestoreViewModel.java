@@ -28,11 +28,15 @@ public class FirestoreViewModel extends ViewModel {
         mFirestoreRepository.requestAllFirestoreWorkmates();
     }
 
-    public void requestWorkmatesWithCustomQuery(String key, String value){
-        mFirestoreRepository.requestWorkmatesWithCustomQuery(key, value);
+    public void requestDataWithCustomQuery(String key, String value, String collection){
+        mFirestoreRepository.requestDataWithCustomQuery(key, value, collection);
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){
         mFirestoreRepository.addOrUpdateFirestoreCurrentUser(currentUser);
+    }
+
+    public void addOrUpdateRestaurantRating(String restaurantId, float rating){
+        mFirestoreRepository.addOrUpdateRestaurantRating(restaurantId, rating);
     }
 }

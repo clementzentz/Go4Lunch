@@ -24,7 +24,7 @@ public class PermissionRationaleDialogFragment extends DialogFragment {
         builder.setMessage(R.string.permission_rationale_call_phone_dialog)
                 .setPositiveButton(R.string.permission_rationale_allow, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
+                        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
                     }
                 })
                 .setNegativeButton(R.string.permission_rationale_cancel, new DialogInterface.OnClickListener() {
@@ -34,6 +34,5 @@ public class PermissionRationaleDialogFragment extends DialogFragment {
                 });
         // Create the AlertDialog object and return it
         return builder.create();
-
     }
 }

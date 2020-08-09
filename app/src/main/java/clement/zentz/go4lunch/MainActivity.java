@@ -2,6 +2,7 @@ package clement.zentz.go4lunch;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -77,6 +78,12 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(bottomNavView, navController);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mFirestoreViewModel.requestDataWithCustomQuery("workmate_id" , currentUser.getWorkmateId(), "workmates");
+    }
+
     private void subscribeObserver(){
         mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(this, new Observer<List<Workmate>>() {
             @Override
@@ -111,9 +118,9 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()){
                 case R.id.nav_drawer_lunch_item :
                     Intent intent = new Intent(this, RestaurantDetails.class);
-                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT , workmatesListFromCustomQuery.get(0));
-                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT , workmatesListFromCustomQuery.get(0).getRestaurantId());
-                    startActivity(intent);
+                        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT , workmatesListFromCustomQuery.get(0));
+                        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT , workmatesListFromCustomQuery.get(0).getRestaurantId());
+                        startActivity(intent);
                     break;
                 case R.id.nav_drawer_settings_item :
                     startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
@@ -130,12 +137,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mFirestoreViewModel.requestWorkmatesWithCustomQuery("workmate_id" , currentUser.getWorkmateId());
-    }
-
     private void getIncomingIntentFromAuthActivity(){
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
@@ -146,4 +147,9 @@ public class MainActivity extends AppCompatActivity {
     private void setupPlaceAutocomplete(){
 
     }
+
+    //autocomplete searchview into action bar
+    //reproduire google map search mais instant au bout de 3 lettres
+    //unsubscribe observers
+    //faire sois même le bouton de localisation (fab) pour la map
 }

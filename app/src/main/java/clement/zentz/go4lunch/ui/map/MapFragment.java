@@ -1,6 +1,7 @@
 package clement.zentz.go4lunch.ui.map;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -84,29 +85,32 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mFirestoreViewModel.requestAllFirestoreWorkmates();
+    }
+
     private void subscribeGooglePlacesObserver(){
         mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 mRestaurantList = restaurants;
+                addMarkersOnMap();
+            }
+        });
+    }
 
-                if (!mRestaurantList.isEmpty() && !mWorkmateList.isEmpty()){
-                    for (Restaurant restaurant : mRestaurantList) {
-                        for (Workmate workmate : mWorkmateList){
-                            if (!workmate.getRestaurantId().equals(restaurant.getPlaceId())){
-                                map.addMarker(new MarkerOptions()
-                                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                        .title(restaurant.getName())
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                            }else{
-                                map.addMarker(new MarkerOptions()
-                                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                        .title(restaurant.getName())
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                            }
-                        }
-                    }
-                }
+    private void subscribeFirestoreObservers(){
+        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> {
+            mWorkmateList = workmates;
+            addMarkersOnMap();
+        });
+
+        mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(getViewLifecycleOwner(), workmateList -> {
+            workmatesListFromCustomQuery = workmateList;
+            if (!workmatesListFromCustomQuery.isEmpty()){
+                currentUser = workmatesListFromCustomQuery.get(0);
             }
         });
     }
@@ -125,17 +129,24 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         return false;
     }
 
-    private void subscribeFirestoreObserver(){
-        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> {
-            mWorkmateList = workmates;
-        });
-
-        mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(getViewLifecycleOwner(), workmateList -> {
-            workmatesListFromCustomQuery = workmateList;
-            if (!workmatesListFromCustomQuery.isEmpty()){
-                currentUser = workmatesListFromCustomQuery.get(0);
+    private void addMarkersOnMap(){
+        if (!mRestaurantList.isEmpty() && !mWorkmateList.isEmpty()){
+            for (Restaurant restaurant : mRestaurantList) {
+                for (Workmate workmate : mWorkmateList){
+                    if (!workmate.getRestaurantId().equals(restaurant.getPlaceId())){
+                        map.addMarker(new MarkerOptions()
+                                .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                                .title(restaurant.getName())
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                    }else{
+                        map.addMarker(new MarkerOptions()
+                                .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                                .title(restaurant.getName())
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    }
+                }
             }
-        });
+        }
     }
 
     //google map
@@ -170,8 +181,9 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
         getDeviceLocation();
 
-        subscribeFirestoreObserver();
         subscribeGooglePlacesObserver();
+
+        subscribeFirestoreObservers();
     }
 
     @Override
@@ -195,7 +207,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true;
         } else {
             // Permission to access the location is missing. Show rationale and request permission
@@ -236,7 +248,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
             }
         }
         updateLocationUI();
-
     }
 
     private void getDeviceLocation() {
@@ -247,7 +258,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), task -> {
+                locationResult.addOnCompleteListener(requireActivity(), task -> {
                     if (task.isSuccessful()) {
                         // Set the map's camera position to the current location of the device.
                         lastKnownLocation = task.getResult();
@@ -270,7 +281,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage(), e);
         }
-
     }
 
     private void nearbySearchRestaurantsApi() {
@@ -281,19 +291,12 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     }
 
     private void getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
         }else {
             fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(getActivity(), location -> {
+                    .addOnSuccessListener(requireActivity(), location -> {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             // Logic to handle location object

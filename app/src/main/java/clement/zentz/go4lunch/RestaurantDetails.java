@@ -1,14 +1,10 @@
 package clement.zentz.go4lunch;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -19,10 +15,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,10 +32,11 @@ import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.PermissionRationaleDialogFragment;
+import clement.zentz.go4lunch.util.RatingBarDialogFragment;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
-public class RestaurantDetails extends AppCompatActivity {
+public class RestaurantDetails extends AppCompatActivity implements RatingBarDialogFragment.RatingBarDialogListener {
 
     private static final String TAG = "RestaurantDetails";
 
@@ -74,6 +71,7 @@ public class RestaurantDetails extends AppCompatActivity {
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
         toolbar = findViewById(R.id.restaurant_details_toolbar);
+        toolbar.setContentInsetStartWithNavigation(0);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -124,14 +122,20 @@ public class RestaurantDetails extends AppCompatActivity {
         restaurantDetailsStarsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                    RatingBarDialogFragment ratingBarDialogFragment = new RatingBarDialogFragment();
+                    ratingBarDialogFragment.show(getSupportFragmentManager(), TAG);
             }
         });
 
         restaurantDetailsWebsiteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if (restaurantWithDetails.getWebsite() != null){
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantWithDetails.getWebsite()));
+                    startActivity(browserIntent);
+                }else {
+                    Toast.makeText(RestaurantDetails.this, "sorry, we could not find any website associate with this place.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -150,7 +154,6 @@ public class RestaurantDetails extends AppCompatActivity {
                 restaurantWithDetails = restaurant;
 
                 if (restaurantWithDetails != null){
-
                     Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
                             + "key=" + Constants.API_KEY
                             + "&maxwidth=200"
@@ -186,15 +189,18 @@ public class RestaurantDetails extends AppCompatActivity {
 
     private void getIncomingIntent(){
         if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT) && getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT)){
-            restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT);
-            currentUser = getIntent().getParcelableExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT);
-
-            mFirestoreViewModel.requestWorkmatesWithCustomQuery("restaurant_id", restaurantId);
-
-            if (currentUser.getRestaurantId() == null){
+                restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT);
+                currentUser = getIntent().getParcelableExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT);
+                mFirestoreViewModel.requestDataWithCustomQuery("restaurant_id", restaurantId, "workmates");
+            if(restaurantId == null && currentUser == null){
                 fab.setVisibility(View.GONE);
                 Toast.makeText(this, "pas de restaurant enregistré :(", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    @Override
+    public void onDialogPositiveClick(float rating) {
+        mFirestoreViewModel.addOrUpdateRestaurantRating(restaurantWithDetails.getPlaceId(), rating);
     }
 }

@@ -36,7 +36,6 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     private ListRestaurantAdapter adapter;
 
     private Workmate currentUser;
-    private Restaurant currentRestaurantWithDetails;
 
     private static final String TAG = "ListRestaurantFragment";
 
@@ -74,12 +73,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     private void subscribeFirebaseObserver(){
         mMainActivityViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
 
-        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), new Observer<List<Workmate>>() {
-            @Override
-            public void onChanged(List<Workmate> workmates) {
-                adapter.setWorkmatesList(workmates);
-            }
-        });
+        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmatesList(workmates));
     }
 
     private void setUpRecyclerView(){
