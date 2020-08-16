@@ -85,6 +85,10 @@ public class Restaurant implements Parcelable {
     @Expose
     private String website;
 
+    public Restaurant(){
+
+    }
+
     protected Restaurant(Parcel in) {
         adrAddress = in.readString();
         businessStatus = in.readString();
@@ -123,6 +127,49 @@ public class Restaurant implements Parcelable {
         website = in.readString();
     }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(adrAddress);
+        dest.writeString(businessStatus);
+        dest.writeString(formattedAddress);
+        dest.writeString(formattedPhoneNumber);
+        dest.writeString(icon);
+        dest.writeString(id);
+        dest.writeString(internationalPhoneNumber);
+        dest.writeString(name);
+        dest.writeString(placeId);
+        if (priceLevel == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(priceLevel);
+        }
+        if (rating == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(rating);
+        }
+        dest.writeString(reference);
+        dest.writeString(scope);
+        dest.writeStringList(types);
+        dest.writeString(url);
+        if (userRatingsTotal == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(userRatingsTotal);
+        }
+        if (utcOffset == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(utcOffset);
+        }
+        dest.writeString(vicinity);
+        dest.writeString(website);
+    }
+
     public static final Creator<Restaurant> CREATOR = new Creator<Restaurant>() {
         @Override
         public Restaurant createFromParcel(Parcel in) {
@@ -134,14 +181,6 @@ public class Restaurant implements Parcelable {
             return new Restaurant[size];
         }
     };
-
-    public List<AddressComponent> getAddressComponents() {
-        return addressComponents;
-    }
-
-    public void setAddressComponents(List<AddressComponent> addressComponents) {
-        this.addressComponents = addressComponents;
-    }
 
     public String getAdrAddress() {
         return adrAddress;
@@ -338,48 +377,5 @@ public class Restaurant implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(adrAddress);
-        parcel.writeString(businessStatus);
-        parcel.writeString(formattedAddress);
-        parcel.writeString(formattedPhoneNumber);
-        parcel.writeString(icon);
-        parcel.writeString(id);
-        parcel.writeString(internationalPhoneNumber);
-        parcel.writeString(name);
-        parcel.writeString(placeId);
-        if (priceLevel == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(priceLevel);
-        }
-        if (rating == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeDouble(rating);
-        }
-        parcel.writeString(reference);
-        parcel.writeString(scope);
-        parcel.writeStringList(types);
-        parcel.writeString(url);
-        if (userRatingsTotal == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(userRatingsTotal);
-        }
-        if (utcOffset == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(utcOffset);
-        }
-        parcel.writeString(vicinity);
-        parcel.writeString(website);
     }
 }

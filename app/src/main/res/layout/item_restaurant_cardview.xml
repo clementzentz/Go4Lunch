@@ -73,42 +73,16 @@
                 android:inputType="number"/>
 
             <RatingBar
+                android:id="@+id/rating_bar_indicator_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="?android:attr/ratingBarStyleSmall"
                 android:numStars="3"
+                android:max="3"
                 app:layout_constraintTop_toBottomOf="@id/workmates_btn"
                 app:layout_constraintEnd_toStartOf="@id/restaurant_photo"
                 android:layout_marginTop="8dp"
                 android:theme="@style/RatingBar"/>
-
-<!--            <ImageView-->
-<!--                android:id="@+id/first_star"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:src="@drawable/ic_baseline_star_border_24"-->
-<!--                app:layout_constraintRight_toLeftOf="@id/restaurant_photo"-->
-<!--                android:layout_marginTop="5dp"-->
-<!--                app:layout_constraintBottom_toBottomOf="@+id/restaurant_clock"-->
-<!--                android:visibility="gone"/>-->
-<!--            <ImageView-->
-<!--                android:id="@+id/second_star"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:src="@drawable/ic_baseline_star_border_24"-->
-<!--                app:layout_constraintRight_toLeftOf="@id/first_star"-->
-<!--                android:layout_marginTop="5dp"-->
-<!--                app:layout_constraintBottom_toBottomOf="@+id/restaurant_clock"-->
-<!--                android:visibility="gone"/>-->
-<!--            <ImageView-->
-<!--                android:id="@+id/third_star"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:src="@drawable/ic_baseline_star_border_24"-->
-<!--                app:layout_constraintRight_toLeftOf="@id/second_star"-->
-<!--                android:layout_marginTop="5dp"-->
-<!--                app:layout_constraintBottom_toBottomOf="@+id/restaurant_clock"-->
-<!--                android:visibility="gone"/>-->
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

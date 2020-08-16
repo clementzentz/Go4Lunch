@@ -22,7 +22,19 @@ public abstract class Constants  {
     public static final String RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT = "currentRestaurant";
     public static final String RESTAURANT_DETAILS_CURRENT_USER_INTENT = "currentUser";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
+    public static final String IS_USER_RESTAURANT = "isUserRestaurant";
 
     //request_code
     public static final int CALL_PERMISSION_REQUEST_CODE = 2;
+
+    //Firestore map key
+    public static final String WORKMATES_COLLECTION = "Workmates";
+    public static final String RATINGS_COLLECTION = "Ratings";
+    public static final String WORKMATE_ID = "workmate_id";
+    public static final String WORKMATE_NAME = "workmate_name";
+    public static final String WORKMATE_EMAIL = "workmate_email";
+    public static final String WORKMATE_PHOTO_URL = "workmate_photo_url";
+    public static final String RESTAURANT_ID = "restaurant_id";
+    public static final String RESTAURANT_RATING = "restaurant_rating";
+    public static final String TIMESTAMP = "timestamp";
 }

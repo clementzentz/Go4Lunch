@@ -14,10 +14,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
+import clement.zentz.go4lunch.models.restaurant.Photo;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
@@ -36,6 +39,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     private ListRestaurantAdapter adapter;
 
     private Workmate currentUser;
+    private List<Restaurant> restaurantPlaceAutocomplete;
 
     private static final String TAG = "ListRestaurantFragment";
 
@@ -66,6 +70,25 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 adapter.setRestaurantList(restaurants);
+            }
+        });
+
+        mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
+            @Override
+            public void onChanged(List<Prediction> predictions) {
+                if (!predictions.isEmpty()){
+                    for (Prediction prediction : predictions){
+                        mGooglePlacesViewModel.restaurantDetails(prediction.getPlaceId(), "restaurant");
+                    }
+                }
+            }
+        });
+
+        mGooglePlacesViewModel.getRestaurantDetails().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
+            @Override
+            public void onChanged(Restaurant restaurant) {
+                restaurantPlaceAutocomplete.add(restaurant);
+                adapter.setRestaurantList(restaurantPlaceAutocomplete);
             }
         });
     }

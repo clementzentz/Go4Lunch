@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -65,6 +66,13 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
                 holder.workmatesCount.setText("("+ (count += 1) +")");
             }
         }
+
+        if (mRestaurantList.get(position).getRating() != null){
+            float rating = (float)((mRestaurantList.get(position).getRating().floatValue())*(3.0/5.0));
+            holder.ratingBar.setRating(rating);
+        }else {
+            holder.ratingBar.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -93,6 +101,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         TextView restaurantTypeAddress;
         ImageView restaurantPhoto;
         TextView workmatesCount;
+        RatingBar ratingBar;
 
         public ListRestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -101,6 +110,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             restaurantTypeAddress = itemView.findViewById(R.id.restaurant_type_address_txt);
             restaurantPhoto = itemView.findViewById(R.id.restaurant_photo);
             workmatesCount = itemView.findViewById(R.id.workmates_count_txt);
+            ratingBar = itemView.findViewById(R.id.rating_bar_indicator_item);
         }
     }
 }

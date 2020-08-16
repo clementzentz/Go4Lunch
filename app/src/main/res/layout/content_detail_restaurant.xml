@@ -33,45 +33,16 @@
                 android:textColor="#fff"/>
 
             <RatingBar
+                android:id="@+id/rating_bar_indicator_details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="?android:attr/ratingBarStyleSmall"
                 android:numStars="3"
+                android:max="3"
                 android:layout_toEndOf="@id/restaurant_details_name_txt"
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="8dp"
                 android:theme="@style/RatingBar"/>
-
-
-            <!--            <ImageView-->
-<!--                android:id="@+id/first_star_restaurant_details"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_toEndOf="@+id/restaurant_details_name_txt"-->
-<!--                android:src="@drawable/ic_baseline_star_24"-->
-<!--                android:visibility="visible"-->
-<!--                android:layout_marginTop="2dp"-->
-<!--                android:layout_marginStart="2dp"/>-->
-
-<!--            <ImageView-->
-<!--                android:id="@+id/second_star_restaurant_details"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_toEndOf="@+id/first_star_restaurant_details"-->
-<!--                android:src="@drawable/ic_baseline_star_24"-->
-<!--                android:visibility="visible"-->
-<!--                android:layout_marginTop="2dp"-->
-<!--                android:layout_marginStart="2dp"/>-->
-
-<!--            <ImageView-->
-<!--                android:id="@+id/third_star_restaurant_details"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_toEndOf="@+id/second_star_restaurant_details"-->
-<!--                android:src="@drawable/ic_baseline_star_24"-->
-<!--                android:visibility="visible"-->
-<!--                android:layout_marginTop="2dp"-->
-<!--                android:layout_marginStart="2dp"/>-->
 
             <TextView
                 android:id="@+id/restaurant_details_address_txt"

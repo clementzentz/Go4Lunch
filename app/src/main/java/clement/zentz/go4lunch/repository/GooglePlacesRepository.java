@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 
 import java.util.List;
 
+import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.services.googlePlaces.GooglePlacesAPIClient;
 
@@ -31,11 +32,19 @@ public class GooglePlacesRepository {
         return mGooglePlacesAPIClient.getRestaurantDetails();
     }
 
+    public LiveData<List<Prediction>> getPredictionsPlaceAutocomplete(){
+        return mGooglePlacesAPIClient.getPredictionsPlaceAutocomplete();
+    }
+
     public void nearbySearchRestaurantsApi(String location, String radius, String type){
         mGooglePlacesAPIClient.nearbySearchRestaurantApi(location, radius, type);
     }
 
     public void restaurantDetailsApi(String restaurantId, String type){
         mGooglePlacesAPIClient.restaurantDetailsApi(restaurantId, type);
+    }
+
+    public void placeAutocompleteApi(String userInput, String type, String radius, String location){
+        mGooglePlacesAPIClient.placeAutoCompleteApi(userInput, type, radius, location);
     }
 }

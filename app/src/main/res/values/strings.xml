@@ -36,5 +36,6 @@
     <string name="permission_rationale_allow">i want to start the call.</string>
     <string name="permission_rationale_cancel">i don\'t want to start the call</string>
     <string name="permission_denied">permission denied.</string>
+    <string name="search_btn">search_btn</string>
 
 </resources>

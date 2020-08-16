@@ -1,6 +1,7 @@
 package clement.zentz.go4lunch.services.googlePlaces;
 
 import clement.zentz.go4lunch.services.googlePlaces.responses.NearbySearchRestaurantResponse;
+import clement.zentz.go4lunch.services.googlePlaces.responses.PlaceAutocompleteResponse;
 import clement.zentz.go4lunch.services.googlePlaces.responses.RestaurantDetailsResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -8,12 +9,7 @@ import retrofit2.http.Query;
 
 public interface GooglePlacesApi {
 
-    public static final String BASE_URL = "https://maps.googleapis.com/maps/api/place/";
-    public static final String ENDPOINT_FIND_PLACES = "https://maps.googleapis.com/maps/api/place/findplacefromtext/output?parameters";
-    public static final String ENDPOINT_NEARBY_SEARCH = "https://maps.googleapis.com/maps/api/place/nearbysearch/output?parameters";
-    public static final String ENDPOINT_PLACE_DETAILS = "https://maps.googleapis.com/maps/api/place/details/output?parameters";
-    public static final String ENDPOINT_FIND_PLACES_EXAMPLE = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Museum%20of%20Contemporary%20Art%20Australia&inputtype=textquery&fields=photos,formatted_address,name,rating,opening_hours,geometry&key=YOUR_API_KEY";
-
+    String BASE_URL = "https://maps.googleapis.com/maps/api/place/";
 
     @GET("nearbysearch/json")
     Call<NearbySearchRestaurantResponse> nearbySearchRestaurant(
@@ -30,5 +26,14 @@ public interface GooglePlacesApi {
             @Query("key") String key,
             @Query("place_id") String placeId,
             @Query("type") String type
+    );
+
+    @GET("autocomplete/json")
+    Call<PlaceAutocompleteResponse> requestPlaceAutocompleteEstablishment(
+            @Query("input") String input,
+            @Query("type") String type,
+            @Query(value = "location", encoded = true) String location,
+            @Query("radius") String radius,
+            @Query("key") String key
     );
 }

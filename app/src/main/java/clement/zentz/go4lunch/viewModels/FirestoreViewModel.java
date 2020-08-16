@@ -20,23 +20,35 @@ public class FirestoreViewModel extends ViewModel {
         return mFirestoreRepository.receiveAllFirestoreWorkmates();
     }
 
-    public LiveData<List<Workmate>> receiveWorkmatesWithCustomQuery(){
-        return mFirestoreRepository.receiveWorkmatesWithCustomQuery();
+    public LiveData<List<Workmate>> receiveWorkmatesWithRestaurantId(){
+        return mFirestoreRepository.receiveWorkmatesWithRestaurantId();
     }
+
+    public LiveData<Workmate> receiveCurrentUserWithWorkmateId(){
+        return mFirestoreRepository.receiveCurrentUserWithWorkmateId();
+    }
+
+//    public LiveData<FirebaseRestaurantRating> receiveRestaurantRatingWithRestaurantId(){
+//        return mFirestoreRepository.receiveRestaurantRatingWithRestaurantId();
+//    }
 
     public void requestAllFirestoreWorkmates(){
         mFirestoreRepository.requestAllFirestoreWorkmates();
     }
 
-    public void requestDataWithCustomQuery(String key, String value, String collection){
-        mFirestoreRepository.requestDataWithCustomQuery(key, value, collection);
+    public void requestWorkmatesWithRestaurantId(String restaurantId){
+        mFirestoreRepository.requestWorkmatesWithRestaurantId(restaurantId);
+    }
+
+    public void requestCurrentUserWithId(String workmateId){
+        mFirestoreRepository.requestCurrentUserWithId(workmateId);
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){
         mFirestoreRepository.addOrUpdateFirestoreCurrentUser(currentUser);
     }
 
-    public void addOrUpdateRestaurantRating(String restaurantId, float rating){
-        mFirestoreRepository.addOrUpdateRestaurantRating(restaurantId, rating);
+    public void addOrUpdateRestaurantRating(String restaurantId, String workmateId, float rating){
+        mFirestoreRepository.addOrUpdateRestaurantRating(restaurantId, workmateId, rating);
     }
 }

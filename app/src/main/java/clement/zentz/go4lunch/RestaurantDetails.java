@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,7 +19,6 @@ import com.squareup.picasso.Picasso;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -48,6 +48,7 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
     private ImageView restaurantImg;
     private FloatingActionButton fab;
     private WorkmatesAdapter adapter;
+    private RatingBar mRatingBar;
 
     //toolbar
     private Toolbar toolbar;
@@ -77,6 +78,8 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
 
         restaurantDetailsName = findViewById(R.id.restaurant_details_name_txt);
         restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
+        mRatingBar = findViewById(R.id.rating_bar_indicator_details);
+
 
         fab = findViewById(R.id.fab);
         restaurantImg = findViewById(R.id.restaurant_detail_img);
@@ -95,10 +98,10 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE);
 
         fab.setOnClickListener(view -> {
-            currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
-            currentUser.setTimestamp(Timestamp.now());
-            mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
-            mFirestoreViewModel.requestAllFirestoreWorkmates();
+                currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
+                currentUser.setTimestamp(Timestamp.now());
+                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
+                mFirestoreViewModel.requestAllFirestoreWorkmates();
         });
 
         restaurantDetailsCallBtn.setOnClickListener(new View.OnClickListener() {
@@ -163,19 +166,22 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
 
                     restaurantDetailsName.setText(restaurantWithDetails.getName());
                     restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
+
+                    if (restaurantWithDetails.getRating() != null){
+                        mRatingBar.setRating((float)((restaurantWithDetails.getRating().floatValue())*(3.0/5.0)));
+                    }
                 }
             }
         });
     }
 
     private void subscribeFirestoreObservers(){
-        mFirestoreViewModel.receiveWorkmatesWithCustomQuery().observe(this, new Observer<List<Workmate>>() {
+        mFirestoreViewModel.receiveWorkmatesWithRestaurantId().observe(this, new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmateList) {
-                List<Workmate> workmatesWithCurrentRestaurantId = new ArrayList<>();
-                workmatesWithCurrentRestaurantId.addAll(workmateList);
-                if (!workmatesWithCurrentRestaurantId.isEmpty()){
-                    adapter.setWorkmateList(workmatesWithCurrentRestaurantId);
+                List<Workmate> workmatesWithRestaurantId = new ArrayList<>(workmateList);
+                if (!workmatesWithRestaurantId.isEmpty()){
+                    adapter.setWorkmateList(workmatesWithRestaurantId);
                 }
             }
         });
@@ -191,16 +197,18 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT) && getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT)){
                 restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT);
                 currentUser = getIntent().getParcelableExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT);
-                mFirestoreViewModel.requestDataWithCustomQuery("restaurant_id", restaurantId, "workmates");
-            if(restaurantId == null && currentUser == null){
-                fab.setVisibility(View.GONE);
-                Toast.makeText(this, "pas de restaurant enregistré :(", Toast.LENGTH_LONG).show();
-            }
+                mFirestoreViewModel.requestWorkmatesWithRestaurantId(restaurantId);
+                if(getIntent().hasExtra(Constants.IS_USER_RESTAURANT)){
+                    if (restaurantId == null){
+                        fab.setVisibility(View.GONE);
+                        Toast.makeText(this, "pas de restaurant enregistré :(", Toast.LENGTH_LONG).show();
+                    }
+                }
         }
     }
 
     @Override
     public void onDialogPositiveClick(float rating) {
-        mFirestoreViewModel.addOrUpdateRestaurantRating(restaurantWithDetails.getPlaceId(), rating);
+        mFirestoreViewModel.addOrUpdateRestaurantRating(restaurantWithDetails.getPlaceId(), currentUser.getWorkmateId(), rating);
     }
 }

@@ -27,23 +27,31 @@ public class FirestoreRepository {
         return mFirestoreApi.receiveAllFirestoreWorkmates();
     }
 
-    public LiveData<List<Workmate>> receiveWorkmatesWithCustomQuery(){
-        return mFirestoreApi.receiveWorkmatesWithCustomQuery();
+    public LiveData<List<Workmate>> receiveWorkmatesWithRestaurantId(){
+        return mFirestoreApi.receiveWorkmatesWithRestaurantId();
     }
-    
+
+    public LiveData<Workmate> receiveCurrentUserWithWorkmateId(){
+        return mFirestoreApi.receiveCurrentUserWithWorkmateId();
+    }
+
     public void requestAllFirestoreWorkmates() {
         mFirestoreApi.requestAllFirestoreWorkmates();
     }
 
-    public void requestDataWithCustomQuery(String key, String value, String collection){
-        mFirestoreApi.requestDataWithCustomQuery(key, value, collection);
+    public void requestWorkmatesWithRestaurantId(String restaurantId){
+        mFirestoreApi.requestWorkmatesWithRestaurantId(restaurantId);
+    }
+
+    public void requestCurrentUserWithId(String workmateId){
+        mFirestoreApi.requestCurrentUserWithId(workmateId);
     }
 
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){
        mFirestoreApi.addOrUpdateFirestoreCurrentUser(currentUser);
     }
 
-    public void addOrUpdateRestaurantRating(String restaurantId, float rating){
-        mFirestoreApi.addOrUpdateRestaurantRating(restaurantId, rating);
+    public void addOrUpdateRestaurantRating(String restaurantId, String workmatesId, float rating){
+        mFirestoreApi.addOrUpdateRestaurantRating(restaurantId, workmatesId, rating);
     }
 }
