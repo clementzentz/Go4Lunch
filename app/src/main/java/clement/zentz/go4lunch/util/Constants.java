@@ -6,7 +6,7 @@ import clement.zentz.go4lunch.R;
 
 public abstract class Constants  {
     //api
-    public static final int NETWORK_TIMEOUT = 5000;
+    public static final int NETWORK_TIMEOUT = 10000;
     public static final String API_KEY = "AIzaSyB-Enm6PIJRhyaQuTuMswPetf12jOI-_Iw";
 
     //nearbySearch

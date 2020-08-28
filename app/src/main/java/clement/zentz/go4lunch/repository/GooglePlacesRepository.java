@@ -32,6 +32,10 @@ public class GooglePlacesRepository {
         return mGooglePlacesAPIClient.getRestaurantDetails();
     }
 
+    public LiveData<Restaurant> getRestaurantDetails4PlaceAutocomplete(){
+        return mGooglePlacesAPIClient.getRestaurantDetails4PlaceAutocomplete();
+    }
+
     public LiveData<List<Prediction>> getPredictionsPlaceAutocomplete(){
         return mGooglePlacesAPIClient.getPredictionsPlaceAutocomplete();
     }
@@ -40,8 +44,8 @@ public class GooglePlacesRepository {
         mGooglePlacesAPIClient.nearbySearchRestaurantApi(location, radius, type);
     }
 
-    public void restaurantDetailsApi(String restaurantId, String type){
-        mGooglePlacesAPIClient.restaurantDetailsApi(restaurantId, type);
+    public void restaurantDetailsApi(String restaurantId, String type, int code){
+        mGooglePlacesAPIClient.restaurantDetailsApi(restaurantId, type, code);
     }
 
     public void placeAutocompleteApi(String userInput, String type, String radius, String location){

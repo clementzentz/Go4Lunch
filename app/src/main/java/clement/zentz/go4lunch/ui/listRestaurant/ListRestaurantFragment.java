@@ -19,27 +19,25 @@ import java.util.List;
 
 import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
-import clement.zentz.go4lunch.models.restaurant.Photo;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
-import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
+import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
 public class ListRestaurantFragment extends Fragment implements ListRestaurantFragmentToListRestaurantAdapter {
 
     private GooglePlacesViewModel mGooglePlacesViewModel;
-    private MainActivityViewModel mMainActivityViewModel;
+    private SharedViewModel mSharedViewModel;
     private FirestoreViewModel mFirestoreViewModel;
 
     private RecyclerView recyclerView;
     private ListRestaurantAdapter adapter;
 
     private Workmate currentUser;
-    private List<Restaurant> restaurantPlaceAutocomplete;
+    private final List<Restaurant> restaurantPlaceAutocomplete = new ArrayList<>();
 
     private static final String TAG = "ListRestaurantFragment";
 
@@ -57,7 +55,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mMainActivityViewModel = new ViewModelProvider(requireActivity()).get(MainActivityViewModel.class);
+        mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
 
@@ -66,6 +64,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     }
 
     private void subscribeGooglePlaceObserver(){
+
         mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
@@ -73,28 +72,20 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
             }
         });
 
-        mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
-            @Override
-            public void onChanged(List<Prediction> predictions) {
-                if (!predictions.isEmpty()){
-                    for (Prediction prediction : predictions){
-                        mGooglePlacesViewModel.restaurantDetails(prediction.getPlaceId(), "restaurant");
-                    }
-                }
-            }
-        });
-
-        mGooglePlacesViewModel.getRestaurantDetails().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
+        mSharedViewModel.getPlaceAutocompleteRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
             @Override
             public void onChanged(Restaurant restaurant) {
-                restaurantPlaceAutocomplete.add(restaurant);
-                adapter.setRestaurantList(restaurantPlaceAutocomplete);
+                List<Restaurant> placeAUtocompleteRestaut = new ArrayList<>();
+                placeAUtocompleteRestaut.add(restaurant);
+                if (!placeAUtocompleteRestaut.isEmpty()){
+                    adapter.setRestaurantList(placeAUtocompleteRestaut);
+                }
             }
         });
     }
 
     private void subscribeFirebaseObserver(){
-        mMainActivityViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
+        mSharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
 
         mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmatesList(workmates));
     }

@@ -95,7 +95,7 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         subscribeGooglePlacesObserver();
         subscribeFirestoreObservers();
 
-        mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE);
+        mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE, 0);
 
         fab.setOnClickListener(view -> {
                 currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
@@ -155,14 +155,15 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
             @Override
             public void onChanged(Restaurant restaurant) {
                 restaurantWithDetails = restaurant;
-
                 if (restaurantWithDetails != null){
-                    Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
-                            + "key=" + Constants.API_KEY
-                            + "&maxwidth=200"
-                            + "&maxheight=200"
-                            + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
-                            .into(restaurantImg);
+                    if (restaurantWithDetails.getPhotos() != null){
+                        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+                                + "key=" + Constants.API_KEY
+                                + "&maxwidth=200"
+                                + "&maxheight=200"
+                                + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
+                                .into(restaurantImg);
+                    }
 
                     restaurantDetailsName.setText(restaurantWithDetails.getName());
                     restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());

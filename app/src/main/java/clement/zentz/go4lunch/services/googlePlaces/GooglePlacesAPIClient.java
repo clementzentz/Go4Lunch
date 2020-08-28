@@ -35,6 +35,7 @@ public class GooglePlacesAPIClient {
 
     //placeDetailsRequest
     private MutableLiveData<Restaurant> mRestaurantDetails;
+    private MutableLiveData<Restaurant> mRestaurantDetails4PlaceAutocomplete;
     private RetrieveRestaurantDetailsRunnable mRetrieveRestaurantDetailsRunnable;
 
     //placeAutocompleteRequest
@@ -51,6 +52,8 @@ public class GooglePlacesAPIClient {
     private GooglePlacesAPIClient(){
         mRestaurants = new MutableLiveData<>();
         mRestaurantDetails = new MutableLiveData<>();
+        predictionsPlaceAutocomplete = new MutableLiveData<>();
+        mRestaurantDetails4PlaceAutocomplete = new MutableLiveData<>();
     }
 
     public LiveData<List<Restaurant>> getRestaurants(){
@@ -59,6 +62,10 @@ public class GooglePlacesAPIClient {
 
     public LiveData<Restaurant> getRestaurantDetails(){
         return mRestaurantDetails;
+    }
+
+    public LiveData<Restaurant> getRestaurantDetails4PlaceAutocomplete(){
+        return mRestaurantDetails4PlaceAutocomplete;
     }
 
     public LiveData<List<Prediction>> getPredictionsPlaceAutocomplete(){
@@ -78,11 +85,11 @@ public class GooglePlacesAPIClient {
         }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
-    public void restaurantDetailsApi(String restaurantId, String type){
+    public void restaurantDetailsApi(String restaurantId, String type, int code){
         if (mRetrieveRestaurantDetailsRunnable != null){
             mRetrieveRestaurantDetailsRunnable = null;
         }
-        mRetrieveRestaurantDetailsRunnable = new RetrieveRestaurantDetailsRunnable(restaurantId, type);
+        mRetrieveRestaurantDetailsRunnable = new RetrieveRestaurantDetailsRunnable(restaurantId, type, code);
         final Future handler = AppExecutors.getInstance().getNetworkIO().submit(mRetrieveRestaurantDetailsRunnable);
 
         AppExecutors.getInstance().getNetworkIO().schedule(() -> { handler.cancel(true); }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -147,12 +154,14 @@ public class GooglePlacesAPIClient {
 
         private String mRestaurantId;
         private String mType;
+        private int code;
         boolean cancelRequest;
 
 
-        public RetrieveRestaurantDetailsRunnable(String restaurantId, String type) {
+        public RetrieveRestaurantDetailsRunnable(String restaurantId, String type, int code) {
             this.mRestaurantId = restaurantId;
             this.mType = type;
+            this.code = code;
             this.cancelRequest = false;
         }
 
@@ -165,7 +174,11 @@ public class GooglePlacesAPIClient {
                 }
                 if (response.code() == 200){
                     Restaurant restaurantWithDetails = ((RestaurantDetailsResponse)response.body()).getResult();
-                    mRestaurantDetails.postValue(restaurantWithDetails);
+                    if (code == 0){
+                        mRestaurantDetails.postValue(restaurantWithDetails);
+                    }else if (code == 1){
+                        mRestaurantDetails4PlaceAutocomplete.postValue(restaurantWithDetails);
+                    }
                 }else{
                     String error  = response.errorBody().string();
                     Log.e(TAG, "run: "+ error);
@@ -207,6 +220,7 @@ public class GooglePlacesAPIClient {
                 }
                 if (response.code() == 200){
                     List<Prediction> list = new ArrayList<>(((PlaceAutocompleteResponse)response.body()).getPredictions());
+                    //filter avec getType
                     predictionsPlaceAutocomplete.postValue(list);
                 }
                 else{

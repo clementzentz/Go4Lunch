@@ -31,10 +31,12 @@ import androidx.navigation.ui.NavigationUI;
 import java.util.ArrayList;
 import java.util.List;
 
+import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
+import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
-import clement.zentz.go4lunch.viewModels.MainActivityViewModel;
+import clement.zentz.go4lunch.viewModels.SharedViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 //bottom nav + nav drawer activity
@@ -45,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Workmate currentUser;
     private Location locationUser;
 
-    private MainActivityViewModel mMainActivityViewModel;
+    private SharedViewModel mSharedViewModel;
     private FirestoreViewModel mFirestoreViewModel;
     private GooglePlacesViewModel mGooglePlaceViewModel;
 
@@ -66,13 +68,15 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getString(R.string.app_name));
 
-        mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
         mGooglePlaceViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
         getIncomingIntentFromAuthActivity();
 
-        subscribeObserver();
+//        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+//        ListRestaurantFragment listRestaurantFragment = (ListRestaurantFragment) getSupportFragmentManager().findFragmentById(R.id.list_restaurant_fragment);
+//        WorkmatesFragment workmatesFragment = (WorkmatesFragment) getSupportFragmentManager().findFragmentById(R.id.list_workmates_fragment);
 
         BottomNavigationView bottomNavView = findViewById(R.id.bottom_nav_view);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -98,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 if (s.length() >= 3){
                     if (locationUser != null){
                         mGooglePlaceViewModel.placeAutocompleteApi(
-                                mSearchView.getQuery().toString(),
+                                 s,
                                 "establishment",
                                 "500",
                                 locationUser.getLatitude()+","+locationUser.getLongitude()
@@ -113,12 +117,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        subscribeObserver();
         mFirestoreViewModel.requestCurrentUserWithId(currentUser.getWorkmateId());
+        mFirestoreViewModel.requestAllFirestoreWorkmates();
     }
 
     private void subscribeObserver(){
 
-        mMainActivityViewModel.getLocationUser().observe(this, new Observer<Location>() {
+        mSharedViewModel.getLocationUser().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
                 locationUser = location;
@@ -130,15 +136,36 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(Workmate workmate) {
                 currentUserFromFirestoreRequest = workmate;
                 if (currentUserFromFirestoreRequest != null) {
-                    mMainActivityViewModel.setCurrentUser(currentUserFromFirestoreRequest);
+                    mSharedViewModel.setCurrentUser(currentUserFromFirestoreRequest);
                 } else {
                     mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
+                }
+                mFirestoreViewModel.receiveCurrentUserWithWorkmateId().removeObserver(this);
+            }
+        });
+
+        mGooglePlaceViewModel.getPredictionsPlaceAutocomplete().observe(this, new Observer<List<Prediction>>() {
+            @Override
+            public void onChanged(List<Prediction> predictions) {
+                if (!predictions.isEmpty()){
+                    for (Prediction prediction : predictions){
+                        if(prediction.getTypes().contains(Constants.PLACES_TYPE)){
+                            mGooglePlaceViewModel.restaurantDetails(prediction.getPlaceId(), Constants.PLACES_TYPE, 1);
+                        }
+                    }
+                }
+            }
+        });
+
+        mGooglePlaceViewModel.getRestaurantDetails4PlaceAutocomplete().observe(this, new Observer<Restaurant>() {
+            @Override
+            public void onChanged(Restaurant restaurant) {
+                if (restaurant != null){
+                    mSharedViewModel.setPlaceAutocompleteRestaurant(restaurant);
                 }
             }
         });
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -207,9 +234,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //autocomplete searchview into action bar
-    //reproduire google map search mais instant au bout de 3 lettres
-    //unsubscribe observers
-    //faire sois même le bouton de localisation (fab) pour la map
-    //faire 1 receive et 1 requête pour chaque besoin
+    //searchview with listitem dialog
+    //ajouter string xml fr + eng
 }

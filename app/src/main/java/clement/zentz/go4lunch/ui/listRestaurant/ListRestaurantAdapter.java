@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.restaurant.Photo;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
@@ -53,12 +54,23 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             }
         });
 
-        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
-                + "key=" + Constants.API_KEY
-                + "&maxwidth="+Constants.MAX_WIDTH_PHOTO
-                + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
-                + "&photoreference=" + (mRestaurantList.get(position).getPhotos().get(0).getPhotoReference()))
-                .into(holder.restaurantPhoto);
+
+        String photoRef = null;
+        if (mRestaurantList.get(position).getPhotos() != null){
+            for (int i=0; i<mRestaurantList.get(position).getPhotos().size() && photoRef == null; i++){
+                if (mRestaurantList.get(position).getPhotos().get(i) != null){
+                    photoRef = mRestaurantList.get(position).getPhotos().get(i).getPhotoReference();
+                }
+            }
+            if (photoRef != null){
+                Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+                        + "key=" + Constants.API_KEY
+                        + "&maxwidth="+Constants.MAX_WIDTH_PHOTO
+                        + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
+                        + "&photoreference=" + (photoRef))
+                        .into(holder.restaurantPhoto);
+            }
+        }
 
         int count = 0;
         for (Workmate workmate : mWorkmateList){
@@ -86,6 +98,11 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     public void setRestaurantList(List<Restaurant> restaurants){
         mRestaurantList = restaurants;
+        notifyDataSetChanged();
+    }
+
+    public void addOneRestaurantToTheList(Restaurant restaurant){
+        mRestaurantList.add(restaurant);
         notifyDataSetChanged();
     }
 

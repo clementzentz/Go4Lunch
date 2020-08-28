@@ -25,6 +25,10 @@ public class GooglePlacesViewModel extends ViewModel {
         return mGooglePlacesRepository.getRestaurantDetails();
     }
 
+    public LiveData<Restaurant> getRestaurantDetails4PlaceAutocomplete(){
+        return mGooglePlacesRepository.getRestaurantDetails4PlaceAutocomplete();
+    }
+
     public LiveData<List<Prediction>> getPredictionsPlaceAutocomplete(){
         return mGooglePlacesRepository.getPredictionsPlaceAutocomplete();
     }
@@ -33,8 +37,8 @@ public class GooglePlacesViewModel extends ViewModel {
         mGooglePlacesRepository.nearbySearchRestaurantsApi(location, radius, type);
     }
 
-    public void restaurantDetails(String placeId, String type){
-        mGooglePlacesRepository.restaurantDetailsApi(placeId, type);
+    public void restaurantDetails(String placeId, String type, int code){
+        mGooglePlacesRepository.restaurantDetailsApi(placeId, type, code);
     }
 
     public void placeAutocompleteApi(String userInput, String type, String radius, String location){
