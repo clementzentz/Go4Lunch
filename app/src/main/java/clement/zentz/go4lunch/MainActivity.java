@@ -34,6 +34,7 @@ import java.util.List;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
+import clement.zentz.go4lunch.util.SearchViewListDialogFragment;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
@@ -91,6 +92,13 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
 
+        initSearchView();
+    }
+
+    private void initSearchView(){
+
+        SearchViewListDialogFragment searchViewListDialogFragment = new SearchViewListDialogFragment();
+
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -100,9 +108,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String s) {
                 if (s.length() >= 3){
+                    searchViewListDialogFragment.show(getSupportFragmentManager(), TAG);
                     if (locationUser != null){
                         mGooglePlaceViewModel.placeAutocompleteApi(
-                                 s,
+                                s,
                                 "establishment",
                                 "500",
                                 locationUser.getLatitude()+","+locationUser.getLongitude()

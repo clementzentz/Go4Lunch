@@ -38,4 +38,8 @@
     <string name="permission_denied">permission denied.</string>
     <string name="search_btn">search_btn</string>
 
+    <!-- searchDialog -->
+    <string name="search_hint">restaurant name…</string>
+    <string name="pick_a_place">pick a place</string>
+
 </resources>

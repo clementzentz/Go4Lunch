@@ -37,7 +37,6 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     private ListRestaurantAdapter adapter;
 
     private Workmate currentUser;
-    private final List<Restaurant> restaurantPlaceAutocomplete = new ArrayList<>();
 
     private static final String TAG = "ListRestaurantFragment";
 

@@ -92,12 +92,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        mFirestoreViewModel.requestAllFirestoreWorkmates();
-    }
-
     private void subscribeObservers(){
         RestaurantsAndWorkmates restaurantsAndWorkmates = new RestaurantsAndWorkmates(null, null);
         MediatorLiveData<RestaurantsAndWorkmates> mediatorLiveData = new MediatorLiveData();
@@ -157,14 +151,16 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mGooglePlacesViewModel.getRestaurantDetails4PlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
             @Override
             public void onChanged(Restaurant restaurant) {
-
-//                if (map != null ){
-//                    map.clear();
-//                }
-//                MarkerOptions markerOptions = new MarkerOptions();
-//                map.addMarker(markerOptions
-//                        .position()
-//                        )
+                if (map != null && restaurant != null){
+                    map.clear();
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(restaurant.getGeometry().getLocation().getLat(),
+                                    restaurant.getGeometry().getLocation().getLng()), DEFAULT_ZOOM));
+                    map.addMarker(new MarkerOptions()
+                            .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                            .title(restaurant.getName())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))).setTag(restaurant);
+                }
             }
         });
 

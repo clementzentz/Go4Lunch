@@ -3,6 +3,7 @@ package clement.zentz.go4lunch.ui.listRestaurant;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -69,6 +70,8 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
                         + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
                         + "&photoreference=" + (photoRef))
                         .into(holder.restaurantPhoto);
+            }else {
+                holder.restaurantPhoto.setVisibility(View.GONE);
             }
         }
 
@@ -77,6 +80,9 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             if (mRestaurantList.get(position).getPlaceId().equals(workmate.getRestaurantId())){
                 holder.workmatesCount.setText("("+ (count += 1) +")");
             }
+        }if (count == 0){
+            holder.workmatesCount.setVisibility(View.GONE);
+            holder.workmatesBtn.setVisibility(View.GONE);
         }
 
         if (mRestaurantList.get(position).getRating() != null){
@@ -84,6 +90,14 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             holder.ratingBar.setRating(rating);
         }else {
             holder.ratingBar.setVisibility(View.GONE);
+        }
+
+        if (mRestaurantList.get(position).getOpeningHours() == null) {
+            holder.restaurantOpenNow.setVisibility(View.GONE);
+        }else if (mRestaurantList.get(position).getOpeningHours().getOpenNow()){
+            holder.restaurantOpenNow.setText("Opened now.");
+        }else {
+            holder.restaurantOpenNow.setText("Closed now.");
         }
     }
 
@@ -101,11 +115,6 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         notifyDataSetChanged();
     }
 
-    public void addOneRestaurantToTheList(Restaurant restaurant){
-        mRestaurantList.add(restaurant);
-        notifyDataSetChanged();
-    }
-
     public void setWorkmatesList(List<Workmate> workmates){
         mWorkmateList = workmates;
         notifyDataSetChanged();
@@ -116,7 +125,9 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
         TextView restaurantName;
         TextView restaurantTypeAddress;
+        TextView restaurantOpenNow;
         ImageView restaurantPhoto;
+        ImageButton workmatesBtn;
         TextView workmatesCount;
         RatingBar ratingBar;
 
@@ -125,7 +136,9 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
             restaurantName = itemView.findViewById(R.id.restaurant_name_txt);
             restaurantTypeAddress = itemView.findViewById(R.id.restaurant_type_address_txt);
+            restaurantOpenNow = itemView.findViewById(R.id.restaurant_clock);
             restaurantPhoto = itemView.findViewById(R.id.restaurant_photo);
+            workmatesBtn = itemView.findViewById(R.id.workmates_btn);
             workmatesCount = itemView.findViewById(R.id.workmates_count_txt);
             ratingBar = itemView.findViewById(R.id.rating_bar_indicator_item);
         }

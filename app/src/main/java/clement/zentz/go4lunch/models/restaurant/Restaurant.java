@@ -89,7 +89,7 @@ public class Restaurant implements Parcelable {
 
     }
 
-    protected Restaurant(Parcel in) {
+    public Restaurant(Parcel in) {
         adrAddress = in.readString();
         businessStatus = in.readString();
         formattedAddress = in.readString();
