@@ -92,6 +92,11 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
     private void subscribeObservers(){
         RestaurantsAndWorkmates restaurantsAndWorkmates = new RestaurantsAndWorkmates(null, null);
         MediatorLiveData<RestaurantsAndWorkmates> mediatorLiveData = new MediatorLiveData();
@@ -138,13 +143,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                         }
                     }
                 }
-            }
-        });
-
-        mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
-            @Override
-            public void onChanged(List<Prediction> predictions) {
-
             }
         });
 

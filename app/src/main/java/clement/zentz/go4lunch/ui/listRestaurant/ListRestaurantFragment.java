@@ -19,6 +19,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
@@ -71,13 +72,21 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
             }
         });
 
-        mSharedViewModel.getPlaceAutocompleteRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
+        mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
             @Override
-            public void onChanged(Restaurant restaurant) {
-                List<Restaurant> placeAUtocompleteRestaut = new ArrayList<>();
-                placeAUtocompleteRestaut.add(restaurant);
-                if (!placeAUtocompleteRestaut.isEmpty()){
-                    adapter.setRestaurantList(placeAUtocompleteRestaut);
+            public void onChanged(List<Prediction> predictions) {
+                if (predictions != null){
+                    List<Restaurant> restaurants = new ArrayList<>();
+                    for (Prediction prediction : predictions){
+                        if (prediction.getTypes().contains(Constants.PLACES_TYPE)){
+                            Restaurant restaurant = new Restaurant();
+                            restaurant.setPlaceId(prediction.getPlaceId());
+                            restaurant.setName(prediction.getStructuredFormatting().getMainText());
+                            restaurant.setVicinity(prediction.getStructuredFormatting().getSecondaryText());
+                            restaurants.add(restaurant);
+                        }
+                    }
+                    adapter.setRestaurantList(restaurants);
                 }
             }
         });

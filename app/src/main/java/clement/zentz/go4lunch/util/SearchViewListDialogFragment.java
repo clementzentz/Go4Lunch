@@ -2,7 +2,7 @@ package clement.zentz.go4lunch.util;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -17,20 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.ui.listRestaurant.ListRestaurantAdapter;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
-public class SearchViewListDialogFragment extends DialogFragment implements ListRestaurantFragmentToListRestaurantAdapter {
+public class SearchViewListDialogFragment extends DialogFragment implements SearchViewListDialogToListRestaurantAdapter {
 
     private ListRestaurantAdapter adapter;
     private GooglePlacesViewModel mGooglePlacesViewModel;
-
-    public SearchViewListDialogFragment(){
-
-    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -48,7 +43,13 @@ public class SearchViewListDialogFragment extends DialogFragment implements List
         recyclerView.setAdapter(adapter);
 
         builder.setTitle(R.string.pick_a_place)
-                .setView(linearLayout);
+                .setView(linearLayout)
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        if (getDialog() != null)
+                        getDialog().cancel();
+                    }
+                });
 
         return builder.create();
     }
@@ -75,8 +76,8 @@ public class SearchViewListDialogFragment extends DialogFragment implements List
     }
 
     @Override
-    public void launchDetailRestaurantActivity(Restaurant restaurant) {
-        //request restaurant details to add marker on map
-        mGooglePlacesViewModel.restaurantDetails(restaurant.getPlaceId(), Constants.PLACES_TYPE, 2);
+    public void onRecyclerViewItemClick(Restaurant restaurant) {
+        mGooglePlacesViewModel.restaurantDetails(restaurant.getPlaceId(), Constants.PLACES_TYPE, 1);
+        dismiss();
     }
 }

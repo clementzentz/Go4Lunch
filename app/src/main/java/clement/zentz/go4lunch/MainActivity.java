@@ -153,19 +153,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mGooglePlaceViewModel.getPredictionsPlaceAutocomplete().observe(this, new Observer<List<Prediction>>() {
-            @Override
-            public void onChanged(List<Prediction> predictions) {
-                if (!predictions.isEmpty()){
-                    for (Prediction prediction : predictions){
-                        if(prediction.getTypes().contains(Constants.PLACES_TYPE)){
-                            mGooglePlaceViewModel.restaurantDetails(prediction.getPlaceId(), Constants.PLACES_TYPE, 1);
-                        }
-                    }
-                }
-            }
-        });
-
         mGooglePlaceViewModel.getRestaurantDetails4PlaceAutocomplete().observe(this, new Observer<Restaurant>() {
             @Override
             public void onChanged(Restaurant restaurant) {

@@ -41,5 +41,6 @@
     <!-- searchDialog -->
     <string name="search_hint">restaurant name…</string>
     <string name="pick_a_place">pick a place</string>
+    <string name="cancel">cancel</string>
 
 </resources>

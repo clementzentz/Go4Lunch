@@ -17,20 +17,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.models.restaurant.Photo;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
+import clement.zentz.go4lunch.util.SearchViewListDialogToListRestaurantAdapter;
 
 public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAdapter.ListRestaurantViewHolder> {
 
     public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
+    public SearchViewListDialogToListRestaurantAdapter mSearchViewListDialogToListRestaurantAdapter;
     private List<Restaurant> mRestaurantList;
     private List<Workmate> mWorkmateList;
 
     public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
+        mWorkmateList = new ArrayList<>();
+        mRestaurantList = new ArrayList<>();
+    }
+
+    public ListRestaurantAdapter(SearchViewListDialogToListRestaurantAdapter searchViewListDialogToListRestaurantAdapter){
+        mSearchViewListDialogToListRestaurantAdapter = searchViewListDialogToListRestaurantAdapter;
         mWorkmateList = new ArrayList<>();
         mRestaurantList = new ArrayList<>();
     }
@@ -51,7 +58,11 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
         holder.itemView.setOnClickListener(view -> {
             if (mRestaurantList.get(position) != null){
-                mListRestaurantFragmentToListRestaurantAdapter.launchDetailRestaurantActivity(mRestaurantList.get(position));
+                if (mListRestaurantFragmentToListRestaurantAdapter != null){
+                    mListRestaurantFragmentToListRestaurantAdapter.launchDetailRestaurantActivity(mRestaurantList.get(position));
+                }else if (mSearchViewListDialogToListRestaurantAdapter != null){
+                    mSearchViewListDialogToListRestaurantAdapter.onRecyclerViewItemClick(mRestaurantList.get(position));
+                }
             }
         });
 
