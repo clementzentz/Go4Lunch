@@ -33,12 +33,15 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
     @Override
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
 
-        Picasso.get().load(mWorkmateList.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
+        if (!mWorkmateList.get(position).getPhotoUrl().isEmpty()){
+            Picasso.get().load(mWorkmateList.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
+        }
 
-        for (Restaurant restaurant :
-                mRestaurantList) {
+        for (Restaurant restaurant : mRestaurantList) {
             if (restaurant.getPlaceId().equals(mWorkmateList.get(position).getRestaurantId())){
                 holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+" is eating at "+restaurant.getName());
+            }else if (mWorkmateList.get(position).getRestaurantId().isEmpty()){
+                holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+ " hasn't decided yet...");
             }
         }
     }

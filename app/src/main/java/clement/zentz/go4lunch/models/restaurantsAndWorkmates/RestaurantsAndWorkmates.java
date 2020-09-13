@@ -1,5 +1,6 @@
 package clement.zentz.go4lunch.models.restaurantsAndWorkmates;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;

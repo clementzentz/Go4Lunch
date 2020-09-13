@@ -105,8 +105,9 @@ public class FirestoreApi {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d(TAG, document.getId() + " => " + document.getData());
                             workmateList.add(convertMapToWorkmate(document.getData()));
+                        }if (!workmateList.isEmpty()){
+                            currentUserWithWorkmateId.postValue(workmateList.get(0));
                         }
-                        currentUserWithWorkmateId.postValue(workmateList.get(0));
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }

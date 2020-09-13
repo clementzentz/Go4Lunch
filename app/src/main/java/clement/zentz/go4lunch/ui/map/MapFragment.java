@@ -35,11 +35,10 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.RestaurantDetails;
-import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.restaurantsAndWorkmates.RestaurantsAndWorkmates;
 import clement.zentz.go4lunch.models.workmate.Workmate;
@@ -92,11 +91,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
     private void subscribeObservers(){
         RestaurantsAndWorkmates restaurantsAndWorkmates = new RestaurantsAndWorkmates(null, null);
         MediatorLiveData<RestaurantsAndWorkmates> mediatorLiveData = new MediatorLiveData();
@@ -125,11 +119,14 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mediatorLiveData.observe(getViewLifecycleOwner(), new Observer<RestaurantsAndWorkmates>() {
             @Override
             public void onChanged(RestaurantsAndWorkmates restaurantsAndWorkmates) {
+                if (map != null){
+                    map.clear();
+                }
                 if (restaurantsAndWorkmates.getRestaurants()!= null && restaurantsAndWorkmates.getWorkmates() != null){
                     for (Restaurant restaurant : restaurantsAndWorkmates.getRestaurants()){
                         for (Workmate workmate : restaurantsAndWorkmates.getWorkmates()){
                             if (workmate.getRestaurantId().equals(restaurant.getPlaceId())){
-                                /*mMarkerList.add(*/map.addMarker(new MarkerOptions()
+                                map.addMarker(new MarkerOptions()
                                         .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
                                         .title(restaurant.getName())
                                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
@@ -265,13 +262,11 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         locationPermissionGranted = false;
-        switch (requestCode) {
-            case LOCATION_PERMISSION_REQUEST_CODE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    locationPermissionGranted = true;
-                }
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationPermissionGranted = true;
             }
         }
         updateLocationUI();

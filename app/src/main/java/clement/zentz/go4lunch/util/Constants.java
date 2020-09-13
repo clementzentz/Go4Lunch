@@ -2,12 +2,14 @@ package clement.zentz.go4lunch.util;
 
 import android.content.Context;
 
+import clement.zentz.go4lunch.BuildConfig;
 import clement.zentz.go4lunch.R;
 
 public abstract class Constants  {
     //api
     public static final int NETWORK_TIMEOUT = 10000;
     public static final String API_KEY = "AIzaSyB-Enm6PIJRhyaQuTuMswPetf12jOI-_Iw";
+//    public static final String build_time = ;
 
     //nearbySearch
     public static final int RADIUS = 1000;
