@@ -31,7 +31,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:text="@string/app_name"
-        android:textSize="32dp"/>
+        android:textSize="32sp"/>
 
     <TextView
         android:id="@+id/displayName_user_txt"

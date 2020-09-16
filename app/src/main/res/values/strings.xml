@@ -5,8 +5,8 @@
     <string name="sign_in_with_email">sign in with email</string>
 
     <!-- Facebook application ID and custom URL scheme (app ID prefixed by 'fb'). -->
-    <string name="facebook_application_id">244121366690101</string>
-    <string name="fb_login_protocol_scheme">fb244121366690101</string>
+    <string name="facebook_application_id" translatable="false">244121366690101</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb244121366690101</string>
 
 
     <!-- Twitter consumer key and secret -->
@@ -14,20 +14,20 @@
     <string name="twitter_consumer_secret" translatable="false">mvAuIyWHxll6TltoqIu1dWXbfHH6hGt1Tt8YDKsNMnuLnGZH5Q</string>
 
     <!-- Bottom Nav -->
-    <string name="title_activity_bottom_nav">BottomNavActivity</string>
+    <string name="title_activity_bottom_nav" translatable="false">BottomNavActivity</string>
     <string name="title_mapView">Map View</string>
     <string name="title_listRestaurant">List View</string>
     <string name="title_workmates">Workmates</string>
     <string name="title_activity_google_maps">Map</string>
 
     <!-- Used in NavigationDrawer -->
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+    <string name="nav_header_title" translatable="false">Android Studio</string>
+    <string name="nav_header_subtitle" translatable="false">android.studio@android.com</string>
+    <string name="nav_header_desc" translatable="false">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_detail_restaurant">DetailRestaurant</string>
+    <string name="title_activity_detail_restaurant" translatable="false">DetailRestaurant</string>
 
     <!-- Permission Rationale Dialog -->
     <string name="permission_rationale_call_phone_dialog_title">Required permission to start a call</string>
@@ -36,11 +36,29 @@
     <string name="permission_rationale_allow">i want to start the call.</string>
     <string name="permission_rationale_cancel">i don\'t want to start the call</string>
     <string name="permission_denied">permission denied.</string>
-    <string name="search_btn">search_btn</string>
+    <string name="search_btn" translatable="false">search_btn</string>
 
-    <!-- searchDialog -->
+    <!-- searchDialog Fragment -->
     <string name="search_hint">restaurant name…</string>
     <string name="pick_a_place">pick a place</string>
-    <string name="cancel">cancel</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Settings Activity -->
+    <string name="enable_notifications">enable notifications :</string>
+
+    <!-- ListRestaurant Fragment -->
+    <string name="open_until_pm">Open until … pm</string>
+    <string name="_120m" translatable="false">120m</string>
+    <string name="_0" translatable="false">(0)</string>
+    <string name="restaurant_name">Restaurant Name</string>
+
+    <!-- workmate Fragment -->
+    <string name="workmate_name_is_eating_type_restaurant_restaurant_name">workmate_example is eating at restaurant_example</string>
+
+    <!--RestaurantDetails Activity -->
+    <string name="french_restaurant_12_faubourg_poissoniere_street">"French Restaurant - 12 Faubourg Poissonière street "</string>
+    <string name="call">CALL</string>
+    <string name="like">LIKE</string>
+    <string name="website">WEBSITE</string>
 
 </resources>

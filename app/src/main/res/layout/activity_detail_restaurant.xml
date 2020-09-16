@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RestaurantDetails">
+    tools:context=".RestaurantDetails"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -27,17 +28,17 @@
                 android:layout_height="match_parent"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:layout_scrollFlags="scroll|enterAlways"
                 app:contentInsetLeft="0dp"
                 app:contentInsetStart="0dp"
-                app:contentInsetStartWithNavigation="0dp"
-                app:layout_scrollFlags="scroll|enterAlways">
+                app:contentInsetStartWithNavigation="0dp">
 
                 <ImageView
                     android:id="@+id/restaurant_detail_img"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/logo_resto"
-                    android:cropToPadding="true"
+                    android:cropToPadding="false"
                     android:scaleType="centerCrop"
                     app:layout_collapseMode="pin"/>
 

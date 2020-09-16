@@ -56,10 +56,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private FirestoreViewModel mFirestoreViewModel;
     private SharedViewModel mSharedViewModel;
 
-    private List<Restaurant> mRestaurantList = new ArrayList<>();
-    private List<Marker> mMarkerList = new ArrayList<>();
-
-    private List<Workmate> allWorkmates = new ArrayList<>();
     private Workmate currentUser;
 
     //google map

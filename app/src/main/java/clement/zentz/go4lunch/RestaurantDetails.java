@@ -164,7 +164,6 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
                                 + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
                                 .into(restaurantImg);
                     }
-
                     restaurantDetailsName.setText(restaurantWithDetails.getName());
                     restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
 
@@ -174,16 +173,20 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
                 }
             }
         });
+
+        mGooglePlacesViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                adapter.setRestaurantList(restaurants);
+            }
+        });
     }
 
     private void subscribeFirestoreObservers(){
         mFirestoreViewModel.receiveWorkmatesWithRestaurantId().observe(this, new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmateList) {
-                List<Workmate> workmatesWithRestaurantId = new ArrayList<>(workmateList);
-                if (!workmatesWithRestaurantId.isEmpty()){
-                    adapter.setWorkmateList(workmatesWithRestaurantId);
-                }
+                    adapter.setWorkmateList(workmateList);
             }
         });
     }

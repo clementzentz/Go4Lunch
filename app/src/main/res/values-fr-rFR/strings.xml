@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Go4Lunch</string>
+    <string name="sign_in_with_facebook">se connecter avec facebook</string>
+    <string name="sign_in_with_google">se connecter avec google</string>
+    <string name="sign_in_with_email">se connecter par email</string>
+    <string name="call">APPELLER</string>
+    <string name="like">J\'AIME</string>
+    <string name="website">SITE WEB</string>
+    <string name="restaurant_name">Nom du Restaurant</string>
+    <string name="permission_rationale_call_phone_dialog_title">Permission requise pour démarrer un appelle</string>
+    <string name="permission_rationale_call_phone_dialog">nous avons besoin de votre permission pour demarrer un appelle</string>
+    <string name="permission_rationale_allow">je veux démarrer l\'appelle.</string>
+    <string name="permission_rationale_cancel">je ne veux pas démarrer l\'appelle</string>
+    <string name="permission_denied">permission refusé</string>
+    <string name="search_hint">nom du restaurant…</string>
+    <string name="pick_a_place">choissisez un lieu</string>
+    <string name="cancel">annuler</string>
+    <string name="enable_notifications">activer les notifications :</string>
+    <string name="open_until_pm">Ouvert jusqu\'à</string>
+    <string name="workmate_name_is_eating_type_restaurant_restaurant_name">exemple_collègue mange actuellement à exemple_restaurant</string>
+    <string name="french_restaurant_12_faubourg_poissoniere_street">Restaurant Français - 12 rue du faubourg Poissonière</string>
+    <string name="title_mapView">Vue Carte</string>
+    <string name="title_listRestaurant">Vue Liste</string>
+    <string name="title_workmates">Collègues</string>
+    <string name="title_activity_google_maps">Carte</string>
+    <string name="action_settings">Paramètres</string>
+</resources>

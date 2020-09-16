@@ -37,11 +37,13 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
             Picasso.get().load(mWorkmateList.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
         }
 
-        for (Restaurant restaurant : mRestaurantList) {
-            if (restaurant.getPlaceId().equals(mWorkmateList.get(position).getRestaurantId())){
-                holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+" is eating at "+restaurant.getName());
-            }else if (mWorkmateList.get(position).getRestaurantId().isEmpty()){
-                holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+ " hasn't decided yet...");
+        if (mRestaurantList!= null){
+            for (Restaurant restaurant : mRestaurantList) {
+                if (restaurant.getPlaceId().equals(mWorkmateList.get(position).getRestaurantId())){
+                    holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+" is eating at "+restaurant.getName());
+                }else if (mWorkmateList.get(position).getRestaurantId().isEmpty()){
+                    holder.workmateTxt.setText(mWorkmateList.get(position).getWorkmateName()+ " hasn't decided yet...");
+                }
             }
         }
     }
@@ -55,12 +57,14 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
     }
 
     public void setWorkmateList(List<Workmate> workmates){
-        mWorkmateList = workmates;
+        mWorkmateList.clear();
+        mWorkmateList.addAll(workmates);
         notifyDataSetChanged();
     }
 
     public void setRestaurantList(List<Restaurant> restaurants){
-        mRestaurantList = restaurants;
+        mRestaurantList.clear();
+        mRestaurantList.addAll(restaurants);
         notifyDataSetChanged();
     }
 

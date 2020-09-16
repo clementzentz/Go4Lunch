@@ -23,7 +23,7 @@
             android:id="@+id/workmate_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="workmate_name is eating type_restaurant (restaurant_name)"
+            android:text="@string/workmate_name_is_eating_type_restaurant_restaurant_name"
             android:textSize="10sp"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toEndOf="@id/workmate_img"
