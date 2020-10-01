@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import clement.zentz.go4lunch.AppExecutors;
+import clement.zentz.go4lunch.util.appExecutors.AppExecutors;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.services.googlePlaces.responses.NearbySearchRestaurantResponse;

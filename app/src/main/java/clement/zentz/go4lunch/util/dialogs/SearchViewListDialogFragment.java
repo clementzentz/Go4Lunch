@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.util;
+package clement.zentz.go4lunch.util.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -20,6 +20,8 @@ import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.ui.listRestaurant.ListRestaurantAdapter;
+import clement.zentz.go4lunch.util.Constants;
+import clement.zentz.go4lunch.util.interfaces.SearchViewListDialogToListRestaurantAdapter;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
 public class SearchViewListDialogFragment extends DialogFragment implements SearchViewListDialogToListRestaurantAdapter {

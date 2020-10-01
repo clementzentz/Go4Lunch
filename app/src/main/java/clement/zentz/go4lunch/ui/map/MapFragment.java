@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -20,7 +19,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,11 +30,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.RestaurantDetails;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
@@ -56,7 +50,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private FirestoreViewModel mFirestoreViewModel;
     private SharedViewModel mSharedViewModel;
 
-    private Workmate currentUser;
+    private Workmate currentUserFromFirestore;
 
     //google map
     private GoogleMap map;
@@ -120,20 +114,21 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                 }
                 if (restaurantsAndWorkmates.getRestaurants()!= null && restaurantsAndWorkmates.getWorkmates() != null){
                     for (Restaurant restaurant : restaurantsAndWorkmates.getRestaurants()){
+                        boolean found = false;
                         for (Workmate workmate : restaurantsAndWorkmates.getWorkmates()){
                             if (workmate.getRestaurantId().equals(restaurant.getPlaceId())){
-                                map.addMarker(new MarkerOptions()
-                                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                        .title(restaurant.getName())
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                                ).setTag(restaurant);
-                            }else {
-                                map.addMarker(new MarkerOptions()
-                                        .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
-                                        .title(restaurant.getName())
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))).setTag(restaurant);
+                                found = true;
+                                break;
                             }
                         }
+
+                        float color = (found)? BitmapDescriptorFactory.HUE_GREEN : BitmapDescriptorFactory.HUE_ORANGE;
+
+                        map.addMarker(new MarkerOptions()
+                                .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
+                                .title(restaurant.getName())
+                                .icon(BitmapDescriptorFactory.defaultMarker(color))
+                        ).setTag(restaurant);
                     }
                 }
             }
@@ -158,7 +153,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(getViewLifecycleOwner(), new Observer<Workmate>() {
             @Override
             public void onChanged(Workmate workmate) {
-                currentUser = workmate;
+                currentUserFromFirestore = workmate;
             }
         });
     }
@@ -167,8 +162,9 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     public boolean onMarkerClick(Marker marker) {
         Intent intent = new Intent(getContext(), RestaurantDetails.class);
         if (marker.getTag() != null){
-            intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT, ((Restaurant) marker.getTag()).getPlaceId());
-            intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT, currentUser);
+            intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, ((Restaurant) marker.getTag()).getPlaceId());
+            intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUserFromFirestore.getWorkmateId());
+            intent.putExtra(Constants.IS_YOUR_LUNCH, false);
             startActivity(intent);
         }
         return false;

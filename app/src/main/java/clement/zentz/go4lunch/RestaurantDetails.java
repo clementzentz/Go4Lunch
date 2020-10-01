@@ -1,6 +1,9 @@
 package clement.zentz.go4lunch;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -11,11 +14,9 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -24,17 +25,18 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
-
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
-import clement.zentz.go4lunch.util.PermissionRationaleDialogFragment;
-import clement.zentz.go4lunch.util.RatingBarDialogFragment;
+import clement.zentz.go4lunch.util.dialogs.PermissionRationaleDialogFragment;
+import clement.zentz.go4lunch.util.dialogs.RatingBarDialogFragment;
+import clement.zentz.go4lunch.util.notification.AlertReceiver;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
+import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
 public class RestaurantDetails extends AppCompatActivity implements RatingBarDialogFragment.RatingBarDialogListener {
 
@@ -56,12 +58,16 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
     private TextView restaurantDetailsAddress;
 
     //getIntent
-    private Workmate currentUser;
+    private String currentUserId;
     private String restaurantId;
+    private boolean isYourLunch;
 
     //viewModels
     private GooglePlacesViewModel mGooglePlacesViewModel;
     private FirestoreViewModel mFirestoreViewModel;
+    private SharedViewModel mSharedViewModel;
+
+    private Workmate currentUserFromFirestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +76,11 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
 
         mGooglePlacesViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
+        mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+
+        subscribeObservers();
+
+        getIncomingIntent();
 
         toolbar = findViewById(R.id.restaurant_details_toolbar);
         toolbar.setContentInsetStartWithNavigation(0);
@@ -80,7 +91,6 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
         mRatingBar = findViewById(R.id.rating_bar_indicator_details);
 
-
         fab = findViewById(R.id.fab);
         restaurantImg = findViewById(R.id.restaurant_detail_img);
         ImageButton restaurantDetailsCallBtn = findViewById(R.id.restaurant_details_call_btn);
@@ -90,18 +100,14 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         recyclerView = findViewById(R.id.restaurantDetail_workmates_rv);
         setupRecyclerView();
 
-        getIncomingIntent();
-
-        subscribeGooglePlacesObserver();
-        subscribeFirestoreObservers();
-
-        mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE, 0);
-
         fab.setOnClickListener(view -> {
-                currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
-                currentUser.setTimestamp(Timestamp.now());
-                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
+                currentUserFromFirestore.setRestaurantId(restaurantWithDetails.getPlaceId());
+                currentUserFromFirestore.setRestaurantName(restaurantWithDetails.getName());
+                currentUserFromFirestore.setRestaurantAddress(restaurantWithDetails.getAdrAddress());
+                currentUserFromFirestore.setTimestamp(Timestamp.now());
+                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUserFromFirestore);
                 mFirestoreViewModel.requestAllFirestoreWorkmates();
+                startAlarm();
         });
 
         restaurantDetailsCallBtn.setOnClickListener(new View.OnClickListener() {
@@ -150,12 +156,27 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         return result;
     }
 
-    private void subscribeGooglePlacesObserver(){
+    private void subscribeObservers(){
+
+        mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(this, new Observer<Workmate>() {
+            @Override
+            public void onChanged(Workmate user) {
+                if (user != null){
+                    currentUserFromFirestore = user;
+                    mSharedViewModel.setCurrentUser(user);
+                    if (isYourLunch){
+                        mGooglePlacesViewModel.restaurantDetails(user.getRestaurantId(), Constants.PLACES_TYPE, 0);
+                        mFirestoreViewModel.requestWorkmatesWithRestaurantId(user.getRestaurantId());
+                    }
+                }
+            }
+        });
+
         mGooglePlacesViewModel.getRestaurantDetails().observe(this, new Observer<Restaurant>() {
             @Override
             public void onChanged(Restaurant restaurant) {
-                restaurantWithDetails = restaurant;
-                if (restaurantWithDetails != null){
+                if (restaurant != null){
+                    restaurantWithDetails = restaurant;
                     if (restaurantWithDetails.getPhotos() != null){
                         Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
                                 + "key=" + Constants.API_KEY
@@ -180,13 +201,11 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
                 adapter.setRestaurantList(restaurants);
             }
         });
-    }
 
-    private void subscribeFirestoreObservers(){
         mFirestoreViewModel.receiveWorkmatesWithRestaurantId().observe(this, new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmateList) {
-                    adapter.setWorkmateList(workmateList);
+                adapter.setWorkmateList(workmateList);
             }
         });
     }
@@ -198,21 +217,37 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
     }
 
     private void getIncomingIntent(){
-        if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT) && getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT)){
-                restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT);
-                currentUser = getIntent().getParcelableExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT);
-                mFirestoreViewModel.requestWorkmatesWithRestaurantId(restaurantId);
-                if(getIntent().hasExtra(Constants.IS_USER_RESTAURANT)){
-                    if (restaurantId == null){
-                        fab.setVisibility(View.GONE);
-                        Toast.makeText(this, "pas de restaurant enregistré :(", Toast.LENGTH_LONG).show();
-                    }
-                }
+        if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID) && getIntent().hasExtra(Constants.IS_YOUR_LUNCH)){
+            currentUserId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID);
+            isYourLunch = getIntent().getBooleanExtra(Constants.IS_YOUR_LUNCH, false);
+            mFirestoreViewModel.requestCurrentUserWithId(currentUserId);
+            mFirestoreViewModel.requestAllFirestoreWorkmates();
         }
+        if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID)){
+            restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID);
+            mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE, 0);
+            mFirestoreViewModel.requestWorkmatesWithRestaurantId(restaurantId);
+        }
+    }
+
+    private void startAlarm() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlertReceiver.class);
+        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUserId);
+        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, restaurantId);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
+
+        // Set the alarm to start at approximately 2:00 p.m.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+
+        if (alarmManager != null)
+        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
     }
 
     @Override
     public void onDialogPositiveClick(float rating) {
-        mFirestoreViewModel.addOrUpdateRestaurantRating(restaurantWithDetails.getPlaceId(), currentUser.getWorkmateId(), rating);
+        mFirestoreViewModel.addOrUpdateRestaurantRating(restaurantWithDetails.getPlaceId(), currentUserId, rating);
     }
 }

@@ -25,7 +25,7 @@ import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
-import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
+import clement.zentz.go4lunch.util.interfaces.ListRestaurantFragmentToListRestaurantAdapter;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
 public class ListRestaurantFragment extends Fragment implements ListRestaurantFragmentToListRestaurantAdapter {
@@ -107,8 +107,9 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void launchDetailRestaurantActivity(Restaurant currentRestaurant) {
         Intent intent = new Intent(getActivity(), RestaurantDetails.class);
-        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT, currentRestaurant.getPlaceId());
-        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT, currentUser);
+        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, currentRestaurant.getPlaceId());
+        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUser.getWorkmateId());
+        intent.putExtra(Constants.IS_YOUR_LUNCH, false);
         startActivity(intent);
     }
 }

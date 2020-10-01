@@ -1,9 +1,16 @@
 package clement.zentz.go4lunch;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import clement.zentz.go4lunch.util.notification.AlertReceiver;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -15,6 +22,15 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.settings_activity);
 
         initViews();
+
+        enableNotificationsSwitchBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (!isChecked){
+                    cancelAlarm();
+                }
+            }
+        });
     }
 
     @Override
@@ -26,5 +42,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void initViews(){
         enableNotificationsSwitchBtn = findViewById(R.id.enable_notifications_switch_btn);
+    }
+
+    private void cancelAlarm() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlertReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
+        alarmManager.cancel(pendingIntent);
     }
 }

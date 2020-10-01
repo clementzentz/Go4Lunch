@@ -20,8 +20,8 @@ import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
-import clement.zentz.go4lunch.util.ListRestaurantFragmentToListRestaurantAdapter;
-import clement.zentz.go4lunch.util.SearchViewListDialogToListRestaurantAdapter;
+import clement.zentz.go4lunch.util.interfaces.ListRestaurantFragmentToListRestaurantAdapter;
+import clement.zentz.go4lunch.util.interfaces.SearchViewListDialogToListRestaurantAdapter;
 
 public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAdapter.ListRestaurantViewHolder> {
 
@@ -122,12 +122,14 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
     }
 
     public void setRestaurantList(List<Restaurant> restaurants){
-        mRestaurantList = restaurants;
+        mRestaurantList.clear();
+        mRestaurantList.addAll(restaurants);
         notifyDataSetChanged();
     }
 
     public void setWorkmatesList(List<Workmate> workmates){
-        mWorkmateList = workmates;
+        mWorkmateList.clear();
+        mWorkmateList.addAll(workmates);
         notifyDataSetChanged();
     }
 

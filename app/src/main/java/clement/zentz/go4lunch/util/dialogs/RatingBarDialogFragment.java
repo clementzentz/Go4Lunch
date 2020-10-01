@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.util;
+package clement.zentz.go4lunch.util.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

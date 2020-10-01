@@ -2,7 +2,6 @@ package clement.zentz.go4lunch;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -30,8 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -46,17 +43,17 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.util.SearchViewListDialogFragment;
+import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
 import clement.zentz.go4lunch.util.Constants;
+
+import static clement.zentz.go4lunch.util.Constants.CHANNEL_ID;
 
 //bottom nav + nav drawer activity
 public class MainActivity extends AppCompatActivity {
@@ -70,8 +67,6 @@ public class MainActivity extends AppCompatActivity {
     private FirestoreViewModel mFirestoreViewModel;
     private GooglePlacesViewModel mGooglePlaceViewModel;
 
-    private Workmate currentUserFromFirestoreRequest;
-
     //View
     private Toolbar toolbar;
     private SearchView mSearchView;
@@ -80,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+        createNotificationChannel();
 
         toolbar = findViewById(R.id.main_activity_toolbar);
         mSearchView = findViewById(R.id.main_activity_search_view);
@@ -96,10 +93,6 @@ public class MainActivity extends AppCompatActivity {
         subscribeObservers();
 
         getIncomingIntentFromAuthActivity();
-
-//        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
-//        ListRestaurantFragment listRestaurantFragment = (ListRestaurantFragment) getSupportFragmentManager().findFragmentById(R.id.list_restaurant_fragment);
-//        WorkmatesFragment workmatesFragment = (WorkmatesFragment) getSupportFragmentManager().findFragmentById(R.id.list_workmates_fragment);
 
         BottomNavigationView bottomNavView = findViewById(R.id.bottom_nav_view);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -153,10 +146,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (currentUser != null){
-            mFirestoreViewModel.requestCurrentUserWithId(currentUser.getWorkmateId());
-        }
-        mFirestoreViewModel.requestAllFirestoreWorkmates();
     }
 
     private void subscribeObservers(){
@@ -176,16 +165,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(Location location) {
                 locationUser = location;
-            }
-        });
-
-        mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(this, new Observer<Workmate>() {
-            @Override
-            public void onChanged(Workmate currentUser) {
-                if (currentUser != null){
-                    currentUserFromFirestoreRequest = currentUser;
-                    mSharedViewModel.setCurrentUser(currentUser);
-                }
             }
         });
 
@@ -239,9 +218,8 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()){
                 case R.id.nav_drawer_lunch_item :
                     Intent intent = new Intent(this, RestaurantDetails.class);
-                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_INTENT , currentUserFromFirestoreRequest);
-                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID_INTENT , currentUserFromFirestoreRequest.getRestaurantId());
-                    intent.putExtra(Constants.IS_USER_RESTAURANT, true);
+                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUser.getWorkmateId());
+                    intent.putExtra(Constants.IS_YOUR_LUNCH, true);
                     startActivity(intent);
                     break;
                 case R.id.nav_drawer_settings_item :
@@ -262,10 +240,37 @@ public class MainActivity extends AppCompatActivity {
     private void getIncomingIntentFromAuthActivity(){
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
+            mSharedViewModel.setCurrentUser(currentUser);
             configureNavDrawer();
         }
     }
 
+    private void settingsActivityResult(){
+        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(),
+                new ActivityResultCallback<Uri>() {
+                    @Override
+                    public void onActivityResult(Uri uri) {
+                        // Handle the returned Uri
+
+                    }
+                });
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 
     public String loadJSONFromAsset() {
 
@@ -307,6 +312,8 @@ public class MainActivity extends AppCompatActivity {
                         current_jo_inside.getString("email"),
                         current_jo_inside.getString("photoUrl"),
                         current_jo_inside.getString("restaurantId"),
+                        current_jo_inside.getString("restaurantName"),
+                        current_jo_inside.getString("restaurantAddress"),
                         Timestamp.now());
 
                 mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(workmate);
@@ -316,52 +323,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupActivityResult(){
-        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(),
-                new ActivityResultCallback<Uri>() {
-                    @Override
-                    public void onActivityResult(Uri uri) {
-                        // Handle the returned Uri
-                    }
-                });
-    }
-
-//    private void setupNotification() {
-//        // Create an explicit intent for an Activity in your app
-//        Intent intent = new Intent(this, AlertDetails.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-//
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                .setSmallIcon(R.drawable.ic_baseline_restaurant_24)
-//                .setContentTitle(getString(R.string.app_name))
-//                .setContentText("Hey ! you registered ")
-//                .setStyle(new NotificationCompat.BigTextStyle()
-//                        .bigText("Much longer text that cannot fit one line..."))
-//                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-//        // notificationId is a unique int for each notification that you must define
-//        notificationManager.notify(notificationId, builder.build());
-//    }
-//
-//    private void createNotificationChannel() {
-//        // Create the NotificationChannel, but only on API 26+ because
-//        // the NotificationChannel class is new and not in the support library
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            CharSequence name = getString(R.string.channel_name);
-//            String description = getString(R.string.channel_description);
-//            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-//            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-//            channel.setDescription(description);
-//            // Register the channel with the system; you can't change the importance
-//            // or other notification behaviors after this
-//            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-//            notificationManager.createNotificationChannel(channel);
-//        }
-//    }
-
-    //searchview with listitem dialog
-    //ajouter string xml fr + eng
     //power mockito
 }

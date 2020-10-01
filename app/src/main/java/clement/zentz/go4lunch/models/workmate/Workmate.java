@@ -14,16 +14,21 @@ public class Workmate implements Parcelable {
     private String photoUrl;
     //the id of the restaurant associate with the workmate
     private String restaurantId;
+    private String restaurantName;
+    private String restaurantAddress;
     private Timestamp mTimestamp;
 
-    public Workmate(String workmateId, String workmateName, String email, String photoUrl, String restaurantId, Timestamp timestamp) {
+    public Workmate(String workmateId, String workmateName, String email, String photoUrl, String restaurantId, String restaurantName, String restaurantAddress, Timestamp timestamp) {
         this.workmateId = workmateId;
         this.workmateName = workmateName;
         this.email = email;
         this.photoUrl = photoUrl;
         this.restaurantId = restaurantId;
+        this.restaurantName = restaurantName;
+        this.restaurantAddress = restaurantAddress;
         mTimestamp = timestamp;
     }
+
 
     protected Workmate(Parcel in) {
         workmateId = in.readString();
@@ -31,7 +36,21 @@ public class Workmate implements Parcelable {
         email = in.readString();
         photoUrl = in.readString();
         restaurantId = in.readString();
+        restaurantName = in.readString();
+        restaurantAddress = in.readString();
         mTimestamp = in.readParcelable(Timestamp.class.getClassLoader());
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(workmateId);
+        dest.writeString(workmateName);
+        dest.writeString(email);
+        dest.writeString(photoUrl);
+        dest.writeString(restaurantId);
+        dest.writeString(restaurantName);
+        dest.writeString(restaurantAddress);
+        dest.writeParcelable(mTimestamp, flags);
     }
 
     public static final Creator<Workmate> CREATOR = new Creator<Workmate>() {
@@ -94,19 +113,25 @@ public class Workmate implements Parcelable {
         mTimestamp = timestamp;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public String getRestaurantName() {
+        return restaurantName;
+    }
+
+    public void setRestaurantName(String restaurantName) {
+        this.restaurantName = restaurantName;
+    }
+
+    public String getRestaurantAddress() {
+        return restaurantAddress;
+    }
+
+    public void setRestaurantAddress(String restaurantAddress) {
+        this.restaurantAddress = restaurantAddress;
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(workmateId);
-        parcel.writeString(workmateName);
-        parcel.writeString(email);
-        parcel.writeString(photoUrl);
-        parcel.writeString(restaurantId);
-        parcel.writeParcelable(mTimestamp, i);
+    public int describeContents() {
+        return 0;
     }
 
     @Override
@@ -117,6 +142,8 @@ public class Workmate implements Parcelable {
                 ", email='" + email + '\'' +
                 ", photoUrl='" + photoUrl + '\'' +
                 ", restaurantId='" + restaurantId + '\'' +
+                ", restaurantName='" + restaurantName + '\'' +
+                ", restaurantAddress='" + restaurantAddress + '\'' +
                 ", mTimestamp=" + mTimestamp +
                 '}';
     }

@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch;
+package clement.zentz.go4lunch.util.appExecutors;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

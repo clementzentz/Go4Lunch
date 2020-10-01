@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch.util;
+package clement.zentz.go4lunch.util.dialogs;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.util.Constants;
 
 public class PermissionRationaleDialogFragment extends DialogFragment {
 

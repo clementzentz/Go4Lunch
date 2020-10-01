@@ -64,6 +64,8 @@ public class AuthActivity extends AppCompatActivity {
                         user.getEmail(),
                         userPhotoUrl,
                         "",
+                        "",
+                        "",
                         Timestamp.now());
 
                 intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, workmate);

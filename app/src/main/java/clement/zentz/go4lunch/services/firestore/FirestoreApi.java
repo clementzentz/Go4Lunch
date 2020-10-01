@@ -145,6 +145,8 @@ public class FirestoreApi {
         user.put(Constants.WORKMATE_EMAIL, currentUser.getEmail());
         user.put(Constants.WORKMATE_PHOTO_URL, currentUser.getPhotoUrl());
         user.put(Constants.RESTAURANT_ID, currentUser.getRestaurantId());
+        user.put(Constants.RESTAURANT_NAME, currentUser.getRestaurantName());
+        user.put(Constants.RESTAURANT_ADDRESS, currentUser.getRestaurantAddress());
         user.put(Constants.TIMESTAMP, currentUser.getTimestamp());
         // Add a new document with a generated ID
         db.collection(Constants.WORKMATES_COLLECTION).document(currentUser.getWorkmateId())
@@ -171,6 +173,8 @@ public class FirestoreApi {
                 (String)map.get(Constants.WORKMATE_EMAIL),
                 (String)map.get(Constants.WORKMATE_PHOTO_URL),
                 (String)map.get(Constants.RESTAURANT_ID),
+                (String)map.get(Constants.RESTAURANT_NAME),
+                (String)map.get(Constants.RESTAURANT_ADDRESS),
                 (Timestamp)map.get(Constants.TIMESTAMP));
     }
 
