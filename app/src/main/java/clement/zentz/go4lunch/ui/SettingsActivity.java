@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch;
+package clement.zentz.go4lunch.ui;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -10,6 +10,7 @@ import android.widget.Switch;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.util.notification.AlertReceiver;
 
 public class SettingsActivity extends AppCompatActivity {

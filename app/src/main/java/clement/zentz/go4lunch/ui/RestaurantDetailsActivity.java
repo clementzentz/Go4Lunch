@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch;
+package clement.zentz.go4lunch.ui;
 
 import android.Manifest;
 import android.app.AlarmManager;
@@ -17,6 +17,8 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
+
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -27,6 +29,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Calendar;
 import java.util.List;
+
+import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
@@ -38,9 +42,9 @@ import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
-public class RestaurantDetails extends AppCompatActivity implements RatingBarDialogFragment.RatingBarDialogListener {
+public class RestaurantDetailsActivity extends AppCompatActivity implements RatingBarDialogFragment.RatingBarDialogListener {
 
-    private static final String TAG = "RestaurantDetails";
+    private static final String TAG = "RestaurantDetailsActivity";
 
     //observers
     private Restaurant restaurantWithDetails;
@@ -103,7 +107,7 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         fab.setOnClickListener(view -> {
                 currentUserFromFirestore.setRestaurantId(restaurantWithDetails.getPlaceId());
                 currentUserFromFirestore.setRestaurantName(restaurantWithDetails.getName());
-                currentUserFromFirestore.setRestaurantAddress(restaurantWithDetails.getAdrAddress());
+                currentUserFromFirestore.setRestaurantAddress(restaurantWithDetails.getVicinity());
                 currentUserFromFirestore.setTimestamp(Timestamp.now());
                 mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUserFromFirestore);
                 mFirestoreViewModel.requestAllFirestoreWorkmates();
@@ -113,17 +117,17 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         restaurantDetailsCallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(RestaurantDetails.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.checkSelfPermission(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
                     Intent callIntent = new Intent(Intent.ACTION_CALL);
                     if (restaurantWithDetails.getFormattedPhoneNumber() != null) {
                         callIntent.setData(Uri.parse("tel:+"+restaurantWithDetails.getFormattedPhoneNumber()));
                         startActivity(callIntent);
                     }
-                }else if(ActivityCompat.shouldShowRequestPermissionRationale(RestaurantDetails.this, Manifest.permission.CALL_PHONE)){
+                }else if(ActivityCompat.shouldShowRequestPermissionRationale(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE)){
                     PermissionRationaleDialogFragment permissionRationaleDialogFragment = new PermissionRationaleDialogFragment();
                     permissionRationaleDialogFragment.show(getSupportFragmentManager() , TAG);
                 }else{
-                    ActivityCompat.requestPermissions(RestaurantDetails.this, new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
+                    ActivityCompat.requestPermissions(RestaurantDetailsActivity.this, new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
                 }
             }
         });
@@ -143,7 +147,7 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantWithDetails.getWebsite()));
                     startActivity(browserIntent);
                 }else {
-                    Toast.makeText(RestaurantDetails.this, "sorry, we could not find any website associate with this place.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RestaurantDetailsActivity.this, "sorry, we could not find any website associate with this place.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -156,7 +160,8 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         return result;
     }
 
-    private void subscribeObservers(){
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public void subscribeObservers(){
 
         mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(this, new Observer<Workmate>() {
             @Override
@@ -237,10 +242,11 @@ public class RestaurantDetails extends AppCompatActivity implements RatingBarDia
         intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, restaurantId);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
 
-        // Set the alarm to start at approximately 2:00 p.m.
+        // Set the alarm to start at approximately 12:00 p.m.
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.HOUR_OF_DAY, 17);
+        calendar.set(Calendar.MINUTE, 15);
 
         if (alarmManager != null)
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);

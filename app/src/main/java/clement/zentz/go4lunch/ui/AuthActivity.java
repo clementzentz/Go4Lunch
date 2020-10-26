@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch;
+package clement.zentz.go4lunch.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,10 +10,8 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.type.DateTime;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import clement.zentz.go4lunch.models.workmate.Workmate;

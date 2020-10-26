@@ -32,7 +32,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 import java.util.List;
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.RestaurantDetails;
+import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.restaurantsAndWorkmates.RestaurantsAndWorkmates;
 import clement.zentz.go4lunch.models.workmate.Workmate;
@@ -111,18 +111,17 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
             public void onChanged(RestaurantsAndWorkmates restaurantsAndWorkmates) {
                 if (map != null){
                     map.clear();
-                }
                 if (restaurantsAndWorkmates.getRestaurants()!= null && restaurantsAndWorkmates.getWorkmates() != null){
-                    for (Restaurant restaurant : restaurantsAndWorkmates.getRestaurants()){
+                    for (Restaurant restaurant : restaurantsAndWorkmates.getRestaurants()) {
                         boolean found = false;
-                        for (Workmate workmate : restaurantsAndWorkmates.getWorkmates()){
-                            if (workmate.getRestaurantId().equals(restaurant.getPlaceId())){
+                        for (Workmate workmate : restaurantsAndWorkmates.getWorkmates()) {
+                            if (workmate.getRestaurantId().equals(restaurant.getPlaceId())) {
                                 found = true;
                                 break;
                             }
                         }
 
-                        float color = (found)? BitmapDescriptorFactory.HUE_GREEN : BitmapDescriptorFactory.HUE_ORANGE;
+                        float color = (found) ? BitmapDescriptorFactory.HUE_GREEN : BitmapDescriptorFactory.HUE_ORANGE;
 
                         map.addMarker(new MarkerOptions()
                                 .position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()))
@@ -130,6 +129,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                                 .icon(BitmapDescriptorFactory.defaultMarker(color))
                         ).setTag(restaurant);
                     }
+                 }
                 }
             }
         });
@@ -160,7 +160,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        Intent intent = new Intent(getContext(), RestaurantDetails.class);
+        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
         if (marker.getTag() != null){
             intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, ((Restaurant) marker.getTag()).getPlaceId());
             intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUserFromFirestore.getWorkmateId());

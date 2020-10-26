@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-import clement.zentz.go4lunch.RestaurantDetails;
+import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
@@ -106,7 +106,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
 
     @Override
     public void launchDetailRestaurantActivity(Restaurant currentRestaurant) {
-        Intent intent = new Intent(getActivity(), RestaurantDetails.class);
+        Intent intent = new Intent(getActivity(), RestaurantDetailsActivity.class);
         intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, currentRestaurant.getPlaceId());
         intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUser.getWorkmateId());
         intent.putExtra(Constants.IS_YOUR_LUNCH, false);

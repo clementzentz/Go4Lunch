@@ -1,4 +1,4 @@
-package clement.zentz.go4lunch;
+package clement.zentz.go4lunch.ui;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
@@ -87,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
         mGooglePlaceViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
+
+        mFirestoreViewModel.requestAllFirestoreWorkmates();
 
 //        getDataFromJsonFile();
 
@@ -217,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()){
                 case R.id.nav_drawer_lunch_item :
-                    Intent intent = new Intent(this, RestaurantDetails.class);
+                    Intent intent = new Intent(this, RestaurantDetailsActivity.class);
                     intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUser.getWorkmateId());
                     intent.putExtra(Constants.IS_YOUR_LUNCH, true);
                     startActivity(intent);
@@ -241,19 +244,9 @@ public class MainActivity extends AppCompatActivity {
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             mSharedViewModel.setCurrentUser(currentUser);
+            mFirestoreViewModel.requestCurrentUserWithId(currentUser.getWorkmateId());
             configureNavDrawer();
         }
-    }
-
-    private void settingsActivityResult(){
-        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(),
-                new ActivityResultCallback<Uri>() {
-                    @Override
-                    public void onActivityResult(Uri uri) {
-                        // Handle the returned Uri
-
-                    }
-                });
     }
 
     private void createNotificationChannel() {
@@ -269,6 +262,32 @@ public class MainActivity extends AppCompatActivity {
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void getDataFromJsonFile(){
+        try {
+            JSONObject obj = new JSONObject(loadJSONFromAsset());
+
+            JSONArray m_jArry = obj.getJSONArray("data");
+
+            for (int i = 0; i < m_jArry.length(); i++) {
+                JSONObject current_jo_inside = m_jArry.getJSONObject(i);
+
+                Workmate workmate = new Workmate(
+                        current_jo_inside.getString("workmateId"),
+                        current_jo_inside.getString("workmateName"),
+                        current_jo_inside.getString("email"),
+                        current_jo_inside.getString("photoUrl"),
+                        current_jo_inside.getString("restaurantId"),
+                        current_jo_inside.getString("restaurantName"),
+                        current_jo_inside.getString("restaurantAddress"),
+                        Timestamp.now());
+
+                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(workmate);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -294,33 +313,6 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
         return json;
-    }
-
-    private void getDataFromJsonFile(){
-        try {
-            JSONObject obj = new JSONObject(loadJSONFromAsset());
-
-            JSONArray m_jArry = obj.getJSONArray("data");
-
-            for (int i = 0; i < m_jArry.length(); i++) {
-                JSONObject current_jo_inside = m_jArry.getJSONObject(i);
-                Log.d("Details-->", current_jo_inside.getString("data"));
-
-                Workmate workmate = new Workmate(
-                        current_jo_inside.getString("workmateId"),
-                        current_jo_inside.getString("workmateName"),
-                        current_jo_inside.getString("email"),
-                        current_jo_inside.getString("photoUrl"),
-                        current_jo_inside.getString("restaurantId"),
-                        current_jo_inside.getString("restaurantName"),
-                        current_jo_inside.getString("restaurantAddress"),
-                        Timestamp.now());
-
-                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(workmate);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     //power mockito

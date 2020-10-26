@@ -17,6 +17,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 
@@ -30,13 +31,14 @@ public class WorkmatesFragment extends Fragment{
     private FirestoreViewModel mFirestoreViewModel;
     private GooglePlacesViewModel mGooglePlacesViewModel;
 
+    private List<Workmate> mWorkmateList;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
             ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_workmates, container, false);
 
         recyclerView = root.findViewById(R.id.workmates_rv);
         setupRecyclerView();
-
         return root;
     }
 

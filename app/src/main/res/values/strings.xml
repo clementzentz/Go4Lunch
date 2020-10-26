@@ -55,7 +55,7 @@
     <!-- workmate Fragment -->
     <string name="workmate_name_is_eating_type_restaurant_restaurant_name">workmate_example is eating at restaurant_example</string>
 
-    <!--RestaurantDetails Activity -->
+    <!--RestaurantDetailsActivity Activity -->
     <string name="french_restaurant_12_faubourg_poissoniere_street">"French Restaurant - 12 Faubourg Poissonière street "</string>
     <string name="call">CALL</string>
     <string name="like">LIKE</string>

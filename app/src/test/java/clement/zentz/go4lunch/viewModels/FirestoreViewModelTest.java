@@ -1,6 +1,9 @@
-package clement.zentz.go4lunch;
+package clement.zentz.go4lunch.viewModels;
+
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.*;
 
@@ -9,9 +12,9 @@ import static org.junit.Assert.*;
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
-public class RestaurantUnitTest {
+public class FirestoreViewModelTest {
     @Test
-    public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+    public void addOrUpdateUserToFirestore() {
+
     }
 }
