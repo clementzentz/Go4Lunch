@@ -1,6 +1,5 @@
-package clement.zentz.go4lunch.models.restaurantsAndWorkmates;
+package clement.zentz.go4lunch.models.mediatorsLiveData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.models.restaurant.Restaurant;

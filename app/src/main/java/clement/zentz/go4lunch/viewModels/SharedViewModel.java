@@ -4,10 +4,9 @@ import android.location.Location;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.restaurantsAndWorkmates.RestaurantsAndWorkmates;
+import clement.zentz.go4lunch.models.mediatorsLiveData.RestaurantsAndWorkmates;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 
 public class SharedViewModel extends ViewModel {

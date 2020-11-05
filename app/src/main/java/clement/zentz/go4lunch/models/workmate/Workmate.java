@@ -1,10 +1,9 @@
 package clement.zentz.go4lunch.models.workmate;
 
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import com.google.firebase.Timestamp;
+import java.util.List;
 
 public class Workmate implements Parcelable {
 
@@ -29,6 +28,16 @@ public class Workmate implements Parcelable {
         mTimestamp = timestamp;
     }
 
+    public Workmate(Workmate workmate){
+        workmateId = workmate.getWorkmateId();
+        workmateName = workmate.getWorkmateName();
+        email = workmate.getEmail();
+        photoUrl = workmate.getPhotoUrl();
+        restaurantId = workmate.getRestaurantId();
+        restaurantName = workmate.getRestaurantName();
+        restaurantAddress = workmate.getRestaurantAddress();
+        mTimestamp = workmate.getTimestamp();
+    }
 
     protected Workmate(Parcel in) {
         workmateId = in.readString();
@@ -39,18 +48,6 @@ public class Workmate implements Parcelable {
         restaurantName = in.readString();
         restaurantAddress = in.readString();
         mTimestamp = in.readParcelable(Timestamp.class.getClassLoader());
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(workmateId);
-        dest.writeString(workmateName);
-        dest.writeString(email);
-        dest.writeString(photoUrl);
-        dest.writeString(restaurantId);
-        dest.writeString(restaurantName);
-        dest.writeString(restaurantAddress);
-        dest.writeParcelable(mTimestamp, flags);
     }
 
     public static final Creator<Workmate> CREATOR = new Creator<Workmate>() {
@@ -105,14 +102,6 @@ public class Workmate implements Parcelable {
         this.restaurantId = restaurantId;
     }
 
-    public Timestamp getTimestamp() {
-        return mTimestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        mTimestamp = timestamp;
-    }
-
     public String getRestaurantName() {
         return restaurantName;
     }
@@ -129,9 +118,29 @@ public class Workmate implements Parcelable {
         this.restaurantAddress = restaurantAddress;
     }
 
+    public Timestamp getTimestamp() {
+        return mTimestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        mTimestamp = timestamp;
+    }
+
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(workmateId);
+        parcel.writeString(workmateName);
+        parcel.writeString(email);
+        parcel.writeString(photoUrl);
+        parcel.writeString(restaurantId);
+        parcel.writeString(restaurantName);
+        parcel.writeString(restaurantAddress);
+        parcel.writeParcelable(mTimestamp, i);
     }
 
     @Override

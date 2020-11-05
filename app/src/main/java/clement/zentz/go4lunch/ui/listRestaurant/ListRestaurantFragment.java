@@ -2,6 +2,7 @@ package clement.zentz.go4lunch.ui.listRestaurant;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,7 +19,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import clement.zentz.go4lunch.models.mediatorsLiveData.WorkmatesAndGlobalRatings;
+import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
@@ -93,9 +99,38 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     }
 
     private void subscribeFirebaseObserver(){
-        mSharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
+        WorkmatesAndGlobalRatings workmatesAndGlobalRatings = new WorkmatesAndGlobalRatings(null, null);
+        MediatorLiveData<WorkmatesAndGlobalRatings> mediatorLiveData = new MediatorLiveData<>();
+        mediatorLiveData.addSource(mFirestoreViewModel.receiveAllFirestoreWorkmates(), new Observer<List<Workmate>>() {
+            @Override
+            public void onChanged(List<Workmate> workmates) {
+                if (workmates != null){
+                    workmatesAndGlobalRatings.setWorkmateList(new ArrayList<>(workmates));
+                    mediatorLiveData.setValue(workmatesAndGlobalRatings);
+                }
+            }
+        });
+        mediatorLiveData.addSource(mFirestoreViewModel.receiveAllGlobalRatings(), new Observer<List<GlobalRating>>() {
+            @Override
+            public void onChanged(List<GlobalRating> globalRatings) {
+                if (globalRatings != null){
+                    workmatesAndGlobalRatings.setGlobalRatings(new ArrayList<>(globalRatings));
+                    mediatorLiveData.setValue(workmatesAndGlobalRatings);
+                }
+            }
+        });
 
-        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmatesList(workmates));
+        mediatorLiveData.observe(getViewLifecycleOwner(), new Observer<WorkmatesAndGlobalRatings>() {
+                    @Override
+                    public void onChanged(WorkmatesAndGlobalRatings workmatesAndGlobalRatings) {
+                        if (workmatesAndGlobalRatings.getWorkmateList() != null && workmatesAndGlobalRatings.getGlobalRatings() != null){
+                            adapter.setWorkmatesList(workmatesAndGlobalRatings.getWorkmateList());
+                            adapter.setAllGlobalRatings(workmatesAndGlobalRatings.getGlobalRatings());
+                        }
+                    }
+        });
+
+        mSharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
     }
 
     private void setUpRecyclerView(){

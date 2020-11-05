@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel;
 
 import java.util.List;
 
+import clement.zentz.go4lunch.models.rating.GlobalRating;
+import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.repository.FirestoreRepository;
 
@@ -14,6 +16,11 @@ public class FirestoreViewModel extends ViewModel {
 
     public FirestoreViewModel(){
         mFirestoreRepository = FirestoreRepository.getInstance();
+    }
+
+    //for test
+    public FirestoreViewModel(FirestoreRepository firestoreRepository){
+        mFirestoreRepository = firestoreRepository;
     }
 
     public LiveData<List<Workmate>> receiveAllFirestoreWorkmates(){
@@ -28,9 +35,17 @@ public class FirestoreViewModel extends ViewModel {
         return mFirestoreRepository.receiveCurrentUserWithWorkmateId();
     }
 
-//    public LiveData<FirebaseRestaurantRating> receiveRestaurantRatingWithRestaurantId(){
-//        return mFirestoreRepository.receiveRestaurantRatingWithRestaurantId();
-//    }
+    public LiveData<List<Rating>> receiveAllRatings4ThisRestaurant(){
+        return mFirestoreRepository.receiveAllRatings4ThisRestaurant();
+    }
+
+    public LiveData<GlobalRating> receiveGlobalRating4ThisRestaurant(){
+        return mFirestoreRepository.receiveGlobalRating4ThisRestaurant();
+    }
+
+    public LiveData<List<GlobalRating>> receiveAllGlobalRatings(){
+        return mFirestoreRepository.receiveAllGlobalRatings();
+    }
 
     public void requestAllFirestoreWorkmates(){
         mFirestoreRepository.requestAllFirestoreWorkmates();
@@ -44,11 +59,27 @@ public class FirestoreViewModel extends ViewModel {
         mFirestoreRepository.requestCurrentUserWithId(workmateId);
     }
 
+    public void requestAllRatings4ThisRestaurant(String restaurantId){
+        mFirestoreRepository.requestAllRatings4ThisRestaurant(restaurantId);
+    }
+
+    public void requestGlobalRating4ThisRestaurant(String restaurantId){
+        mFirestoreRepository.requestGlobalRating4ThisRestaurant(restaurantId);
+    }
+
+    public void requestAllGlobalRatings(){
+        mFirestoreRepository.requestAllGlobalRatings();
+    }
+
     public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){
         mFirestoreRepository.addOrUpdateFirestoreCurrentUser(currentUser);
     }
 
-    public void addOrUpdateRestaurantRating(String restaurantId, String workmateId, float rating){
-        mFirestoreRepository.addOrUpdateRestaurantRating(restaurantId, workmateId, rating);
+    public void addOrUpdateUserRating(Rating rating){
+        mFirestoreRepository.addOrUpdateUserRating(rating);
+    }
+
+    public void addOrUpdateGlobalRating(GlobalRating globalRating){
+        mFirestoreRepository.addOrUpdateGlobalRating(globalRating);
     }
 }

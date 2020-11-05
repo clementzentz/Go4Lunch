@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
@@ -28,18 +29,21 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
     public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
     public SearchViewListDialogToListRestaurantAdapter mSearchViewListDialogToListRestaurantAdapter;
     private List<Restaurant> mRestaurantList;
-    private List<Workmate> mWorkmateList;
+    private List<Workmate> allWorkmates;
+    private List<GlobalRating> allGlobalRatings;
 
     public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
-        mWorkmateList = new ArrayList<>();
+        allWorkmates = new ArrayList<>();
         mRestaurantList = new ArrayList<>();
+        allGlobalRatings = new ArrayList<>();
     }
 
     public ListRestaurantAdapter(SearchViewListDialogToListRestaurantAdapter searchViewListDialogToListRestaurantAdapter){
         mSearchViewListDialogToListRestaurantAdapter = searchViewListDialogToListRestaurantAdapter;
-        mWorkmateList = new ArrayList<>();
+        allWorkmates = new ArrayList<>();
         mRestaurantList = new ArrayList<>();
+        allGlobalRatings = new ArrayList<>();
     }
 
     @NonNull
@@ -87,7 +91,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         }
 
         int count = 0;
-        for (Workmate workmate : mWorkmateList){
+        for (Workmate workmate : allWorkmates){
             if (mRestaurantList.get(position).getPlaceId().equals(workmate.getRestaurantId())){
                 holder.workmatesCount.setText("("+ (count += 1) +")");
             }
@@ -96,12 +100,15 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             holder.workmatesBtn.setVisibility(View.GONE);
         }
 
-        if (mRestaurantList.get(position).getRating() != null){
-            float rating = (float)((mRestaurantList.get(position).getRating().floatValue())*(3.0/5.0));
-            holder.ratingBar.setRating(rating);
-        }else {
-            holder.ratingBar.setVisibility(View.GONE);
+        for (GlobalRating globalRating: allGlobalRatings){
+            if (globalRating.getRestaurantId().equals(mRestaurantList.get(position).getPlaceId())){
+                holder.ratingBar.setRating((float)globalRating.getGlobalRating());
+            }else {
+                holder.ratingBar.setVisibility(View.GONE);
+            }
         }
+
+
 
         if (mRestaurantList.get(position).getOpeningHours() == null) {
             holder.restaurantOpenNow.setVisibility(View.GONE);
@@ -127,9 +134,15 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         notifyDataSetChanged();
     }
 
+    public void setAllGlobalRatings(List<GlobalRating> globalRatings){
+        allGlobalRatings.clear();
+        allGlobalRatings.addAll(globalRatings);
+        notifyDataSetChanged();
+    }
+
     public void setWorkmatesList(List<Workmate> workmates){
-        mWorkmateList.clear();
-        mWorkmateList.addAll(workmates);
+        allWorkmates.clear();
+        allWorkmates.addAll(workmates);
         notifyDataSetChanged();
     }
 

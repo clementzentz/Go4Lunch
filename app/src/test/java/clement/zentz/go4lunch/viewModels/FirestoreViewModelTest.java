@@ -1,20 +1,36 @@
 package clement.zentz.go4lunch.viewModels;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import clement.zentz.go4lunch.models.workmate.Workmate;
+import clement.zentz.go4lunch.repository.FirestoreRepository;
+import clement.zentz.go4lunch.util.TestUtil;
 
-import static org.junit.Assert.*;
-
-/**
- * Restaurant local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
 public class FirestoreViewModelTest {
+
+    private Workmate WORKMATES2 = new Workmate(TestUtil.TEST_WORKMATE_2);
+
+    //system under test
+    private FirestoreViewModel mFirestoreViewModel;
+
+    @Mock
+    private FirestoreRepository mFirestoreRepository;
+
+    @Before
+    public void init(){
+        MockitoAnnotations.initMocks(this);
+        mFirestoreViewModel = new FirestoreViewModel(mFirestoreRepository);
+    }
+
     @Test
     public void addOrUpdateUserToFirestore() {
+        //Arrange
 
+        //Act
+
+        //Assert
     }
 }

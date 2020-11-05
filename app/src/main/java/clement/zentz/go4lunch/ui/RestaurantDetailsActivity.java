@@ -31,6 +31,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.rating.GlobalRating;
+import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
@@ -72,6 +74,9 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
     private SharedViewModel mSharedViewModel;
 
     private Workmate currentUserFromFirestore;
+
+    //global rating
+    private GlobalRating mGlobalRating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,10 +197,6 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
                     }
                     restaurantDetailsName.setText(restaurantWithDetails.getName());
                     restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
-
-                    if (restaurantWithDetails.getRating() != null){
-                        mRatingBar.setRating((float)((restaurantWithDetails.getRating().floatValue())*(3.0/5.0)));
-                    }
                 }
             }
         });
@@ -211,6 +212,30 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
             @Override
             public void onChanged(List<Workmate> workmateList) {
                 adapter.setWorkmateList(workmateList);
+            }
+        });
+
+        mFirestoreViewModel.receiveAllRatings4ThisRestaurant().observe(this, new Observer<List<Rating>>() {
+            @Override
+            public void onChanged(List<Rating> ratings) {
+                double ratingsSum = 0;
+                if (!ratings.isEmpty()){
+                    for (Rating rating : ratings){
+                        ratingsSum = ratingsSum + rating.getRating();
+                    }
+                    GlobalRating globalRating = new GlobalRating((float)ratingsSum/ratings.size(), restaurantId);
+                    mFirestoreViewModel.addOrUpdateGlobalRating(globalRating);
+                    mFirestoreViewModel.requestAllGlobalRatings();
+                }
+            }
+        });
+
+        mFirestoreViewModel.receiveGlobalRating4ThisRestaurant().observe(this, new Observer<GlobalRating>() {
+            @Override
+            public void onChanged(GlobalRating globalRating) {
+                if (globalRating != null){
+                    mRatingBar.setRating((float) globalRating.getGlobalRating());
+                }
             }
         });
     }
@@ -230,6 +255,10 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
         }
         if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID)){
             restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID);
+
+            mFirestoreViewModel.requestAllRatings4ThisRestaurant(restaurantId);
+            mFirestoreViewModel.requestGlobalRating4ThisRestaurant(restaurantId);
+
             mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE, 0);
             mFirestoreViewModel.requestWorkmatesWithRestaurantId(restaurantId);
         }
@@ -245,8 +274,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
         // Set the alarm to start at approximately 12:00 p.m.
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 17);
-        calendar.set(Calendar.MINUTE, 15);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
 
         if (alarmManager != null)
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
@@ -254,6 +283,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
 
     @Override
     public void onDialogPositiveClick(float rating) {
-        mFirestoreViewModel.addOrUpdateRestaurantRating(restaurantWithDetails.getPlaceId(), currentUserId, rating);
+        Rating rating1 = new Rating(rating, restaurantId, currentUserId);
+        mFirestoreViewModel.addOrUpdateUserRating(rating1);
+        mFirestoreViewModel.requestAllRatings4ThisRestaurant(restaurantId);
     }
 }

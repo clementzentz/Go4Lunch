@@ -4,10 +4,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,9 +20,6 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,10 +38,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
@@ -90,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
         mFirestoreViewModel.requestAllFirestoreWorkmates();
+        mFirestoreViewModel.requestAllGlobalRatings();
 
 //        getDataFromJsonFile();
 
@@ -267,36 +266,70 @@ public class MainActivity extends AppCompatActivity {
 
     private void getDataFromJsonFile(){
         try {
-            JSONObject obj = new JSONObject(loadJSONFromAsset());
+            JSONObject obj1 = new JSONObject(loadJSONFromAsset(1));
+            JSONObject obj2 = new JSONObject(loadJSONFromAsset(2));
+            JSONObject obj3 = new JSONObject(loadJSONFromAsset(3));
 
-            JSONArray m_jArry = obj.getJSONArray("data");
+            JSONArray m_iArry = obj1.getJSONArray("fakeWorkmates");
+            JSONArray m_jArry = obj2.getJSONArray("fakeRatings");
+            JSONArray m_kArry = obj3.getJSONArray("fakeGlobalRatings");
 
             for (int i = 0; i < m_jArry.length(); i++) {
-                JSONObject current_jo_inside = m_jArry.getJSONObject(i);
+                JSONObject current_jo_inside1 = m_iArry.getJSONObject(i);
 
                 Workmate workmate = new Workmate(
-                        current_jo_inside.getString("workmateId"),
-                        current_jo_inside.getString("workmateName"),
-                        current_jo_inside.getString("email"),
-                        current_jo_inside.getString("photoUrl"),
-                        current_jo_inside.getString("restaurantId"),
-                        current_jo_inside.getString("restaurantName"),
-                        current_jo_inside.getString("restaurantAddress"),
-                        Timestamp.now());
+                        current_jo_inside1.getString(Constants.WORKMATE_ID),
+                        current_jo_inside1.getString(Constants.WORKMATE_NAME),
+                        current_jo_inside1.getString(Constants.WORKMATE_EMAIL),
+                        current_jo_inside1.getString(Constants.WORKMATE_PHOTO_URL),
+                        current_jo_inside1.getString(Constants.RESTAURANT_ID),
+                        current_jo_inside1.getString(Constants.RESTAURANT_NAME),
+                        current_jo_inside1.getString(Constants.RESTAURANT_ADDRESS),
+                        Timestamp.now()
+                );
 
                 mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(workmate);
+            }
+
+            for (int j = 0; j < m_kArry.length(); j++){
+
+                JSONObject current_jo_inside2 = m_jArry.getJSONObject(j);
+
+                Rating rating = new Rating(
+                        (double)current_jo_inside2.get(Constants.RATING),
+                        current_jo_inside2.getString(Constants.RESTAURANT_ID),
+                        current_jo_inside2.getString(Constants.WORKMATE_ID)
+                );
+                mFirestoreViewModel.addOrUpdateUserRating(rating);
+            }
+
+            for (int k = 0; k < m_kArry.length(); k++){
+
+                JSONObject current_jo_inside3 = m_kArry.getJSONObject(k);
+
+                GlobalRating globalRating = new GlobalRating(
+                        (double)current_jo_inside3.get(Constants.GLOBAL_RATING),
+                        current_jo_inside3.getString(Constants.RESTAURANT_ID)
+                );
+                mFirestoreViewModel.addOrUpdateGlobalRating(globalRating);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public String loadJSONFromAsset() {
+    public String loadJSONFromAsset(int num) {
 
         String json = null;
-
+        InputStream is;
         try {
-            InputStream is = this.getAssets().open("fake_users.json");
+            if (num == 1){
+                is = this.getAssets().open("fake_workmates.json");
+            }else if (num == 2){
+                is = this.getAssets().open("fake_workmates_ratings.json");
+            }else {
+                is = this.getAssets().open("fake_workmates_global_ratings.json");
+            }
 
             int size = is.available();
 
@@ -306,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
 
             is.close();
 
-            json = new String(buffer, "UTF-8");
+            json = new String(buffer, StandardCharsets.UTF_8);
 
         } catch (IOException ex) {
             ex.printStackTrace();

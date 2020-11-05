@@ -27,9 +27,11 @@ public abstract class Constants  {
     //request_code
     public static final int CALL_PERMISSION_REQUEST_CODE = 2;
 
-    //Firestore map key
+    //Firestore map keys
     public static final String WORKMATES_COLLECTION = "Workmates";
     public static final String RATINGS_COLLECTION = "Ratings";
+    public static final String GLOBAL_RATINGS_COLLECTION = "GlobalRatings";
+
     public static final String WORKMATE_ID = "workmate_id";
     public static final String WORKMATE_NAME = "workmate_name";
     public static final String WORKMATE_EMAIL = "workmate_email";
@@ -37,8 +39,9 @@ public abstract class Constants  {
     public static final String RESTAURANT_ID = "restaurant_id";
     public static final String RESTAURANT_NAME = "restaurant_name";
     public static final String RESTAURANT_ADDRESS = "restaurant_address";
-    public static final String RESTAURANT_RATING = "restaurant_rating";
     public static final String TIMESTAMP = "timestamp";
+    public static final String RATING = "rating";
+    public static final String GLOBAL_RATING = "global_rating";
 
     //notifications
     public static final String CHANNEL_ID = "CHANNEL_ID";

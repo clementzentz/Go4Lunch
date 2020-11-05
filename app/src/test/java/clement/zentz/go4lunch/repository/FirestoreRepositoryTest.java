@@ -1,26 +1,33 @@
 package clement.zentz.go4lunch.repository;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
+import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.services.firestore.FirestoreApi;
-
+import clement.zentz.go4lunch.util.TestUtil;
 import static org.mockito.Mockito.mock;
 
 class FirestoreRepositoryTest {
 
-    private FirestoreRepositoryTest mFirestoreRepositoryTest;
+    private Workmate WORKMATE1 = new Workmate(TestUtil.TEST_WORKMATE_1);
+
+    private FirestoreRepository mFirestoreRepository;
 
     private FirestoreApi mFirestoreApi;
 
-    @BeforeClass
+    @Before
     public void initEach(){
         mFirestoreApi = mock(FirestoreApi.class);
-        mFirestoreRepositoryTest = new FirestoreRepositoryTest();
+        mFirestoreRepository = new FirestoreRepository();
     }
 
     @Test
-    public void insertWorkmate_returnRow() {
+    public void addOrUpdateCurrentUser_returnRow() throws Exception {
+        //Arrange
 
+        //Act
+
+        //Assert
     }
 }

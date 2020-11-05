@@ -34,7 +34,7 @@ import java.util.List;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.restaurantsAndWorkmates.RestaurantsAndWorkmates;
+import clement.zentz.go4lunch.models.mediatorsLiveData.RestaurantsAndWorkmates;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
 import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
@@ -59,7 +59,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastKnownLocation;
     private static final float DEFAULT_ZOOM = 14; //zoom
-    private static final LatLng defaultLocation = new LatLng(0,0);
+    private static final LatLng defaultLocation = new LatLng(48.801954,2.334204);
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -83,7 +83,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
     private void subscribeObservers(){
         RestaurantsAndWorkmates restaurantsAndWorkmates = new RestaurantsAndWorkmates(null, null);
-        MediatorLiveData<RestaurantsAndWorkmates> mediatorLiveData = new MediatorLiveData();
+        MediatorLiveData<RestaurantsAndWorkmates> mediatorLiveData = new MediatorLiveData<>();
         LiveData<List<Restaurant>> googlePlaceApiSource = mGooglePlacesViewModel.getRestaurants();
         LiveData<List<Workmate>> firebaseApiSource = mFirestoreViewModel.receiveAllFirestoreWorkmates();
         mediatorLiveData.addSource(googlePlaceApiSource, new Observer<List<Restaurant>>() {
