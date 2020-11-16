@@ -2,20 +2,23 @@ package clement.zentz.go4lunch.viewModels;
 
 import android.location.Location;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import java.util.List;
+
+import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.mediatorsLiveData.RestaurantsAndWorkmates;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 
 public class SharedViewModel extends ViewModel {
 
-    private MutableLiveData<Workmate> currentUser = new MutableLiveData<>();
-    private MutableLiveData<Location> locationUser = new MutableLiveData<>();
-    private MutableLiveData<Restaurant> placeAutocompleteRestaurant = new MutableLiveData<>();
+    private final MutableLiveData<Workmate> currentUser = new MutableLiveData<>();
+    private final MutableLiveData<Location> locationUser = new MutableLiveData<>();
+    private final MutableLiveData<Restaurant> placeAutocompleteRestaurant = new MutableLiveData<>();
 
-    private MediatorLiveData<RestaurantsAndWorkmates> mRestaurantsAndWorkmatesMediatorLiveData = new MediatorLiveData<>();
+    private MutableLiveData<List<Workmate>> allWorkmates = new MutableLiveData<>();
+    private MutableLiveData<List<GlobalRating>> allGlobalRatings = new MutableLiveData<>();
 
     public LiveData<Workmate> getCurrentUser(){
         return currentUser;
@@ -37,7 +40,19 @@ public class SharedViewModel extends ViewModel {
         placeAutocompleteRestaurant.setValue(restaurant);
     }
 
-    public MediatorLiveData<RestaurantsAndWorkmates> getMediatorLiveData(){
-        return mRestaurantsAndWorkmatesMediatorLiveData;
+    public LiveData<List<Workmate>> getAllWorkmates() {
+        return allWorkmates;
+    }
+
+    public void setAllWorkmates(List<Workmate> workmateList) {
+        allWorkmates.setValue(workmateList);
+    }
+
+    public LiveData<List<GlobalRating>> getAllGlobalRatings(){
+        return allGlobalRatings;
+    }
+
+    public void  setAllGlobalRatings(List<GlobalRating> globalRatingList){
+        allGlobalRatings.setValue(globalRatingList);
     }
 }

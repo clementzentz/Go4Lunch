@@ -87,12 +87,12 @@ public class MainActivity extends AppCompatActivity {
         mGooglePlaceViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
         mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
 
+        subscribeObservers();
+
         mFirestoreViewModel.requestAllFirestoreWorkmates();
         mFirestoreViewModel.requestAllGlobalRatings();
 
 //        getDataFromJsonFile();
-
-        subscribeObservers();
 
         getIncomingIntentFromAuthActivity();
 
@@ -155,11 +155,14 @@ public class MainActivity extends AppCompatActivity {
         mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(this, new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmateList) {
-//                if (!workmateList.isEmpty() && currentUser != null){
-//                    if (!workmateList.contains(currentUser)){
-//                        mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUser);
-//                    }
-//                }
+                mSharedViewModel.setAllWorkmates(workmateList);
+            }
+        });
+
+        mFirestoreViewModel.receiveAllGlobalRatings().observe(this, new Observer<List<GlobalRating>>() {
+            @Override
+            public void onChanged(List<GlobalRating> globalRatings) {
+                mSharedViewModel.setAllGlobalRatings(globalRatings);
             }
         });
 
@@ -274,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             JSONArray m_jArry = obj2.getJSONArray("fakeRatings");
             JSONArray m_kArry = obj3.getJSONArray("fakeGlobalRatings");
 
-            for (int i = 0; i < m_jArry.length(); i++) {
+            for (int i = 0; i < m_iArry.length(); i++) {
                 JSONObject current_jo_inside1 = m_iArry.getJSONObject(i);
 
                 Workmate workmate = new Workmate(
@@ -291,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                 mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(workmate);
             }
 
-            for (int j = 0; j < m_kArry.length(); j++){
+            for (int j = 0; j < m_jArry.length(); j++){
 
                 JSONObject current_jo_inside2 = m_jArry.getJSONObject(j);
 

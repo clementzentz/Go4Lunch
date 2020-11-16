@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import com.google.firebase.Timestamp;
 import java.util.List;
+import java.util.Objects;
 
 public class Workmate implements Parcelable {
 
@@ -155,5 +156,25 @@ public class Workmate implements Parcelable {
                 ", restaurantAddress='" + restaurantAddress + '\'' +
                 ", mTimestamp=" + mTimestamp +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Workmate workmate = (Workmate) o;
+        return Objects.equals(workmateId, workmate.workmateId) &&
+                Objects.equals(workmateName, workmate.workmateName) &&
+                Objects.equals(email, workmate.email) &&
+                Objects.equals(photoUrl, workmate.photoUrl) &&
+                Objects.equals(restaurantId, workmate.restaurantId) &&
+                Objects.equals(restaurantName, workmate.restaurantName) &&
+                Objects.equals(restaurantAddress, workmate.restaurantAddress) &&
+                Objects.equals(mTimestamp, workmate.mTimestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(workmateId, workmateName, email, photoUrl, restaurantId, restaurantName, restaurantAddress, mTimestamp);
     }
 }

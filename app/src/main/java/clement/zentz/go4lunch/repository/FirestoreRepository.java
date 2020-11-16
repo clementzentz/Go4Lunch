@@ -34,8 +34,8 @@ public class FirestoreRepository {
         return mFirestoreApi.receiveAllFirestoreWorkmates();
     }
 
-    public LiveData<List<Workmate>> receiveWorkmatesWithRestaurantId(){
-        return mFirestoreApi.receiveWorkmatesWithRestaurantId();
+    public LiveData<List<Workmate>> receiveAllWorkmates4ThisRestaurant(){
+        return mFirestoreApi.receiveAllWorkmates4ThisRestaurant();
     }
 
     public LiveData<Workmate> receiveCurrentUserWithWorkmateId(){

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -19,9 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import clement.zentz.go4lunch.models.mediatorsLiveData.WorkmatesAndGlobalRatings;
 import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.R;
@@ -38,7 +35,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
 
     private GooglePlacesViewModel mGooglePlacesViewModel;
     private SharedViewModel mSharedViewModel;
-    private FirestoreViewModel mFirestoreViewModel;
+    private FirestoreViewModel firestoreViewModel;
 
     private RecyclerView recyclerView;
     private ListRestaurantAdapter adapter;
@@ -46,6 +43,13 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     private Workmate currentUser;
 
     private static final String TAG = "ListRestaurantFragment";
+
+    private boolean hasWorkmates=false, hasRestaurants=false, hasGlobalRatings=false;
+    private List<Workmate> allWorkmates;
+    private List<Restaurant> allRestaurants;
+    private List<GlobalRating> allGlobalRatings;
+
+    MediatorLiveData<Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>>> mediatorLiveData = new MediatorLiveData<>();
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -63,20 +67,56 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
         super.onViewCreated(view, savedInstanceState);
         mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
-        mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
+        firestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
 
-        subscribeFirebaseObserver();
-        subscribeGooglePlaceObserver();
+        subscribeObservers();
     }
 
-    private void subscribeGooglePlaceObserver(){
+    private void subscribeObservers(){
 
-        mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mediatorLiveData.addSource(firestoreViewModel.receiveAllFirestoreWorkmates(), new Observer<List<Workmate>>() {
             @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                adapter.setRestaurantList(restaurants);
+            public void onChanged(List<Workmate> workmates) {
+                if (workmates != null){
+                    hasWorkmates = true;
+                    allWorkmates = workmates;
+                    updateIfAll();
+                }
             }
         });
+
+        mediatorLiveData.addSource(firestoreViewModel.receiveAllGlobalRatings(), new Observer<List<GlobalRating>>() {
+            @Override
+            public void onChanged(List<GlobalRating> globalRatings) {
+                if (globalRatings != null){
+                    hasGlobalRatings = true;
+                    allGlobalRatings = globalRatings;
+                    updateIfAll();
+                }
+            }
+        });
+
+        mediatorLiveData.addSource(mGooglePlacesViewModel.getRestaurants(), new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurantList) {
+                if (restaurantList != null){
+                    hasRestaurants = true;
+                    allRestaurants = restaurantList;
+                    updateIfAll();
+                }
+            }
+        });
+
+        mediatorLiveData.observe(getViewLifecycleOwner(), new Observer<Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>>>() {
+                    @Override
+                    public void onChanged(Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>> pairListPair) {
+                        adapter.setAllWorkmates(pairListPair.first.first);
+                        adapter.setAllGlobalRatings(pairListPair.first.second);
+                        adapter.setRestaurantList(pairListPair.second);
+                    }
+        });
+
+        mSharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
 
         mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
             @Override
@@ -98,39 +138,10 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
         });
     }
 
-    private void subscribeFirebaseObserver(){
-        WorkmatesAndGlobalRatings workmatesAndGlobalRatings = new WorkmatesAndGlobalRatings(null, null);
-        MediatorLiveData<WorkmatesAndGlobalRatings> mediatorLiveData = new MediatorLiveData<>();
-        mediatorLiveData.addSource(mFirestoreViewModel.receiveAllFirestoreWorkmates(), new Observer<List<Workmate>>() {
-            @Override
-            public void onChanged(List<Workmate> workmates) {
-                if (workmates != null){
-                    workmatesAndGlobalRatings.setWorkmateList(new ArrayList<>(workmates));
-                    mediatorLiveData.setValue(workmatesAndGlobalRatings);
-                }
-            }
-        });
-        mediatorLiveData.addSource(mFirestoreViewModel.receiveAllGlobalRatings(), new Observer<List<GlobalRating>>() {
-            @Override
-            public void onChanged(List<GlobalRating> globalRatings) {
-                if (globalRatings != null){
-                    workmatesAndGlobalRatings.setGlobalRatings(new ArrayList<>(globalRatings));
-                    mediatorLiveData.setValue(workmatesAndGlobalRatings);
-                }
-            }
-        });
-
-        mediatorLiveData.observe(getViewLifecycleOwner(), new Observer<WorkmatesAndGlobalRatings>() {
-                    @Override
-                    public void onChanged(WorkmatesAndGlobalRatings workmatesAndGlobalRatings) {
-                        if (workmatesAndGlobalRatings.getWorkmateList() != null && workmatesAndGlobalRatings.getGlobalRatings() != null){
-                            adapter.setWorkmatesList(workmatesAndGlobalRatings.getWorkmateList());
-                            adapter.setAllGlobalRatings(workmatesAndGlobalRatings.getGlobalRatings());
-                        }
-                    }
-        });
-
-        mSharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
+    private void updateIfAll(){
+        if (hasWorkmates && hasGlobalRatings && hasRestaurants){
+            mediatorLiveData.postValue(Pair.create(Pair.create(allWorkmates, allGlobalRatings), allRestaurants));
+        }
     }
 
     private void setUpRecyclerView(){

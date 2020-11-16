@@ -10,7 +10,6 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -18,12 +17,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
+import clement.zentz.go4lunch.util.convert.ConvertUtil;
 
 import static clement.zentz.go4lunch.util.Constants.CHANNEL_ID;
 import static clement.zentz.go4lunch.util.Constants.notificationId;
@@ -31,11 +30,13 @@ import static clement.zentz.go4lunch.util.Constants.notificationId;
 public class AlertReceiver extends BroadcastReceiver {
 
     private Workmate currentUser;
-    private List<Workmate> workmatesJoining = new ArrayList<>();
+    private final List<Workmate> workmatesJoining = new ArrayList<>();
     private String workmatesJoiningNames;
 
     @Override
     public void onReceive(Context context, Intent intent) {
+
+        ConvertUtil convertUtil = new ConvertUtil();
 
         if (intent.hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID) && intent.hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID)){
             String userId = intent.getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID);
@@ -46,13 +47,13 @@ public class AlertReceiver extends BroadcastReceiver {
 
             currentUserTask.addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.getData() != null){
-                    currentUser = convertMapToWorkmate(documentSnapshot.getData());
+                    currentUser = convertUtil.convertMapToWorkmate(documentSnapshot.getData());
                 }
             });
 
             workmatesJoiningTask.addOnSuccessListener(queryDocumentSnapshots -> {
                 for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots){
-                    workmatesJoining.add(convertMapToWorkmate(queryDocumentSnapshot.getData()));
+                    workmatesJoining.add(convertUtil.convertMapToWorkmate(queryDocumentSnapshot.getData()));
                     for (Workmate workmate : workmatesJoining){
                         if (workmatesJoiningNames != null){
                             workmatesJoiningNames = workmatesJoiningNames +" "+ workmate.getWorkmateName();
@@ -94,17 +95,5 @@ public class AlertReceiver extends BroadcastReceiver {
                 }
             });
         }
-    }
-
-    private Workmate convertMapToWorkmate (Map<String, Object> map){
-        return new Workmate(
-                (String)map.get(Constants.WORKMATE_ID),
-                (String)map.get(Constants.WORKMATE_NAME),
-                (String)map.get(Constants.WORKMATE_EMAIL),
-                (String)map.get(Constants.WORKMATE_PHOTO_URL),
-                (String)map.get(Constants.RESTAURANT_ID),
-                (String)map.get(Constants.RESTAURANT_NAME),
-                (String)map.get(Constants.RESTAURANT_ADDRESS),
-                (Timestamp)map.get(Constants.TIMESTAMP));
     }
 }

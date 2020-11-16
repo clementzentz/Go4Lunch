@@ -22,23 +22,26 @@ import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
+import clement.zentz.go4lunch.util.convert.ConvertUtil;
 
 public class FirestoreApi {
 
     private static final String TAG = "FirestoreApi";
 
-    private MutableLiveData<List<Workmate>> allWorkmates;
-    private MutableLiveData<List<Workmate>> workmatesWithRestaurantId;
-    private MutableLiveData<Workmate> currentUserWithWorkmateId;
+    private final MutableLiveData<List<Workmate>> allWorkmates;
+    private final MutableLiveData<List<Workmate>> workmatesWithRestaurantId;
+    private final MutableLiveData<Workmate> currentUserWithWorkmateId;
 
-    private MutableLiveData<List<Rating>> allRatings;
-    private MutableLiveData<GlobalRating> globalRating;
-    private MutableLiveData<List<GlobalRating>> allGlobalRatings;
+    private final MutableLiveData<List<Rating>> allRatings;
+    private final MutableLiveData<GlobalRating> globalRating;
+    private final MutableLiveData<List<GlobalRating>> allGlobalRatings;
 
-    private FirebaseFirestore db;
+    private final FirebaseFirestore db;
     private static FirestoreApi instance;
+    private final ConvertUtil convertUtil;
 
     public FirestoreApi(){
+        convertUtil = new ConvertUtil();
         db = FirebaseFirestore.getInstance();
         allWorkmates = new MutableLiveData<>();
         workmatesWithRestaurantId = new MutableLiveData<>();
@@ -59,7 +62,7 @@ public class FirestoreApi {
         return allWorkmates;
     }
 
-    public LiveData<List<Workmate>> receiveWorkmatesWithRestaurantId(){
+    public LiveData<List<Workmate>> receiveAllWorkmates4ThisRestaurant(){
         return workmatesWithRestaurantId;
     }
 
@@ -89,7 +92,7 @@ public class FirestoreApi {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d(TAG, document.getId() + " => " + document.getData());
-                            workmateList.add(convertMapToWorkmate(document.getData()));
+                            workmateList.add(convertUtil.convertMapToWorkmate(document.getData()));
                         }
                         allWorkmates.postValue(workmateList);
                     } else {
@@ -109,7 +112,7 @@ public class FirestoreApi {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d(TAG, document.getId() + " => " + document.getData());
-                            workmateList.add(convertMapToWorkmate(document.getData()));
+                            workmateList.add(convertUtil.convertMapToWorkmate(document.getData()));
                         }
                         workmatesWithRestaurantId.postValue(workmateList);
                     } else {
@@ -129,7 +132,7 @@ public class FirestoreApi {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d(TAG, document.getId() + " => " + document.getData());
-                            workmateList.add(convertMapToWorkmate(document.getData()));
+                            workmateList.add(convertUtil.convertMapToWorkmate(document.getData()));
                         }if (!workmateList.isEmpty()){
                             currentUserWithWorkmateId.postValue(workmateList.get(0));
                         }
@@ -149,7 +152,7 @@ public class FirestoreApi {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()){
                             for (QueryDocumentSnapshot document : task.getResult()){
-                                ratingList.add(convertMapToRating(document.getData()));
+                                ratingList.add(convertUtil.convertMapToRating(document.getData()));
                             }
                             allRatings.postValue(ratingList);
                         }else {
@@ -170,7 +173,7 @@ public class FirestoreApi {
                         for (QueryDocumentSnapshot document : task.getResult()){
                             Log.e(TAG, document.getId() + " => "+document.getData());
                             Log.e(TAG, "onComplete: test2");
-                            globalRating.postValue(convertMapToGlobalRating(document.getData()));
+                            globalRating.postValue(convertUtil.convertMapToGlobalRating(document.getData()));
                         }
                     }else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
@@ -191,7 +194,7 @@ public class FirestoreApi {
                         if (task.isSuccessful()){
                             for (QueryDocumentSnapshot document : task.getResult()){
                                 Log.e(TAG, "onComplete: test");
-                                globalRatingList.add(convertMapToGlobalRating(document.getData()));
+                                globalRatingList.add(convertUtil.convertMapToGlobalRating(document.getData()));
                             }
                             allGlobalRatings.postValue(globalRatingList);
                         }else {
@@ -224,7 +227,7 @@ public class FirestoreApi {
         ratingMap.put(Constants.RATING, rating.getRating());
         ratingMap.put(Constants.RESTAURANT_ID, rating.getRestaurantId());
         ratingMap.put(Constants.WORKMATE_ID, rating.getWorkmatesId());
-        db.collection(Constants.RATINGS_COLLECTION).document(rating.getRestaurantId()+rating.getWorkmatesId())
+        db.collection(Constants.RATINGS_COLLECTION).document(rating.getWorkmatesId().substring(0,14)+rating.getRestaurantId().substring(0,14))
                 .set(ratingMap)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
@@ -238,31 +241,5 @@ public class FirestoreApi {
                 .set(globalRatingMap)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
-    }
-
-    private Workmate convertMapToWorkmate (Map<String, Object> map){
-        return new Workmate(
-                (String)map.get(Constants.WORKMATE_ID),
-                (String)map.get(Constants.WORKMATE_NAME),
-                (String)map.get(Constants.WORKMATE_EMAIL),
-                (String)map.get(Constants.WORKMATE_PHOTO_URL),
-                (String)map.get(Constants.RESTAURANT_ID),
-                (String)map.get(Constants.RESTAURANT_NAME),
-                (String)map.get(Constants.RESTAURANT_ADDRESS),
-                (Timestamp)map.get(Constants.TIMESTAMP));
-    }
-
-    private Rating convertMapToRating(Map<String, Object> map){
-        return new Rating(
-                (double) map.get(Constants.RATING),
-                (String)map.get(Constants.RESTAURANT_ID),
-                (String)map.get(Constants.WORKMATE_ID));
-    }
-
-    private GlobalRating convertMapToGlobalRating(Map<String, Object> map){
-        return new GlobalRating(
-                (double)map.get(Constants.GLOBAL_RATING),
-                (String)map.get(Constants.RESTAURANT_ID)
-        );
     }
 }

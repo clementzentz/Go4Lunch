@@ -208,7 +208,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
             }
         });
 
-        mFirestoreViewModel.receiveWorkmatesWithRestaurantId().observe(this, new Observer<List<Workmate>>() {
+        mFirestoreViewModel.receiveAllWorkmates4ThisRestaurant().observe(this, new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmateList) {
                 adapter.setWorkmateList(workmateList);
@@ -235,6 +235,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
             public void onChanged(GlobalRating globalRating) {
                 if (globalRating != null){
                     mRatingBar.setRating((float) globalRating.getGlobalRating());
+                }else {
+                    mRatingBar.setVisibility(View.GONE);
                 }
             }
         });

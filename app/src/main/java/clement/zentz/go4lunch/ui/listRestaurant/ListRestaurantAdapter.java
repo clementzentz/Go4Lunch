@@ -28,9 +28,9 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
     public SearchViewListDialogToListRestaurantAdapter mSearchViewListDialogToListRestaurantAdapter;
-    private List<Restaurant> mRestaurantList;
-    private List<Workmate> allWorkmates;
-    private List<GlobalRating> allGlobalRatings;
+    private final List<Restaurant> mRestaurantList;
+    private final List<Workmate> allWorkmates;
+    private final List<GlobalRating> allGlobalRatings;
 
     public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
@@ -95,20 +95,13 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             if (mRestaurantList.get(position).getPlaceId().equals(workmate.getRestaurantId())){
                 holder.workmatesCount.setText("("+ (count += 1) +")");
             }
-        }if (count == 0){
-            holder.workmatesCount.setVisibility(View.GONE);
-            holder.workmatesBtn.setVisibility(View.GONE);
         }
 
         for (GlobalRating globalRating: allGlobalRatings){
-            if (globalRating.getRestaurantId().equals(mRestaurantList.get(position).getPlaceId())){
-                holder.ratingBar.setRating((float)globalRating.getGlobalRating());
-            }else {
-                holder.ratingBar.setVisibility(View.GONE);
+            if (globalRating.getRestaurantId().equals(mRestaurantList.get(position).getPlaceId())) {
+                holder.ratingBar.setRating((float) globalRating.getGlobalRating());
             }
         }
-
-
 
         if (mRestaurantList.get(position).getOpeningHours() == null) {
             holder.restaurantOpenNow.setVisibility(View.GONE);
@@ -121,11 +114,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     @Override
     public int getItemCount() {
-        if (mRestaurantList != null){
-            return mRestaurantList.size();
-        }else {
-            return 0;
-        }
+        return mRestaurantList.size();
     }
 
     public void setRestaurantList(List<Restaurant> restaurants){
@@ -140,7 +129,7 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
         notifyDataSetChanged();
     }
 
-    public void setWorkmatesList(List<Workmate> workmates){
+    public void setAllWorkmates(List<Workmate> workmates){
         allWorkmates.clear();
         allWorkmates.addAll(workmates);
         notifyDataSetChanged();

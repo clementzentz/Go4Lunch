@@ -27,8 +27,8 @@ public class FirestoreViewModel extends ViewModel {
         return mFirestoreRepository.receiveAllFirestoreWorkmates();
     }
 
-    public LiveData<List<Workmate>> receiveWorkmatesWithRestaurantId(){
-        return mFirestoreRepository.receiveWorkmatesWithRestaurantId();
+    public LiveData<List<Workmate>> receiveAllWorkmates4ThisRestaurant(){
+        return mFirestoreRepository.receiveAllWorkmates4ThisRestaurant();
     }
 
     public LiveData<Workmate> receiveCurrentUserWithWorkmateId(){
