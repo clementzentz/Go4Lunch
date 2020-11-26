@@ -17,7 +17,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
@@ -110,9 +112,9 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
         mediatorLiveData.observe(getViewLifecycleOwner(), new Observer<Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>>>() {
                     @Override
                     public void onChanged(Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>> pairListPair) {
+                        adapter.setAllRestaurants(pairListPair.second);
                         adapter.setAllWorkmates(pairListPair.first.first);
                         adapter.setAllGlobalRatings(pairListPair.first.second);
-                        adapter.setRestaurantList(pairListPair.second);
                     }
         });
 
@@ -132,7 +134,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
                             restaurants.add(restaurant);
                         }
                     }
-                    adapter.setRestaurantList(restaurants);
+                    adapter.setAllRestaurants(restaurants);
                 }
             }
         });

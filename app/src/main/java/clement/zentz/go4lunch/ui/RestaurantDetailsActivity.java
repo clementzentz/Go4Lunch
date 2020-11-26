@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.rating.GlobalRating;
@@ -75,9 +76,6 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
 
     private Workmate currentUserFromFirestore;
 
-    //global rating
-    private GlobalRating mGlobalRating;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,7 +92,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
         toolbar = findViewById(R.id.restaurant_details_toolbar);
         toolbar.setContentInsetStartWithNavigation(0);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         restaurantDetailsName = findViewById(R.id.restaurant_details_name_txt);
         restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
@@ -193,6 +191,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
                                 + "&maxwidth=200"
                                 + "&maxheight=200"
                                 + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
+                                .resize(200, 200)
+                                .centerCrop()
                                 .into(restaurantImg);
                     }
                     restaurantDetailsName.setText(restaurantWithDetails.getName());
@@ -219,7 +219,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
             @Override
             public void onChanged(List<Rating> ratings) {
                 double ratingsSum = 0;
-                if (!ratings.isEmpty()){
+                if (!ratings.isEmpty() && ratings != null){
                     for (Rating rating : ratings){
                         ratingsSum = ratingsSum + rating.getRating();
                     }
@@ -258,8 +258,10 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
         if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID)){
             restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID);
 
-            mFirestoreViewModel.requestAllRatings4ThisRestaurant(restaurantId);
-            mFirestoreViewModel.requestGlobalRating4ThisRestaurant(restaurantId);
+            if (restaurantId != null){
+                mFirestoreViewModel.requestAllRatings4ThisRestaurant(restaurantId);
+                mFirestoreViewModel.requestGlobalRating4ThisRestaurant(restaurantId);
+            }
 
             mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE, 0);
             mFirestoreViewModel.requestWorkmatesWithRestaurantId(restaurantId);

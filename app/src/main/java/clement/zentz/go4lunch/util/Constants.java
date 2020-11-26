@@ -1,12 +1,14 @@
 package clement.zentz.go4lunch.util;
 
+import clement.zentz.go4lunch.BuildConfig;
+
 public abstract class Constants  {
 
     public static String APP_NAME = "Go4Lunch";
 
     //api
     public static final int NETWORK_TIMEOUT = 10000;
-    public static final String API_KEY = "AIzaSyB-Enm6PIJRhyaQuTuMswPetf12jOI-_Iw";
+    public static final String API_KEY = BuildConfig.API_KEY;
 //    public static final String build_time = ;
 
     //nearbySearch

@@ -71,7 +71,7 @@ public class SearchViewListDialogFragment extends DialogFragment implements Sear
                             restaurants.add(restaurant);
                         }
                     }
-                    adapter.setRestaurantList(restaurants);
+                    adapter.setAllRestaurants(restaurants);
                 }
             }
         });

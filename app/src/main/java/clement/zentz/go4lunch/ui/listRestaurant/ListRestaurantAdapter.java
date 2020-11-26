@@ -28,22 +28,29 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
     public SearchViewListDialogToListRestaurantAdapter mSearchViewListDialogToListRestaurantAdapter;
-    private final List<Restaurant> mRestaurantList;
+
+    private final List<Restaurant> allRestaurants;
     private final List<Workmate> allWorkmates;
+    private final List<Workmate> allWorkmates4ThisRestaurant;
     private final List<GlobalRating> allGlobalRatings;
+    private final List<GlobalRating> globalRating4ThisRestaurants;
 
     public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
         mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
         allWorkmates = new ArrayList<>();
-        mRestaurantList = new ArrayList<>();
+        allWorkmates4ThisRestaurant = new ArrayList<>();
+        allRestaurants = new ArrayList<>();
         allGlobalRatings = new ArrayList<>();
+        globalRating4ThisRestaurants = new ArrayList<>();
     }
 
     public ListRestaurantAdapter(SearchViewListDialogToListRestaurantAdapter searchViewListDialogToListRestaurantAdapter){
         mSearchViewListDialogToListRestaurantAdapter = searchViewListDialogToListRestaurantAdapter;
         allWorkmates = new ArrayList<>();
-        mRestaurantList = new ArrayList<>();
+        allWorkmates4ThisRestaurant = new ArrayList<>();
+        allRestaurants = new ArrayList<>();
         allGlobalRatings = new ArrayList<>();
+        globalRating4ThisRestaurants = new ArrayList<>();
     }
 
     @NonNull
@@ -56,26 +63,25 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
     @Override
     public void onBindViewHolder(@NonNull ListRestaurantAdapter.ListRestaurantViewHolder holder, int position) {
 
-        holder.restaurantName.setText(mRestaurantList.get(position).getName());
+        holder.restaurantName.setText(allRestaurants.get(position).getName());
 
-        holder.restaurantTypeAddress.setText(mRestaurantList.get(position).getVicinity());
+        holder.restaurantTypeAddress.setText(allRestaurants.get(position).getVicinity());
 
         holder.itemView.setOnClickListener(view -> {
-            if (mRestaurantList.get(position) != null){
+            if (allRestaurants.get(position) != null){
                 if (mListRestaurantFragmentToListRestaurantAdapter != null){
-                    mListRestaurantFragmentToListRestaurantAdapter.launchDetailRestaurantActivity(mRestaurantList.get(position));
+                    mListRestaurantFragmentToListRestaurantAdapter.launchDetailRestaurantActivity(allRestaurants.get(position));
                 }else if (mSearchViewListDialogToListRestaurantAdapter != null){
-                    mSearchViewListDialogToListRestaurantAdapter.onRecyclerViewItemClick(mRestaurantList.get(position));
+                    mSearchViewListDialogToListRestaurantAdapter.onRecyclerViewItemClick(allRestaurants.get(position));
                 }
             }
         });
 
-
         String photoRef = null;
-        if (mRestaurantList.get(position).getPhotos() != null){
-            for (int i=0; i<mRestaurantList.get(position).getPhotos().size() && photoRef == null; i++){
-                if (mRestaurantList.get(position).getPhotos().get(i) != null){
-                    photoRef = mRestaurantList.get(position).getPhotos().get(i).getPhotoReference();
+        if (allRestaurants.get(position).getPhotos() != null){
+            for (int i = 0; i< allRestaurants.get(position).getPhotos().size() && photoRef == null; i++){
+                if (allRestaurants.get(position).getPhotos().get(i) != null){
+                    photoRef = allRestaurants.get(position).getPhotos().get(i).getPhotoReference();
                 }
             }
             if (photoRef != null){
@@ -90,22 +96,31 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
             }
         }
 
-        int count = 0;
         for (Workmate workmate : allWorkmates){
-            if (mRestaurantList.get(position).getPlaceId().equals(workmate.getRestaurantId())){
-                holder.workmatesCount.setText("("+ (count += 1) +")");
+            if (allRestaurants.get(position).getPlaceId().equals(workmate.getRestaurantId())){
+                allWorkmates4ThisRestaurant.add(workmate);
+            }else {
+                allWorkmates4ThisRestaurant.remove(workmate);
             }
         }
+        holder.workmatesCount.setText(String.valueOf(allWorkmates4ThisRestaurant.size()));
 
         for (GlobalRating globalRating: allGlobalRatings){
-            if (globalRating.getRestaurantId().equals(mRestaurantList.get(position).getPlaceId())) {
-                holder.ratingBar.setRating((float) globalRating.getGlobalRating());
+            if (globalRating.getRestaurantId().equals(allRestaurants.get(position).getPlaceId())) {
+                globalRating4ThisRestaurants.add(globalRating);
+            }else {
+                globalRating4ThisRestaurants.remove(globalRating);
             }
         }
+        if (!globalRating4ThisRestaurants.isEmpty()){
+            holder.ratingBar.setRating((float) globalRating4ThisRestaurants.get(0).getGlobalRating());
+        }else{
+            holder.ratingBar.setRating(0f);
+        }
 
-        if (mRestaurantList.get(position).getOpeningHours() == null) {
+        if (allRestaurants.get(position).getOpeningHours() == null) {
             holder.restaurantOpenNow.setVisibility(View.GONE);
-        }else if (mRestaurantList.get(position).getOpeningHours().getOpenNow()){
+        }else if (allRestaurants.get(position).getOpeningHours().getOpenNow()){
             holder.restaurantOpenNow.setText("Opened now.");
         }else {
             holder.restaurantOpenNow.setText("Closed now.");
@@ -114,12 +129,12 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<ListRestaurantAd
 
     @Override
     public int getItemCount() {
-        return mRestaurantList.size();
+        return allRestaurants.size();
     }
 
-    public void setRestaurantList(List<Restaurant> restaurants){
-        mRestaurantList.clear();
-        mRestaurantList.addAll(restaurants);
+    public void setAllRestaurants(List<Restaurant> restaurants){
+        allRestaurants.clear();
+        allRestaurants.addAll(restaurants);
         notifyDataSetChanged();
     }
 

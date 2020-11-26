@@ -25,18 +25,19 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
             // These values are defined only for the release build, which
             // is typically used for full builds and continuous builds.
-            buildConfigField("String", "BUILD_TIME", "6263")
-            resValue("string", "build_time", "6263")
+            buildConfigField("String", "API_KEY", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
+            resValue("string", "api_key", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
         }
         debug {
             // Use static values for incremental builds to ensure that
             // resource files and BuildConfig aren't rebuilt with each run.
             // If these rebuild dynamically, they can interfere with
             // Apply Changes as well as Gradle UP-TO-DATE checks.
-            buildConfigField("String", "BUILD_TIME", "\"0\"")
-            resValue("string", "build_time", "0")
+            buildConfigField("String", "API_KEY", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
+            resValue("string", "api_key", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
         }
     }
 }
@@ -67,8 +68,8 @@ dependencies {
 
     // FirebaseUI
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
-    implementation 'com.google.firebase:firebase-auth:20.0.0'
-    implementation 'com.google.android.gms:play-services-auth:18.1.0'
+    implementation 'com.google.firebase:firebase-auth:20.0.1'
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
     // Required only if Facebook login support is required
     // Find the latest Facebook SDK releases here: https://goo.gl/Ce5L94
