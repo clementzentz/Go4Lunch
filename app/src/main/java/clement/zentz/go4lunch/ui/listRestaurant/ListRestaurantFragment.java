@@ -1,6 +1,7 @@
 package clement.zentz.go4lunch.ui.listRestaurant;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -17,9 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
@@ -35,14 +34,16 @@ import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
 public class ListRestaurantFragment extends Fragment implements ListRestaurantFragmentToListRestaurantAdapter {
 
-    private GooglePlacesViewModel mGooglePlacesViewModel;
-    private SharedViewModel mSharedViewModel;
+    private GooglePlacesViewModel googlePlacesViewModel;
+    private SharedViewModel sharedViewModel;
     private FirestoreViewModel firestoreViewModel;
 
     private RecyclerView recyclerView;
     private ListRestaurantAdapter adapter;
 
     private Workmate currentUser;
+    private Location userLocation;
+    private String nextPageToken;
 
     private static final String TAG = "ListRestaurantFragment";
 
@@ -67,8 +68,8 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        googlePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
         firestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
 
         subscribeObservers();
@@ -98,7 +99,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
             }
         });
 
-        mediatorLiveData.addSource(mGooglePlacesViewModel.getRestaurants(), new Observer<List<Restaurant>>() {
+        mediatorLiveData.addSource(googlePlacesViewModel.getRestaurants(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurantList) {
                 if (restaurantList != null){
@@ -118,9 +119,18 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
                     }
         });
 
-        mSharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
+        sharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
 
-        mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
+        sharedViewModel.getLocationUser().observe(getViewLifecycleOwner(), new Observer<Location>() {
+            @Override
+            public void onChanged(Location location) {
+                if (location != null){
+                    userLocation = location;
+                }
+            }
+        });
+
+        googlePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
             @Override
             public void onChanged(List<Prediction> predictions) {
                 if (predictions != null){
@@ -138,6 +148,15 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
                 }
             }
         });
+
+        googlePlacesViewModel.getPageToken().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                if (s != null){
+                    nextPageToken = s;
+                }
+            }
+        });
     }
 
     private void updateIfAll(){
@@ -150,6 +169,23 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         adapter = new ListRestaurantAdapter(this);
         recyclerView.setAdapter(adapter);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (recyclerView.canScrollVertically(1)){
+                    //search the next page
+                    if (userLocation != null && nextPageToken != null){
+                        googlePlacesViewModel.nearbySearchRestaurants(
+                                userLocation.getLatitude()+" , "+userLocation.getLongitude(),
+                                String.valueOf(Constants.RADIUS),
+                                Constants.PLACES_TYPE,
+                                nextPageToken
+                        );
+                    }
+                }
+            }
+        });
     }
 
     @Override

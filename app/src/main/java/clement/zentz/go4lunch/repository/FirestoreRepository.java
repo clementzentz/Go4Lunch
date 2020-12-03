@@ -9,7 +9,7 @@ import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.services.firestore.FirestoreApi;
 
-public class FirestoreRepository {
+public class  FirestoreRepository {
 
     private static FirestoreRepository instance;
     private FirestoreApi mFirestoreApi;

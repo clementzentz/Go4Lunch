@@ -28,16 +28,14 @@ android {
 
             // These values are defined only for the release build, which
             // is typically used for full builds and continuous builds.
-            buildConfigField("String", "API_KEY", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
-            resValue("string", "api_key", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
+            buildConfigField("String", "API_KEY", API_KEY)
         }
         debug {
             // Use static values for incremental builds to ensure that
             // resource files and BuildConfig aren't rebuilt with each run.
             // If these rebuild dynamically, they can interfere with
             // Apply Changes as well as Gradle UP-TO-DATE checks.
-            buildConfigField("String", "API_KEY", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
-            resValue("string", "api_key", "\"AIzaSyBYsNj_Q8WcwuSk-jpVSCXT8lvr6xa37gE\"")
+            buildConfigField("String", "API_KEY", API_KEY)
         }
     }
 }

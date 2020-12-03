@@ -7,9 +7,8 @@ public abstract class Constants  {
     public static String APP_NAME = "Go4Lunch";
 
     //api
-    public static final int NETWORK_TIMEOUT = 10000;
+    public static final int NETWORK_TIMEOUT = 3000;
     public static final String API_KEY = BuildConfig.API_KEY;
-//    public static final String build_time = ;
 
     //nearbySearch
     public static final int RADIUS = 1000;

@@ -18,7 +18,8 @@ public interface GooglePlacesApi {
             @Query(value = "location", encoded = true) String location, //location of the current user
             @Query("radius") String radius, //radius of the restaurant to be search
             //optional parameters
-            @Query("type") String type //type of searched elements
+            @Query("type") String type, //type of searched elements
+            @Query("pageToken") String pageToken
     );
 
     @GET("details/json")

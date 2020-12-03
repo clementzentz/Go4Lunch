@@ -30,16 +30,17 @@ public class GooglePlacesAPIClient {
     private static GooglePlacesAPIClient instance;
 
     //nearbySearchRequest
-    private MutableLiveData<List<Restaurant>> mRestaurants;
+    private final MutableLiveData<List<Restaurant>> mRestaurants;
+    private final MutableLiveData<String> mPageToken;
     private RetrieveNearbyRestaurantsRunnable mRetrieveNearbyRestaurantsRunnable;
 
     //placeDetailsRequest
-    private MutableLiveData<Restaurant> mRestaurantDetails;
-    private MutableLiveData<Restaurant> mRestaurantDetails4PlaceAutocomplete;
+    private final MutableLiveData<Restaurant> mRestaurantDetails;
+    private final MutableLiveData<Restaurant> mRestaurantDetails4PlaceAutocomplete;
     private RetrieveRestaurantDetailsRunnable mRetrieveRestaurantDetailsRunnable;
 
     //placeAutocompleteRequest
-    private MutableLiveData<List<Prediction>> predictionsPlaceAutocomplete;
+    private final MutableLiveData<List<Prediction>> predictionsPlaceAutocomplete;
     private RetrievePlaceAutoCompleteRestaurantRunnable mRetrievePlaceAutoCompleteRestaurantRunnable;
 
     public static GooglePlacesAPIClient getInstance(){
@@ -51,6 +52,7 @@ public class GooglePlacesAPIClient {
 
     private GooglePlacesAPIClient(){
         mRestaurants = new MutableLiveData<>();
+        mPageToken = new MutableLiveData<>();
         mRestaurantDetails = new MutableLiveData<>();
         predictionsPlaceAutocomplete = new MutableLiveData<>();
         mRestaurantDetails4PlaceAutocomplete = new MutableLiveData<>();
@@ -58,6 +60,10 @@ public class GooglePlacesAPIClient {
 
     public LiveData<List<Restaurant>> getRestaurants(){
         return  mRestaurants;
+    }
+
+    public LiveData<String> getPageToken(){
+        return mPageToken;
     }
 
     public LiveData<Restaurant> getRestaurantDetails(){
@@ -73,11 +79,11 @@ public class GooglePlacesAPIClient {
     }
 
     //setup and run RetrieveNearbyRestaurantsRunnable
-    public void nearbySearchRestaurantApi(String location, String radius, String type){
+    public void nearbySearchRestaurantApi(String location, String radius, String type, String pageToken){
         if (mRetrieveNearbyRestaurantsRunnable != null){
             mRetrieveNearbyRestaurantsRunnable = null;
         }
-        mRetrieveNearbyRestaurantsRunnable = new RetrieveNearbyRestaurantsRunnable(location, radius, type);
+        mRetrieveNearbyRestaurantsRunnable = new RetrieveNearbyRestaurantsRunnable(location, radius, type, pageToken);
         final Future handler = AppExecutors.getInstance().getNetworkIO().submit(mRetrieveNearbyRestaurantsRunnable);
 
         AppExecutors.getInstance().getNetworkIO().schedule(() -> {//let the user know it's timed out
@@ -107,30 +113,39 @@ public class GooglePlacesAPIClient {
 
     private class RetrieveNearbyRestaurantsRunnable implements Runnable{
 
-        private String location;
-        private String radius;
-        private String type;
+        private final String location;
+        private final String radius;
+        private final String type;
+        private String pageToken;
         boolean cancelRequest;
 
-        public RetrieveNearbyRestaurantsRunnable(String location, String radius, String type) {
+        public RetrieveNearbyRestaurantsRunnable(String location, String radius, String type, String pageToken) {
             this.location = location;
             this.radius = radius;
             this.type = type;
+            this.pageToken = pageToken;
             cancelRequest = false;
         }
 
         @Override
         public void run() {
             try {
-                Response response = getRestaurantsFromService(location, radius, type).execute();
+                Response response = getRestaurantsFromService(location, radius, type, pageToken).execute();
                 if (cancelRequest){
                     return;
                 }
                 if (response.code() == 200){
                     List<Restaurant> list = new ArrayList<>(((NearbySearchRestaurantResponse)response.body()).getResult());
-                    mRestaurants.postValue(list);
-                }
-                else{
+                    if (pageToken.equals("")){
+                        mRestaurants.postValue(list);
+                    }else {
+                        List<Restaurant> currentRestaurants = mRestaurants.getValue();
+                        currentRestaurants.addAll(list);
+                        mRestaurants.postValue(currentRestaurants);
+                    }
+                    pageToken = ((NearbySearchRestaurantResponse) response.body()).getNextPageToken();
+                    mPageToken.postValue(pageToken);
+                }else{
                     String error  = response.errorBody().string();
                     Log.e(TAG, "run: "+ error);
                     mRestaurants.postValue(null);
@@ -141,20 +156,21 @@ public class GooglePlacesAPIClient {
             }
         }
 
-        private Call<NearbySearchRestaurantResponse> getRestaurantsFromService(String location, String radius, String type){
-            return ServiceGenerator.getGooglePlaceApi().nearbySearchRestaurant(API_KEY, location, radius, type);
+        private Call<NearbySearchRestaurantResponse> getRestaurantsFromService(String location, String radius, String type, String pageToken){
+            return ServiceGenerator.getGooglePlaceApi().nearbySearchRestaurant(API_KEY, location, radius, type, pageToken);
         }
 
-//        private void cancelRequest(){
-//            Log.d(TAG, "cancelRequest: canceling the search request.");
-//        }
+        private void cancelRequest(){
+            Log.d(TAG, "cancelRequest: canceling the search request.");
+            cancelRequest = true;
+        }
     }
 
     private class RetrieveRestaurantDetailsRunnable implements Runnable{
 
-        private String mRestaurantId;
-        private String mType;
-        private int code;
+        private final String mRestaurantId;
+        private final String mType;
+        private final int code;
         boolean cancelRequest;
 
 
@@ -189,18 +205,23 @@ public class GooglePlacesAPIClient {
                 mRestaurants.postValue(null);
             }
         }
-    }
 
-    private Call<RestaurantDetailsResponse> getRestaurantDetailsFromService(String restaurantId, String type){
-        return ServiceGenerator.getGooglePlaceApi().requestRestaurantDetails(API_KEY, restaurantId, type);
+        private Call<RestaurantDetailsResponse> getRestaurantDetailsFromService(String restaurantId, String type){
+            return ServiceGenerator.getGooglePlaceApi().requestRestaurantDetails(API_KEY, restaurantId, type);
+        }
+
+        private void cancelRequest(){
+            Log.d(TAG, "cancelRequest: canceling the search request.");
+            cancelRequest = true;
+        }
     }
 
     private class RetrievePlaceAutoCompleteRestaurantRunnable implements Runnable{
 
-        private String userInput;
-        private String type;
-        private String radius;
-        private String location;
+        private final String userInput;
+        private final String type;
+        private final String radius;
+        private final String location;
         boolean cancelRequest;
 
         public RetrievePlaceAutoCompleteRestaurantRunnable(String userInput, String type, String radius, String location) {
@@ -233,9 +254,26 @@ public class GooglePlacesAPIClient {
                 predictionsPlaceAutocomplete.postValue(null);
             }
         }
+
+        private Call<PlaceAutocompleteResponse> getPlaceAutocompleteFromService(String userInput, String type, String radius, String location){
+            return ServiceGenerator.getGooglePlaceApi().requestPlaceAutocompleteEstablishment(userInput, type, location, radius, API_KEY);
+        }
+
+        private void cancelRequest(){
+            Log.d(TAG, "cancelRequest: canceling the search request.");
+            cancelRequest = true;
+        }
     }
 
-    private Call<PlaceAutocompleteResponse> getPlaceAutocompleteFromService(String userInput, String type, String radius, String location){
-        return ServiceGenerator.getGooglePlaceApi().requestPlaceAutocompleteEstablishment(userInput, type, location, radius, API_KEY);
+    public void cancelRequest(){
+        if (mRetrieveNearbyRestaurantsRunnable != null) {
+            mRetrieveNearbyRestaurantsRunnable.cancelRequest();
+        }
+        if (mRetrieveRestaurantDetailsRunnable != null){
+            mRetrieveRestaurantDetailsRunnable.cancelRequest();
+        }
+        if (mRetrievePlaceAutoCompleteRestaurantRunnable != null){
+            mRetrievePlaceAutoCompleteRestaurantRunnable.cancelRequest();
+        }
     }
 }

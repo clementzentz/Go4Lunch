@@ -55,12 +55,9 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
     //recyclerView
     private RecyclerView recyclerView;
     private ImageView restaurantImg;
-    private FloatingActionButton fab;
     private WorkmatesAdapter adapter;
     private RatingBar mRatingBar;
 
-    //toolbar
-    private Toolbar toolbar;
     private TextView restaurantDetailsName;
     private TextView restaurantDetailsAddress;
 
@@ -89,16 +86,18 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
 
         getIncomingIntent();
 
-        toolbar = findViewById(R.id.restaurant_details_toolbar);
+        //toolbar
+        Toolbar toolbar = findViewById(R.id.restaurant_details_toolbar);
         toolbar.setContentInsetStartWithNavigation(0);
         setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         restaurantDetailsName = findViewById(R.id.restaurant_details_name_txt);
         restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
         mRatingBar = findViewById(R.id.rating_bar_indicator_details);
 
-        fab = findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         restaurantImg = findViewById(R.id.restaurant_detail_img);
         ImageButton restaurantDetailsCallBtn = findViewById(R.id.restaurant_details_call_btn);
         ImageButton restaurantDetailsStarsBtn = findViewById(R.id.restaurant_details_stars_btn);

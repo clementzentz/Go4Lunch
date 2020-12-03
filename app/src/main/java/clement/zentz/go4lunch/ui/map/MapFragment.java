@@ -302,7 +302,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mGooglePlacesViewModel.nearbySearchRestaurants(
                 lastKnownLocation.getLatitude() + ", " + lastKnownLocation.getLongitude(),
                 String.valueOf(Constants.RADIUS),
-                Constants.PLACES_TYPE);
+                Constants.PLACES_TYPE, "");
     }
 
     private void getLastKnownLocation() {

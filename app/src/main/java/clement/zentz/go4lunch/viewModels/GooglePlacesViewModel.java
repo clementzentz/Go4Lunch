@@ -11,7 +11,7 @@ import clement.zentz.go4lunch.repository.GooglePlacesRepository;
 
 public class GooglePlacesViewModel extends ViewModel {
 
-    private GooglePlacesRepository mGooglePlacesRepository;
+    private final GooglePlacesRepository mGooglePlacesRepository;
 
     public GooglePlacesViewModel(){
         mGooglePlacesRepository = GooglePlacesRepository.getInstance();
@@ -19,6 +19,10 @@ public class GooglePlacesViewModel extends ViewModel {
 
     public LiveData<List<Restaurant>> getRestaurants(){
         return mGooglePlacesRepository.getRestaurants();
+    }
+
+    public LiveData<String> getPageToken(){
+        return mGooglePlacesRepository.getPageToken();
     }
 
     public LiveData<Restaurant> getRestaurantDetails(){
@@ -33,8 +37,8 @@ public class GooglePlacesViewModel extends ViewModel {
         return mGooglePlacesRepository.getPredictionsPlaceAutocomplete();
     }
 
-    public void nearbySearchRestaurants(String location, String radius, String type){
-        mGooglePlacesRepository.nearbySearchRestaurantsApi(location, radius, type);
+    public void nearbySearchRestaurants(String location, String radius, String type, String pageToken){
+        mGooglePlacesRepository.nearbySearchRestaurantsApi(location, radius, type, pageToken);
     }
 
     public void restaurantDetails(String placeId, String type, int code){
