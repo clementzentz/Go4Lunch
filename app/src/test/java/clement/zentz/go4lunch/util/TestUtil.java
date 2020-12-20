@@ -18,8 +18,6 @@ public class TestUtil {
             "JoeBiden@gmail.com",
             "",
             "23qz7jMyF75GKczRR3tJ5REf3j4",
-            "Burger King",
-            "18 Chiltern St, Marylebone, London W1U 7QA, Royaume-Uni",
             Timestamp.now());
 
     public static final Workmate TEST_WORKMATE_2 = new Workmate(
@@ -28,8 +26,6 @@ public class TestUtil {
             "DonaldTrump@outlook.com",
             "",
             "BTtd68RDLij8UjM6B2tZi3gi824",
-            "McDonald",
-            "194 Kensington Park Rd, London W11 2ES, Royaume-Uni",
             Timestamp.now());
 
     public static final List<Workmate> TEST_WORKMATE_LIST = new ArrayList<>(Arrays.asList(TEST_WORKMATE_1, TEST_WORKMATE_2));

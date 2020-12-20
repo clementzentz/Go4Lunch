@@ -9,13 +9,14 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.util.notification.AlertReceiver;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
 
-    private Switch enableNotificationsSwitchBtn;
+    private SwitchCompat enableNotificationsSwitchBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

@@ -6,26 +6,26 @@ import com.google.firebase.Timestamp;
 import java.util.List;
 import java.util.Objects;
 
+import clement.zentz.go4lunch.models.restaurant.Restaurant;
+
 public class Workmate implements Parcelable {
 
     private String workmateId;
     private String workmateName;
     private String email;
     private String photoUrl;
-    //the id of the restaurant associate with the workmate
+    //the id of the restaurant associated with the workmate
     private String restaurantId;
-    private String restaurantName;
-    private String restaurantAddress;
     private Timestamp mTimestamp;
+    private Restaurant mRestaurant;
 
-    public Workmate(String workmateId, String workmateName, String email, String photoUrl, String restaurantId, String restaurantName, String restaurantAddress, Timestamp timestamp) {
+    public Workmate(String workmateId, String workmateName, String email, String photoUrl, String restaurantId, Timestamp timestamp) {
         this.workmateId = workmateId;
         this.workmateName = workmateName;
         this.email = email;
         this.photoUrl = photoUrl;
         this.restaurantId = restaurantId;
-        this.restaurantName = restaurantName;
-        this.restaurantAddress = restaurantAddress;
+        mRestaurant = null;
         mTimestamp = timestamp;
     }
 
@@ -35,8 +35,6 @@ public class Workmate implements Parcelable {
         email = workmate.getEmail();
         photoUrl = workmate.getPhotoUrl();
         restaurantId = workmate.getRestaurantId();
-        restaurantName = workmate.getRestaurantName();
-        restaurantAddress = workmate.getRestaurantAddress();
         mTimestamp = workmate.getTimestamp();
     }
 
@@ -46,8 +44,6 @@ public class Workmate implements Parcelable {
         email = in.readString();
         photoUrl = in.readString();
         restaurantId = in.readString();
-        restaurantName = in.readString();
-        restaurantAddress = in.readString();
         mTimestamp = in.readParcelable(Timestamp.class.getClassLoader());
     }
 
@@ -103,28 +99,20 @@ public class Workmate implements Parcelable {
         this.restaurantId = restaurantId;
     }
 
-    public String getRestaurantName() {
-        return restaurantName;
-    }
-
-    public void setRestaurantName(String restaurantName) {
-        this.restaurantName = restaurantName;
-    }
-
-    public String getRestaurantAddress() {
-        return restaurantAddress;
-    }
-
-    public void setRestaurantAddress(String restaurantAddress) {
-        this.restaurantAddress = restaurantAddress;
-    }
-
     public Timestamp getTimestamp() {
         return mTimestamp;
     }
 
     public void setTimestamp(Timestamp timestamp) {
         mTimestamp = timestamp;
+    }
+
+    public Restaurant getRestaurant(){
+        return mRestaurant;
+    }
+
+    public void setRestaurant(Restaurant restaurant){
+        mRestaurant = restaurant;
     }
 
     @Override
@@ -139,8 +127,6 @@ public class Workmate implements Parcelable {
         parcel.writeString(email);
         parcel.writeString(photoUrl);
         parcel.writeString(restaurantId);
-        parcel.writeString(restaurantName);
-        parcel.writeString(restaurantAddress);
         parcel.writeParcelable(mTimestamp, i);
     }
 
@@ -152,8 +138,6 @@ public class Workmate implements Parcelable {
                 ", email='" + email + '\'' +
                 ", photoUrl='" + photoUrl + '\'' +
                 ", restaurantId='" + restaurantId + '\'' +
-                ", restaurantName='" + restaurantName + '\'' +
-                ", restaurantAddress='" + restaurantAddress + '\'' +
                 ", mTimestamp=" + mTimestamp +
                 '}';
     }
@@ -168,13 +152,11 @@ public class Workmate implements Parcelable {
                 Objects.equals(email, workmate.email) &&
                 Objects.equals(photoUrl, workmate.photoUrl) &&
                 Objects.equals(restaurantId, workmate.restaurantId) &&
-                Objects.equals(restaurantName, workmate.restaurantName) &&
-                Objects.equals(restaurantAddress, workmate.restaurantAddress) &&
                 Objects.equals(mTimestamp, workmate.mTimestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(workmateId, workmateName, email, photoUrl, restaurantId, restaurantName, restaurantAddress, mTimestamp);
+        return Objects.hash(workmateId, workmateName, email, photoUrl, restaurantId, mTimestamp);
     }
 }

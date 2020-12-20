@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -19,7 +20,6 @@ import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
 import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Observer;
@@ -41,11 +41,10 @@ import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.dialogs.PermissionRationaleDialogFragment;
 import clement.zentz.go4lunch.util.dialogs.RatingBarDialogFragment;
 import clement.zentz.go4lunch.util.notification.AlertReceiver;
-import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
-import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
-import clement.zentz.go4lunch.viewModels.SharedViewModel;
+import clement.zentz.go4lunch.viewModels.DetailViewModel;
+import clement.zentz.go4lunch.viewModels.ListViewModel;
 
-public class RestaurantDetailsActivity extends AppCompatActivity implements RatingBarDialogFragment.RatingBarDialogListener {
+public class RestaurantDetailsActivity extends BaseActivity implements RatingBarDialogFragment.RatingBarDialogListener {
 
     private static final String TAG = "RestaurantDetailsActivity";
 
@@ -63,24 +62,21 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
 
     //getIntent
     private String currentUserId;
-    private String restaurantId;
-    private boolean isYourLunch;
+    private String currentRestaurantId;
 
     //viewModels
-    private GooglePlacesViewModel mGooglePlacesViewModel;
-    private FirestoreViewModel mFirestoreViewModel;
-    private SharedViewModel mSharedViewModel;
+    private DetailViewModel mDetailViewModel;
+    private ListViewModel mListViewModel;
 
-    private Workmate currentUserFromFirestore;
+    private Workmate currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_restaurant);
 
-        mGooglePlacesViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
-        mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
-        mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+        mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
+        mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
 
         subscribeObservers();
 
@@ -107,12 +103,10 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
         setupRecyclerView();
 
         fab.setOnClickListener(view -> {
-                currentUserFromFirestore.setRestaurantId(restaurantWithDetails.getPlaceId());
-                currentUserFromFirestore.setRestaurantName(restaurantWithDetails.getName());
-                currentUserFromFirestore.setRestaurantAddress(restaurantWithDetails.getVicinity());
-                currentUserFromFirestore.setTimestamp(Timestamp.now());
-                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(currentUserFromFirestore);
-                mFirestoreViewModel.requestAllFirestoreWorkmates();
+                currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
+                currentUser.setTimestamp(Timestamp.now());
+                mDetailViewModel.setCurrentUser(currentUser);
+                mListViewModel.requestAllWorkmates();
                 startAlarm();
         });
 
@@ -162,116 +156,163 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
         return result;
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    public void subscribeObservers(){
-
-        mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(this, new Observer<Workmate>() {
-            @Override
-            public void onChanged(Workmate user) {
-                if (user != null){
-                    currentUserFromFirestore = user;
-                    mSharedViewModel.setCurrentUser(user);
-                    if (isYourLunch){
-                        mGooglePlacesViewModel.restaurantDetails(user.getRestaurantId(), Constants.PLACES_TYPE, 0);
-                        mFirestoreViewModel.requestWorkmatesWithRestaurantId(user.getRestaurantId());
-                    }
-                }
-            }
-        });
-
-        mGooglePlacesViewModel.getRestaurantDetails().observe(this, new Observer<Restaurant>() {
-            @Override
-            public void onChanged(Restaurant restaurant) {
-                if (restaurant != null){
-                    restaurantWithDetails = restaurant;
-                    if (restaurantWithDetails.getPhotos() != null){
-                        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
-                                + "key=" + Constants.API_KEY
-                                + "&maxwidth=200"
-                                + "&maxheight=200"
-                                + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
-                                .resize(200, 200)
-                                .centerCrop()
-                                .into(restaurantImg);
-                    }
-                    restaurantDetailsName.setText(restaurantWithDetails.getName());
-                    restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
-                }
-            }
-        });
-
-        mGooglePlacesViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                adapter.setRestaurantList(restaurants);
-            }
-        });
-
-        mFirestoreViewModel.receiveAllWorkmates4ThisRestaurant().observe(this, new Observer<List<Workmate>>() {
-            @Override
-            public void onChanged(List<Workmate> workmateList) {
-                adapter.setWorkmateList(workmateList);
-            }
-        });
-
-        mFirestoreViewModel.receiveAllRatings4ThisRestaurant().observe(this, new Observer<List<Rating>>() {
-            @Override
-            public void onChanged(List<Rating> ratings) {
-                double ratingsSum = 0;
-                if (!ratings.isEmpty() && ratings != null){
-                    for (Rating rating : ratings){
-                        ratingsSum = ratingsSum + rating.getRating();
-                    }
-                    GlobalRating globalRating = new GlobalRating((float)ratingsSum/ratings.size(), restaurantId);
-                    mFirestoreViewModel.addOrUpdateGlobalRating(globalRating);
-                    mFirestoreViewModel.requestAllGlobalRatings();
-                }
-            }
-        });
-
-        mFirestoreViewModel.receiveGlobalRating4ThisRestaurant().observe(this, new Observer<GlobalRating>() {
-            @Override
-            public void onChanged(GlobalRating globalRating) {
-                if (globalRating != null){
-                    mRatingBar.setRating((float) globalRating.getGlobalRating());
-                }else {
-                    mRatingBar.setVisibility(View.GONE);
-                }
-            }
-        });
-    }
-
     private void setupRecyclerView(){
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         adapter = new WorkmatesAdapter();
         recyclerView.setAdapter(adapter);
     }
 
-    private void getIncomingIntent(){
-        if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID) && getIntent().hasExtra(Constants.IS_YOUR_LUNCH)){
-            currentUserId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID);
-            isYourLunch = getIntent().getBooleanExtra(Constants.IS_YOUR_LUNCH, false);
-            mFirestoreViewModel.requestCurrentUserWithId(currentUserId);
-            mFirestoreViewModel.requestAllFirestoreWorkmates();
-        }
-        if (getIntent().hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID)){
-            restaurantId = getIntent().getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID);
 
-            if (restaurantId != null){
-                mFirestoreViewModel.requestAllRatings4ThisRestaurant(restaurantId);
-                mFirestoreViewModel.requestGlobalRating4ThisRestaurant(restaurantId);
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public void subscribeObservers(){
+
+//        mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(this, new Observer<Workmate>() {
+//            @Override
+//            public void onChanged(Workmate user) {
+//                if (user != null){
+//                    currentUserFromFirestore = user;
+//                    mSharedViewModel.setCurrentUserId(user);
+//                    if (isYourLunch){
+//                        mGooglePlacesViewModel.restaurantDetails(user.getRestaurantId(), Constants.PLACES_TYPE, 0);
+//                        mFirestoreViewModel.requestWorkmatesWithRestaurantId(user.getRestaurantId());
+//                    }
+//                }
+//            }
+//        });
+//
+//        mGooglePlacesViewModel.getRestaurantDetails().observe(this, new Observer<Restaurant>() {
+//            @Override
+//            public void onChanged(Restaurant restaurant) {
+//                if (restaurant != null){
+//                    restaurantWithDetails = restaurant;
+//                    if (restaurantWithDetails.getPhotos() != null){
+//                        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+//                                + "key=" + Constants.API_KEY
+//                                + "&maxwidth=200"
+//                                + "&maxheight=200"
+//                                + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
+//                                .resize(200, 200)
+//                                .centerCrop()
+//                                .into(restaurantImg);
+//                    }
+//                    restaurantDetailsName.setText(restaurantWithDetails.getName());
+//                    restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
+//                }
+//            }
+//        });
+//
+//        mGooglePlacesViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+//            @Override
+//            public void onChanged(List<Restaurant> restaurants) {
+//                adapter.setRestaurantList(restaurants);
+//            }
+//        });
+//
+//        mFirestoreViewModel.receiveAllWorkmates4ThisRestaurant().observe(this, new Observer<List<Workmate>>() {
+//            @Override
+//            public void onChanged(List<Workmate> workmateList) {
+//                adapter.setAllWorkmates(workmateList);
+//            }
+//        });
+//
+//        mFirestoreViewModel.receiveAllRatings4ThisRestaurant().observe(this, new Observer<List<Rating>>() {
+//            @Override
+//            public void onChanged(List<Rating> ratings) {
+//                double ratingsSum = 0;
+//                if (!ratings.isEmpty() && ratings != null){
+//                    for (Rating rating : ratings){
+//                        ratingsSum = ratingsSum + rating.getRating();
+//                    }
+//                    GlobalRating globalRating = new GlobalRating((float)ratingsSum/ratings.size(), restaurantId);
+//                    mFirestoreViewModel.addOrUpdateGlobalRating(globalRating);
+//                    mFirestoreViewModel.requestAllGlobalRatings();
+//                }
+//            }
+//        });
+//
+//        mFirestoreViewModel.receiveGlobalRating4ThisRestaurant().observe(this, new Observer<GlobalRating>() {
+//            @Override
+//            public void onChanged(GlobalRating globalRating) {
+//                if (globalRating != null){
+//                    mRatingBar.setRating((float) globalRating.getGlobalRating());
+//                }else {
+//                    mRatingBar.setVisibility(View.GONE);
+//                }
+//            }
+//        });
+
+        mDetailViewModel.getCurrentRestaurant().observe(this, new Observer<Pair<Restaurant, List<Rating>>>() {
+            @Override
+            public void onChanged(Pair<Restaurant, List<Rating>> listPair) {
+                if (listPair.first != null){
+
+                    Restaurant restaurant = listPair.first;
+
+                    if (listPair.second != null){
+                        double sum = 0;
+                        List<Rating> restaurantRatings = listPair.second;
+                        for (Rating rating : restaurantRatings){
+                            sum = sum + rating.getRating();
+                        }
+                        mDetailViewModel.setGlobalRating(new GlobalRating(sum, restaurant.getPlaceId()));
+
+                    }
+
+                    if (restaurant.getPhotos() != null){
+                        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+                                + "key=" + Constants.API_KEY
+                                + "&maxwidth=200"
+                                + "&maxheight=200"
+                                + "&photoreference=" + (restaurant.getPhotos().get(0).getPhotoReference()))
+                                .resize(200, 200)
+                                .centerCrop()
+                                .into(restaurantImg);
+                    }
+                    restaurantDetailsName.setText(restaurant.getName());
+                    restaurantDetailsAddress.setText(restaurant.getTypes().get(0)+" - "+restaurant.getVicinity());
+
+                    if (restaurant.getGlobalRating() != 0){
+                        mRatingBar.setRating((float) restaurant.getGlobalRating());
+                    }else {
+                        mRatingBar.setVisibility(View.GONE);
+                    }
+                    adapter.setAllWorkmates(restaurant.getWorkmatesJoining());
+                }
             }
+        });
+    }
 
-            mGooglePlacesViewModel.restaurantDetails(restaurantId, Constants.PLACES_TYPE, 0);
-            mFirestoreViewModel.requestWorkmatesWithRestaurantId(restaurantId);
+    private void displayNoRestaurantFound(){
+        Picasso.get().load("")
+                .placeholder(R.drawable.ic_launcher_background)
+                .resize(200, 200)
+                .centerCrop()
+                .into(restaurantImg);
+
+        restaurantDetailsName.setText("No Restaurant Found.");
+        restaurantDetailsAddress.setText("Please check network connexion.");
+        mRatingBar.setVisibility(View.GONE);
+        adapter.setAllWorkmates(null);
+    }
+
+    private void getIncomingIntent(){
+        if (getIntent().hasExtra(Constants.INTENT_CURRENT_USER_ID) && getIntent().hasExtra(Constants.INTENT_CURRENT_RESTAURANT_ID)){
+            currentUserId = getIntent().getStringExtra(Constants.INTENT_CURRENT_USER_ID);
+            currentRestaurantId = getIntent().getStringExtra(Constants.INTENT_CURRENT_RESTAURANT_ID);
+            if (currentRestaurantId.equals("")){
+                displayNoRestaurantFound();
+            }else {
+                mDetailViewModel.searchRestaurantDetails(currentRestaurantId, Constants.PLACES_TYPE, 0);
+                mDetailViewModel.requestWorkmatesJoining(currentRestaurantId);
+            }
         }
     }
 
     private void startAlarm() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlertReceiver.class);
-        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUserId);
-        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, restaurantId);
+        intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUserId);
+        intent.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, currentRestaurantId);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, 0);
 
         // Set the alarm to start at approximately 12:00 p.m.
@@ -286,8 +327,9 @@ public class RestaurantDetailsActivity extends AppCompatActivity implements Rati
 
     @Override
     public void onDialogPositiveClick(float rating) {
-        Rating rating1 = new Rating(rating, restaurantId, currentUserId);
-        mFirestoreViewModel.addOrUpdateUserRating(rating1);
-        mFirestoreViewModel.requestAllRatings4ThisRestaurant(restaurantId);
+        Rating userRating = new Rating(rating, currentRestaurantId, currentUserId);
+        mDetailViewModel.setUserRating(userRating);
+        mDetailViewModel.requestAllRestaurantRatings(currentRestaurantId);
+        mDetailViewModel.requestGlobalRating(currentRestaurantId);
     }
 }

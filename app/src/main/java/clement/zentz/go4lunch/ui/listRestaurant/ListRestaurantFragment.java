@@ -26,31 +26,23 @@ import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
-import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
 import clement.zentz.go4lunch.util.Constants;
-import clement.zentz.go4lunch.util.interfaces.ListRestaurantFragmentToListRestaurantAdapter;
+import clement.zentz.go4lunch.viewModels.ListViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
 public class ListRestaurantFragment extends Fragment implements ListRestaurantFragmentToListRestaurantAdapter {
 
-    private GooglePlacesViewModel googlePlacesViewModel;
-    private SharedViewModel sharedViewModel;
-    private FirestoreViewModel firestoreViewModel;
+    private SharedViewModel mSharedViewModel;
+    private ListViewModel mListViewModel;
 
     private RecyclerView recyclerView;
     private ListRestaurantAdapter adapter;
 
-    private Workmate currentUser;
+    private String currentUserId;
     private Location userLocation;
     private String nextPageToken;
 
     private static final String TAG = "ListRestaurantFragment";
-
-    private boolean hasWorkmates=false, hasRestaurants=false, hasGlobalRatings=false;
-    private List<Workmate> allWorkmates;
-    private List<Restaurant> allRestaurants;
-    private List<GlobalRating> allGlobalRatings;
 
     MediatorLiveData<Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>>> mediatorLiveData = new MediatorLiveData<>();
 
@@ -68,69 +60,39 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        googlePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
-        firestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
+        mSharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        mListViewModel = new ViewModelProvider(requireActivity()).get(ListViewModel.class);
 
         subscribeObservers();
     }
 
     private void subscribeObservers(){
 
-        mediatorLiveData.addSource(firestoreViewModel.receiveAllFirestoreWorkmates(), new Observer<List<Workmate>>() {
+        mListViewModel.getRestaurantsWithNextPageToken().observe(getViewLifecycleOwner(), new Observer<Pair<List<Restaurant>, String>>() {
             @Override
-            public void onChanged(List<Workmate> workmates) {
-                if (workmates != null){
-                    hasWorkmates = true;
-                    allWorkmates = workmates;
-                    updateIfAll();
-                }
+            public void onChanged(Pair<List<Restaurant>, String> listStringPair) {
+                adapter.setAllRestaurants(listStringPair.first);
+                nextPageToken = listStringPair.second;
             }
         });
 
-        mediatorLiveData.addSource(firestoreViewModel.receiveAllGlobalRatings(), new Observer<List<GlobalRating>>() {
-            @Override
-            public void onChanged(List<GlobalRating> globalRatings) {
-                if (globalRatings != null){
-                    hasGlobalRatings = true;
-                    allGlobalRatings = globalRatings;
-                    updateIfAll();
-                }
-            }
-        });
-
-        mediatorLiveData.addSource(googlePlacesViewModel.getRestaurants(), new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurantList) {
-                if (restaurantList != null){
-                    hasRestaurants = true;
-                    allRestaurants = restaurantList;
-                    updateIfAll();
-                }
-            }
-        });
-
-        mediatorLiveData.observe(getViewLifecycleOwner(), new Observer<Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>>>() {
+        mSharedViewModel.getCurrentUserId().observe(getViewLifecycleOwner(), new Observer<String>() {
                     @Override
-                    public void onChanged(Pair<Pair<List<Workmate>, List<GlobalRating>>, List<Restaurant>> pairListPair) {
-                        adapter.setAllRestaurants(pairListPair.second);
-                        adapter.setAllWorkmates(pairListPair.first.first);
-                        adapter.setAllGlobalRatings(pairListPair.first.second);
+                    public void onChanged(String s) {
+                        currentUserId = s;
                     }
-        });
+                });
 
-        sharedViewModel.getCurrentUser().observe(getViewLifecycleOwner(), workmate -> currentUser = workmate);
-
-        sharedViewModel.getLocationUser().observe(getViewLifecycleOwner(), new Observer<Location>() {
+        mSharedViewModel.getLocationUser().observe(getViewLifecycleOwner(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
-                if (location != null){
+                if (location != null) {
                     userLocation = location;
                 }
             }
         });
 
-        googlePlacesViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
+        mListViewModel.getPredictionsPlaceAutocomplete().observe(getViewLifecycleOwner(), new Observer<List<Prediction>>() {
             @Override
             public void onChanged(List<Prediction> predictions) {
                 if (predictions != null){
@@ -149,23 +111,10 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
             }
         });
 
-        googlePlacesViewModel.getPageToken().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                if (s != null){
-                    nextPageToken = s;
-                }
-            }
-        });
-    }
-
-    private void updateIfAll(){
-        if (hasWorkmates && hasGlobalRatings && hasRestaurants){
-            mediatorLiveData.postValue(Pair.create(Pair.create(allWorkmates, allGlobalRatings), allRestaurants));
-        }
     }
 
     private void setUpRecyclerView(){
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         adapter = new ListRestaurantAdapter(this);
         recyclerView.setAdapter(adapter);
@@ -176,7 +125,7 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
                 if (recyclerView.canScrollVertically(1)){
                     //search the next page
                     if (userLocation != null && nextPageToken != null){
-                        googlePlacesViewModel.nearbySearchRestaurants(
+                        mListViewModel.searchNearbyRestaurants(
                                 userLocation.getLatitude()+" , "+userLocation.getLongitude(),
                                 String.valueOf(Constants.RADIUS),
                                 Constants.PLACES_TYPE,
@@ -191,8 +140,8 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
     @Override
     public void launchDetailRestaurantActivity(Restaurant currentRestaurant) {
         Intent intent = new Intent(getActivity(), RestaurantDetailsActivity.class);
-        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, currentRestaurant.getPlaceId());
-        intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUser.getWorkmateId());
+        intent.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, currentRestaurant.getPlaceId());
+        intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUserId);
         intent.putExtra(Constants.IS_YOUR_LUNCH, false);
         startActivity(intent);
     }

@@ -17,12 +17,10 @@ import android.widget.TextView;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
@@ -32,43 +30,37 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.models.rating.GlobalRating;
-import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
-import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
-import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
+import clement.zentz.go4lunch.viewModels.DetailViewModel;
+import clement.zentz.go4lunch.viewModels.ListViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
 import clement.zentz.go4lunch.util.Constants;
 
 import static clement.zentz.go4lunch.util.Constants.CHANNEL_ID;
 
 //bottom nav + nav drawer activity
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
 
-    private Workmate currentUser;
+    private String currentUserId;
+
     private Location locationUser;
 
     private SharedViewModel mSharedViewModel;
-    private FirestoreViewModel mFirestoreViewModel;
-    private GooglePlacesViewModel mGooglePlaceViewModel;
+    private DetailViewModel mDetailViewModel;
+    private ListViewModel mListViewModel;
 
-    //View
+    //Appbar Views
     private Toolbar toolbar;
     private SearchView mSearchView;
+
+    //navDrawer Views
+    private ImageView currentUserImage;
+    private TextView currentUserName;
+    private TextView currentUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,17 +76,13 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setTitle(getString(R.string.app_name));
 
         mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
-        mGooglePlaceViewModel = new ViewModelProvider(this).get(GooglePlacesViewModel.class);
-        mFirestoreViewModel = new ViewModelProvider(this).get(FirestoreViewModel.class);
+        mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
+        mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
 
-        subscribeObservers();
-
-        mFirestoreViewModel.requestAllFirestoreWorkmates();
-        mFirestoreViewModel.requestAllGlobalRatings();
+        mListViewModel.requestAllWorkmates();
+        mListViewModel.requestAllGlobalRatings();
 
 //        getDataFromJsonFile();
-
-        getIncomingIntentFromAuthActivity();
 
         BottomNavigationView bottomNavView = findViewById(R.id.bottom_nav_view);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -109,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
 
+        showProgressBar(true);
+        subscribeObservers();
+        getIncomingIntentFromAuthActivity();
         initSearchView();
     }
 
@@ -121,13 +112,12 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String s) {
                 return false;
             }
-
             @Override
             public boolean onQueryTextChange(String s) {
                 if (s.length() >= 3){
                     searchViewListDialogFragment.show(getSupportFragmentManager(), TAG);
                     if (locationUser != null){
-                        mGooglePlaceViewModel.placeAutocompleteApi(
+                        mListViewModel.searchPlaceAutocompletePredictions(
                                 s,
                                 "establishment",
                                 "500",
@@ -140,31 +130,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
     private void subscribeObservers(){
-
-        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(this, new Observer<List<Workmate>>() {
-            @Override
-            public void onChanged(List<Workmate> workmateList) {
-                mSharedViewModel.setAllWorkmates(workmateList);
-            }
-        });
-
-        mFirestoreViewModel.receiveAllGlobalRatings().observe(this, new Observer<List<GlobalRating>>() {
-            @Override
-            public void onChanged(List<GlobalRating> globalRatings) {
-                mSharedViewModel.setAllGlobalRatings(globalRatings);
-            }
-        });
 
         mSharedViewModel.getLocationUser().observe(this, new Observer<Location>() {
             @Override
@@ -173,15 +139,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mGooglePlaceViewModel.getRestaurantDetails4PlaceAutocomplete().observe(this, new Observer<Restaurant>() {
+        mDetailViewModel.getCurrentUser().observe(this, new Observer<Workmate>() {
             @Override
-            public void onChanged(Restaurant restaurant) {
-                if (restaurant != null){
-                    mSharedViewModel.setPlaceAutocompleteRestaurant(restaurant);
+            public void onChanged(Workmate workmate) {
+                if (workmate != null){
+                    configureNavDrawer(workmate);
+                    mSharedViewModel.setCurrentUserId(workmate.getWorkmateId());
                 }
             }
         });
     }
+
+    private void displayErrorScreen(String errorMessage){
+        currentUserName.setText("Error retrieving user...");
+        currentUserEmail.setText("");
+
+        Picasso.get().load("")
+                .placeholder(R.drawable.ic_launcher_background)
+                .into(currentUserImage);
+
+//        showParent();
+        showProgressBar(false);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -197,25 +177,33 @@ public class MainActivity extends AppCompatActivity {
             item.setVisible(false);
             return true;
         }else {
+            mSearchView.setVisibility(View.GONE);
             return super.onOptionsItemSelected(item);
         }
     }
 
+    private void getIncomingIntentFromAuthActivity(){
+        if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
+            currentUserId = getIntent().getStringExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
+            mDetailViewModel.requestCurrentUser(currentUserId);
+        }
+    }
+
     //configure nav drawer
-    private void configureNavDrawer(){
+    private void configureNavDrawer(Workmate currentUser){
         //Nav Drawer
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         View navHeader = navigationView.getHeaderView(0);
 
         //nav header
-        ImageView imageUser = navHeader.findViewById(R.id.user_img);
-        TextView nameUser = navHeader.findViewById(R.id.displayName_user_txt);
-        TextView emailUser= navHeader.findViewById(R.id.email_user_txt);
+        currentUserImage = navHeader.findViewById(R.id.user_img);
+        currentUserName = navHeader.findViewById(R.id.displayName_user_txt);
+        currentUserEmail = navHeader.findViewById(R.id.email_user_txt);
 
-        nameUser.setText(currentUser.getWorkmateName());
-        emailUser.setText(currentUser.getEmail());
-        Picasso.get().load(currentUser.getPhotoUrl()).into(imageUser);
+        currentUserName.setText(currentUser.getWorkmateName());
+        currentUserEmail.setText(currentUser.getEmail());
+        Picasso.get().load(currentUser.getPhotoUrl()).into(currentUserImage);
 
         drawer.addDrawerListener(new ActionBarDrawerToggle(this, drawer, toolbar, R.string.app_name, R.string.app_name));
 
@@ -223,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()){
                 case R.id.nav_drawer_lunch_item :
                     Intent intent = new Intent(this, RestaurantDetailsActivity.class);
-                    intent.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, currentUser.getWorkmateId());
+                    intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUser.getWorkmateId());
                     intent.putExtra(Constants.IS_YOUR_LUNCH, true);
                     startActivity(intent);
                     break;
@@ -240,15 +228,8 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
-    }
 
-    private void getIncomingIntentFromAuthActivity(){
-        if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
-            currentUser = getIntent().getParcelableExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
-            mSharedViewModel.setCurrentUser(currentUser);
-            mFirestoreViewModel.requestCurrentUserWithId(currentUser.getWorkmateId());
-            configureNavDrawer();
-        }
+        showProgressBar(false);
     }
 
     private void createNotificationChannel() {
@@ -266,90 +247,5 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
-    private void getDataFromJsonFile(){
-        try {
-            JSONObject obj1 = new JSONObject(loadJSONFromAsset(1));
-            JSONObject obj2 = new JSONObject(loadJSONFromAsset(2));
-            JSONObject obj3 = new JSONObject(loadJSONFromAsset(3));
-
-            JSONArray m_iArry = obj1.getJSONArray("fakeWorkmates");
-            JSONArray m_jArry = obj2.getJSONArray("fakeRatings");
-            JSONArray m_kArry = obj3.getJSONArray("fakeGlobalRatings");
-
-            for (int i = 0; i < m_iArry.length(); i++) {
-                JSONObject current_jo_inside1 = m_iArry.getJSONObject(i);
-
-                Workmate workmate = new Workmate(
-                        current_jo_inside1.getString(Constants.WORKMATE_ID),
-                        current_jo_inside1.getString(Constants.WORKMATE_NAME),
-                        current_jo_inside1.getString(Constants.WORKMATE_EMAIL),
-                        current_jo_inside1.getString(Constants.WORKMATE_PHOTO_URL),
-                        current_jo_inside1.getString(Constants.RESTAURANT_ID),
-                        current_jo_inside1.getString(Constants.RESTAURANT_NAME),
-                        current_jo_inside1.getString(Constants.RESTAURANT_ADDRESS),
-                        Timestamp.now()
-                );
-
-                mFirestoreViewModel.addOrUpdateFirestoreCurrentUser(workmate);
-            }
-
-            for (int j = 0; j < m_jArry.length(); j++){
-
-                JSONObject current_jo_inside2 = m_jArry.getJSONObject(j);
-
-                Rating rating = new Rating(
-                        (double)current_jo_inside2.get(Constants.RATING),
-                        current_jo_inside2.getString(Constants.RESTAURANT_ID),
-                        current_jo_inside2.getString(Constants.WORKMATE_ID)
-                );
-                mFirestoreViewModel.addOrUpdateUserRating(rating);
-            }
-
-            for (int k = 0; k < m_kArry.length(); k++){
-
-                JSONObject current_jo_inside3 = m_kArry.getJSONObject(k);
-
-                GlobalRating globalRating = new GlobalRating(
-                        (double)current_jo_inside3.get(Constants.GLOBAL_RATING),
-                        current_jo_inside3.getString(Constants.RESTAURANT_ID)
-                );
-                mFirestoreViewModel.addOrUpdateGlobalRating(globalRating);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String loadJSONFromAsset(int num) {
-
-        String json = null;
-        InputStream is;
-        try {
-            if (num == 1){
-                is = this.getAssets().open("fake_workmates.json");
-            }else if (num == 2){
-                is = this.getAssets().open("fake_workmates_ratings.json");
-            }else {
-                is = this.getAssets().open("fake_workmates_global_ratings.json");
-            }
-
-            int size = is.available();
-
-            byte[] buffer = new byte[size];
-
-            is.read(buffer);
-
-            is.close();
-
-            json = new String(buffer, StandardCharsets.UTF_8);
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        return json;
-    }
-
     //power mockito
 }

@@ -62,7 +62,7 @@ public class GooglePlacesAPIClient {
         return  mRestaurants;
     }
 
-    public LiveData<String> getPageToken(){
+    public LiveData<String> getNextPageToken(){
         return mPageToken;
     }
 
@@ -79,36 +79,46 @@ public class GooglePlacesAPIClient {
     }
 
     //setup and run RetrieveNearbyRestaurantsRunnable
-    public void nearbySearchRestaurantApi(String location, String radius, String type, String pageToken){
+    public void searchNearbyRestaurants(String location, String radius, String type, String pageToken){
         if (mRetrieveNearbyRestaurantsRunnable != null){
             mRetrieveNearbyRestaurantsRunnable = null;
         }
         mRetrieveNearbyRestaurantsRunnable = new RetrieveNearbyRestaurantsRunnable(location, radius, type, pageToken);
         final Future handler = AppExecutors.getInstance().getNetworkIO().submit(mRetrieveNearbyRestaurantsRunnable);
 
-        AppExecutors.getInstance().getNetworkIO().schedule(() -> {//let the user know it's timed out
+        AppExecutors.getInstance().getNetworkIO().schedule(() -> {
+            //let the user know it's timed out
             handler.cancel(true);
+
         }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
-    public void restaurantDetailsApi(String restaurantId, String type, int code){
+    public void searchRestaurantDetails(String restaurantId, String type, int code){
         if (mRetrieveRestaurantDetailsRunnable != null){
             mRetrieveRestaurantDetailsRunnable = null;
         }
         mRetrieveRestaurantDetailsRunnable = new RetrieveRestaurantDetailsRunnable(restaurantId, type, code);
         final Future handler = AppExecutors.getInstance().getNetworkIO().submit(mRetrieveRestaurantDetailsRunnable);
 
-        AppExecutors.getInstance().getNetworkIO().schedule(() -> { handler.cancel(true); }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
+        AppExecutors.getInstance().getNetworkIO().schedule(() -> {
+
+            handler.cancel(true);
+
+            }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
-    public void placeAutoCompleteApi(String userInput, String type, String radius, String location){
+    public void searchPlaceAutocompletePredictions(String userInput, String type, String radius, String location){
         if (mRetrievePlaceAutoCompleteRestaurantRunnable != null){
             mRetrievePlaceAutoCompleteRestaurantRunnable = null;
         }
         mRetrievePlaceAutoCompleteRestaurantRunnable = new RetrievePlaceAutoCompleteRestaurantRunnable(userInput, type, radius, location);
         final Future handler = AppExecutors.getInstance().getNetworkIO().submit(mRetrievePlaceAutoCompleteRestaurantRunnable);
 
-        AppExecutors.getInstance().getNetworkIO().schedule(() -> { handler.cancel(true); }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
+        AppExecutors.getInstance().getNetworkIO().schedule(() -> {
+
+            handler.cancel(true);
+
+            }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
     private class RetrieveNearbyRestaurantsRunnable implements Runnable{

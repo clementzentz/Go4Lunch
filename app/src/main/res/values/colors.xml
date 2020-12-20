@@ -7,4 +7,5 @@
 
     <color name="duskYellow">#FFA500</color>
     <color name="lightGrey">#a8a8a8</color>
+    <color name="white">#fff</color>
 </resources>

@@ -18,8 +18,6 @@ public class ConvertUtil {
                 (String)map.get(Constants.WORKMATE_EMAIL),
                 (String)map.get(Constants.WORKMATE_PHOTO_URL),
                 (String)map.get(Constants.RESTAURANT_ID),
-                (String)map.get(Constants.RESTAURANT_NAME),
-                (String)map.get(Constants.RESTAURANT_ADDRESS),
                 (Timestamp)map.get(Constants.TIMESTAMP));
     }
 

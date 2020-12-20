@@ -16,10 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.viewModels.FirestoreViewModel;
-import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
+import clement.zentz.go4lunch.viewModels.ListViewModel;
 
 public class WorkmatesFragment extends Fragment{
 
@@ -28,10 +26,7 @@ public class WorkmatesFragment extends Fragment{
     private RecyclerView recyclerView;
     private WorkmatesAdapter adapter;
 
-    private FirestoreViewModel mFirestoreViewModel;
-    private GooglePlacesViewModel mGooglePlacesViewModel;
-
-    private List<Workmate> mWorkmateList;
+    private ListViewModel mListViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
             ViewGroup container, Bundle savedInstanceState) {
@@ -45,18 +40,16 @@ public class WorkmatesFragment extends Fragment{
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mFirestoreViewModel = new ViewModelProvider(requireActivity()).get(FirestoreViewModel.class);
-        mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
+        mListViewModel = new ViewModelProvider(requireActivity()).get(ListViewModel.class);
         subscribeWorkmatesObserver();
     }
 
     private void subscribeWorkmatesObserver(){
-        mFirestoreViewModel.receiveAllFirestoreWorkmates().observe(getViewLifecycleOwner(), workmates -> adapter.setWorkmateList(workmates));
 
-        mGooglePlacesViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mListViewModel.getWorkmates().observe(getViewLifecycleOwner(), new Observer<List<Workmate>>() {
             @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                adapter.setRestaurantList(restaurants);
+            public void onChanged(List<Workmate> workmates) {
+                adapter.setAllWorkmates(workmates);
             }
         });
     }

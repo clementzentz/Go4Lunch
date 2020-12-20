@@ -4,8 +4,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.List;
+
+import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import clement.zentz.go4lunch.models.rating.Rating;
+import clement.zentz.go4lunch.models.workmate.Workmate;
 
 public class Restaurant implements Parcelable {
 
@@ -84,6 +89,25 @@ public class Restaurant implements Parcelable {
     @SerializedName("website")
     @Expose
     private String website;
+
+    private List<Workmate> workmatesJoining;
+    private double globalRating;
+
+    public List<Workmate> getWorkmatesJoining(){
+        return workmatesJoining;
+    }
+
+    public void setWorkmatesJoining(List<Workmate> workmates){
+        workmatesJoining = workmates;
+    }
+
+    public double getGlobalRating(){
+        return globalRating;
+    }
+
+    public void setGlobalRating(double globalRating){
+        this.globalRating = globalRating;
+    }
 
     public Restaurant(){
 

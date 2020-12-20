@@ -8,7 +8,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -24,9 +23,9 @@ import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.convert.ConvertUtil;
 
-public class FirestoreApi {
+public class FirestoreApiClient {
 
-    private static final String TAG = "FirestoreApi";
+    private static final String TAG = "FirestoreApiClient";
 
     private final MutableLiveData<List<Workmate>> allWorkmates;
     private final MutableLiveData<List<Workmate>> workmatesWithRestaurantId;
@@ -37,10 +36,10 @@ public class FirestoreApi {
     private final MutableLiveData<List<GlobalRating>> allGlobalRatings;
 
     private final FirebaseFirestore db;
-    private static FirestoreApi instance;
+    private static FirestoreApiClient instance;
     private final ConvertUtil convertUtil;
 
-    public FirestoreApi(){
+    public FirestoreApiClient(){
         convertUtil = new ConvertUtil();
         db = FirebaseFirestore.getInstance();
         allWorkmates = new MutableLiveData<>();
@@ -51,9 +50,9 @@ public class FirestoreApi {
         allGlobalRatings = new MutableLiveData<>();
     }
 
-    public static FirestoreApi getInstance(){
+    public static FirestoreApiClient getInstance(){
         if (instance == null){
-            instance = new FirestoreApi();
+            instance = new FirestoreApiClient();
         }
         return instance;
     }
@@ -62,19 +61,19 @@ public class FirestoreApi {
         return allWorkmates;
     }
 
-    public LiveData<List<Workmate>> receiveAllWorkmates4ThisRestaurant(){
+    public LiveData<List<Workmate>> receiveWorkmatesJoining(){
         return workmatesWithRestaurantId;
     }
 
-    public LiveData<Workmate> receiveCurrentUserWithWorkmateId(){
+    public LiveData<Workmate> receiveCurrentUser(){
         return currentUserWithWorkmateId;
     }
 
-    public LiveData<List<Rating>> receiveAllRatings4ThisRestaurant(){
+    public LiveData<List<Rating>> receiveAllRestaurantRatings(){
         return allRatings;
     }
 
-    public LiveData<GlobalRating> receiveGlobalRating4ThisRestaurant(){
+    public LiveData<GlobalRating> receiveGlobalRating(){
         return globalRating;
     }
 
@@ -82,7 +81,7 @@ public class FirestoreApi {
         return allGlobalRatings;
     }
 
-    public void requestAllFirestoreWorkmates(){
+    public void requestAllWorkmates(){
 
         List<Workmate> workmateList = new ArrayList<>();
 
@@ -101,7 +100,7 @@ public class FirestoreApi {
                 });
     }
 
-    public void requestWorkmatesWithRestaurantId(String restaurantId){
+    public void requestWorkmatesJoining(String restaurantId){
 
         List<Workmate> workmateList = new ArrayList<>();
 
@@ -121,7 +120,7 @@ public class FirestoreApi {
                 });
     }
 
-    public void requestCurrentUserWithId(String workmateId){
+    public void requestCurrentUser(String workmateId){
 
         List<Workmate> workmateList = new ArrayList<>();
 
@@ -138,11 +137,12 @@ public class FirestoreApi {
                         }
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
+                        currentUserWithWorkmateId.postValue(null);
                     }
                 });
     }
 
-    public void requestAllRatings4ThisRestaurant(String restaurantId){
+    public void requestAllRestaurantRatings(String restaurantId){
         List<Rating> ratingList = new ArrayList<>();
         db.collection(Constants.RATINGS_COLLECTION)
                 .whereEqualTo(Constants.RESTAURANT_ID, restaurantId)
@@ -163,7 +163,7 @@ public class FirestoreApi {
                 });
     }
 
-    public void requestGlobalRating4ThisRestaurant(String restaurantId){
+    public void requestGlobalRating(String restaurantId){
 
         db.collection(Constants.GLOBAL_RATINGS_COLLECTION)
                 .whereEqualTo(Constants.RESTAURANT_ID, restaurantId)
@@ -204,7 +204,7 @@ public class FirestoreApi {
                 });
     }
 
-    public void addOrUpdateFirestoreCurrentUser(Workmate currentUser){
+    public void setCurrentUser(Workmate currentUser){
         // Create a new association between workmate and restaurant
         Map<String, Object> user = new HashMap<>();
         user.put(Constants.WORKMATE_ID, currentUser.getWorkmateId());
@@ -212,8 +212,6 @@ public class FirestoreApi {
         user.put(Constants.WORKMATE_EMAIL, currentUser.getEmail());
         user.put(Constants.WORKMATE_PHOTO_URL, currentUser.getPhotoUrl());
         user.put(Constants.RESTAURANT_ID, currentUser.getRestaurantId());
-        user.put(Constants.RESTAURANT_NAME, currentUser.getRestaurantName());
-        user.put(Constants.RESTAURANT_ADDRESS, currentUser.getRestaurantAddress());
         user.put(Constants.TIMESTAMP, currentUser.getTimestamp());
         // Add a new document with a generated ID
         db.collection(Constants.WORKMATES_COLLECTION).document(currentUser.getWorkmateId())
@@ -222,7 +220,7 @@ public class FirestoreApi {
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
     }
 
-    public void addOrUpdateUserRating(Rating rating){
+    public void setUserRating(Rating rating){
         Map<String, Object> ratingMap = new HashMap<>();
         ratingMap.put(Constants.RATING, rating.getRating());
         ratingMap.put(Constants.RESTAURANT_ID, rating.getRestaurantId());
@@ -233,7 +231,7 @@ public class FirestoreApi {
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
     }
 
-    public void addOrUpdateGlobalRating(GlobalRating globalRating){
+    public void setGlobalRating(GlobalRating globalRating){
         Map<String, Object> globalRatingMap = new HashMap<>();
         globalRatingMap.put(Constants.GLOBAL_RATING, globalRating.getGlobalRating());
         globalRatingMap.put(Constants.RESTAURANT_ID, globalRating.getRestaurantId());

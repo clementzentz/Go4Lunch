@@ -20,8 +20,8 @@ public abstract class Constants  {
     public static final int MAX_HEIGHT_PHOTO = 100;
 
     //Intent
-    public static final String RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID = "currentRestaurant";
-    public static final String RESTAURANT_DETAILS_CURRENT_USER_ID = "currentUser";
+    public static final String INTENT_CURRENT_RESTAURANT_ID = "currentRestaurant";
+    public static final String INTENT_CURRENT_USER_ID = "currentUser";
     public static final String AUTH_ACTIVITY_TO_MAIN_ACTIVITY = "user";
     public static final String IS_YOUR_LUNCH = "IS_YOUR_LUNCH";
 
@@ -38,8 +38,6 @@ public abstract class Constants  {
     public static final String WORKMATE_EMAIL = "workmate_email";
     public static final String WORKMATE_PHOTO_URL = "workmate_photo_url";
     public static final String RESTAURANT_ID = "restaurant_id";
-    public static final String RESTAURANT_NAME = "restaurant_name";
-    public static final String RESTAURANT_ADDRESS = "restaurant_address";
     public static final String TIMESTAMP = "timestamp";
     public static final String RATING = "rating";
     public static final String GLOBAL_RATING = "global_rating";
@@ -47,4 +45,9 @@ public abstract class Constants  {
     //notifications
     public static final String CHANNEL_ID = "CHANNEL_ID";
     public static final int notificationId = 123;
+
+    //Adapter
+    public static final int RESTAURANT_TYPE = 1;
+    public static final int LOADING_TYPE = 2;
+    public static final int EXHAUSTED_TYPE = 3;
 }

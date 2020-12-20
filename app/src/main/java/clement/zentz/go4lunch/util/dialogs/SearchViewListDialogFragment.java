@@ -22,17 +22,20 @@ import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.ui.listRestaurant.ListRestaurantAdapter;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.interfaces.SearchViewListDialogToListRestaurantAdapter;
-import clement.zentz.go4lunch.viewModels.GooglePlacesViewModel;
+import clement.zentz.go4lunch.viewModels.DetailViewModel;
+import clement.zentz.go4lunch.viewModels.ListViewModel;
 
 public class SearchViewListDialogFragment extends DialogFragment implements SearchViewListDialogToListRestaurantAdapter {
 
     private ListRestaurantAdapter adapter;
-    private GooglePlacesViewModel mGooglePlacesViewModel;
+    private DetailViewModel mDetailViewModel;
+    private ListViewModel mListViewModel;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        mGooglePlacesViewModel = new ViewModelProvider(requireActivity()).get(GooglePlacesViewModel.class);
+        mDetailViewModel = new ViewModelProvider(requireActivity()).get(DetailViewModel.class);
+        mListViewModel = new ViewModelProvider(requireActivity()).get(ListViewModel.class);
 
         subscribeObserver();
 
@@ -57,7 +60,7 @@ public class SearchViewListDialogFragment extends DialogFragment implements Sear
     }
 
     private void subscribeObserver(){
-        mGooglePlacesViewModel.getPredictionsPlaceAutocomplete().observe(requireActivity(), new Observer<List<Prediction>>() {
+        mListViewModel.getPredictionsPlaceAutocomplete().observe(requireActivity(), new Observer<List<Prediction>>() {
             @Override
             public void onChanged(List<Prediction> predictions) {
                 if (predictions != null){
@@ -79,7 +82,7 @@ public class SearchViewListDialogFragment extends DialogFragment implements Sear
 
     @Override
     public void onRecyclerViewItemClick(Restaurant restaurant) {
-        mGooglePlacesViewModel.restaurantDetails(restaurant.getPlaceId(), Constants.PLACES_TYPE, 1);
+        mDetailViewModel.searchRestaurantDetails(restaurant.getPlaceId(), Constants.PLACES_TYPE, 1);
         dismiss();
     }
 }

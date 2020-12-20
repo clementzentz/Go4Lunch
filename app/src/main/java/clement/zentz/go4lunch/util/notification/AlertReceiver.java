@@ -38,9 +38,9 @@ public class AlertReceiver extends BroadcastReceiver {
 
         ConvertUtil convertUtil = new ConvertUtil();
 
-        if (intent.hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID) && intent.hasExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID)){
-            String userId = intent.getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID);
-            String restaurantId = intent.getStringExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID);
+        if (intent.hasExtra(Constants.INTENT_CURRENT_RESTAURANT_ID) && intent.hasExtra(Constants.INTENT_CURRENT_USER_ID)){
+            String userId = intent.getStringExtra(Constants.INTENT_CURRENT_USER_ID);
+            String restaurantId = intent.getStringExtra(Constants.INTENT_CURRENT_RESTAURANT_ID);
 
             Task<DocumentSnapshot> currentUserTask = FirebaseFirestore.getInstance().collection(Constants.WORKMATES_COLLECTION).document(userId).get();
             Task<QuerySnapshot> workmatesJoiningTask = FirebaseFirestore.getInstance().collection(Constants.WORKMATES_COLLECTION).whereEqualTo(Constants.RESTAURANT_ID, restaurantId).get();
@@ -69,8 +69,8 @@ public class AlertReceiver extends BroadcastReceiver {
                 public void onSuccess(Void aVoid) {
                     // Create an explicit intent for an Activity in your app
                     Intent intentNotification = new Intent(context, RestaurantDetailsActivity.class);
-                    intentNotification.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_USER_ID, userId);
-                    intentNotification.putExtra(Constants.RESTAURANT_DETAILS_CURRENT_RESTAURANT_ID, restaurantId);
+                    intentNotification.putExtra(Constants.INTENT_CURRENT_USER_ID, userId);
+                    intentNotification.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, restaurantId);
                     intentNotification.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intentNotification, 0);
 
@@ -80,8 +80,8 @@ public class AlertReceiver extends BroadcastReceiver {
                             .setContentText("notification reminder : ")
                             .setStyle(new NotificationCompat.BigTextStyle().bigText(
                                     "Hey ! you have a lunch at "
-                                            + currentUser.getRestaurantName()+" "
-                                            + currentUser.getRestaurantAddress()+". " //get type + get Vicinity
+//                                            + currentUser.getRestaurantName()+" "
+//                                            + currentUser.getRestaurantAddress()+". " //get type + get Vicinity
                                             +" With your fellow workmates : "
                                             + workmatesJoiningNames
                             ))
