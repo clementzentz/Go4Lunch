@@ -39,10 +39,10 @@ public class DetailRepository {
     public DetailRepository(){
         mFirebaseApiClient = FirestoreApiClient.getInstance();
         mGooglePlacesAPIClient = GooglePlacesAPIClient.getInstance();
-        initCurrentUserMediator();
+        initCurrentRestaurantMediator();
     }
 
-    private void initCurrentUserMediator(){
+    private void initCurrentRestaurantMediator(){
 
         currentRestaurant.addSource(mGooglePlacesAPIClient.getRestaurantDetails(), new Observer<Restaurant>() {
             @Override
@@ -58,33 +58,27 @@ public class DetailRepository {
         currentRestaurant.addSource(mFirebaseApiClient.receiveGlobalRating(), new Observer<GlobalRating>() {
             @Override
             public void onChanged(GlobalRating globalRating) {
-                if (globalRating != null){
                     hasGlobalRating = true;
                     mGlobalRating = globalRating;
                     updateIfAll();
-                }
             }
         });
 
         currentRestaurant.addSource(mFirebaseApiClient.receiveWorkmatesJoining(), new Observer<List<Workmate>>() {
             @Override
             public void onChanged(List<Workmate> workmates) {
-                if (workmates != null){
                     hasWorkmatesJoining = true;
                     mWorkmatesJoining = workmates;
                     updateIfAll();
-                }
             }
         });
 
         currentRestaurant.addSource(mFirebaseApiClient.receiveAllRestaurantRatings(), new Observer<List<Rating>>() {
             @Override
             public void onChanged(List<Rating> ratings) {
-                if (ratings != null){
                     hasRatings = true;
                     mRatings = ratings;
                     updateIfAll();
-                }
             }
         });
 
@@ -112,6 +106,10 @@ public class DetailRepository {
 
     public void requestCurrentUser(String currentUserId){
         mFirebaseApiClient.requestCurrentUser(currentUserId);
+    }
+
+    public void updateCurrentUserField(String currentUserId, String fieldName, String value){
+        mFirebaseApiClient.updateCurrentUserField(currentUserId, fieldName, value);
     }
 
     public void searchRestaurantDetails(String restaurantId, String type, int code){

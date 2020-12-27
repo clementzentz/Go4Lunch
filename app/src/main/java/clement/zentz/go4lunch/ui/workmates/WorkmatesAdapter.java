@@ -19,7 +19,14 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.WorkmateViewHolder> {
 
-    private List<Workmate> allWorkmates = new ArrayList<>();
+    private final List<Workmate> allWorkmates = new ArrayList<>();
+
+    private final boolean isDetailActivity;
+
+
+    public WorkmatesAdapter(boolean isDetailActivity){
+        this.isDetailActivity = isDetailActivity;
+    }
 
     @NonNull
     @Override
@@ -35,12 +42,16 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
             Picasso.get().load(allWorkmates.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
         }
 
-        for (Workmate workmate : allWorkmates) {
-            if (workmate.getRestaurantId().equals(allWorkmates.get(position).getRestaurantId())){
-                holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+" is eating at "+workmate.getRestaurant().getName());
-            }else if (allWorkmates.get(position).getRestaurantId().isEmpty()){
-                holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " hasn't decided yet...");
+        if (!isDetailActivity){
+            for (Workmate workmate : allWorkmates) {
+                if (workmate.getRestaurantId().equals(allWorkmates.get(position).getRestaurantId())){
+                    holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " is eating at " +workmate.getRestaurant().getName());
+                }else if (allWorkmates.get(position).getRestaurantId().isEmpty()){
+                    holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " hasn't decided yet...");
+                }
             }
+        }else {
+            holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " is joining!");
         }
     }
 

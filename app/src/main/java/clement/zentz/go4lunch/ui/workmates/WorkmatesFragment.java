@@ -56,7 +56,7 @@ public class WorkmatesFragment extends Fragment{
 
     private void setupRecyclerView(){
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        adapter = new WorkmatesAdapter();
+        adapter = new WorkmatesAdapter(false);
         recyclerView.setAdapter(adapter);
     }
 }

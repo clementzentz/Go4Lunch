@@ -35,7 +35,6 @@ import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.dialogs.PermissionRationaleDialogFragment;
@@ -48,27 +47,24 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
 
     private static final String TAG = "RestaurantDetailsActivity";
 
-    //observers
-    private Restaurant restaurantWithDetails;
+    //adapter
+    private WorkmatesAdapter adapter;
 
-    //recyclerView
+    //views
     private RecyclerView recyclerView;
     private ImageView restaurantImg;
-    private WorkmatesAdapter adapter;
     private RatingBar mRatingBar;
-
     private TextView restaurantDetailsName;
     private TextView restaurantDetailsAddress;
 
-    //getIntent
+    //values
     private String currentUserId;
     private String currentRestaurantId;
+    Restaurant currentRestaurant;
 
     //viewModels
     private DetailViewModel mDetailViewModel;
     private ListViewModel mListViewModel;
-
-    private Workmate currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,9 +99,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         setupRecyclerView();
 
         fab.setOnClickListener(view -> {
-                currentUser.setRestaurantId(restaurantWithDetails.getPlaceId());
-                currentUser.setTimestamp(Timestamp.now());
-                mDetailViewModel.setCurrentUser(currentUser);
+                mDetailViewModel.updatedCurrentUserField(currentUserId, Constants.RESTAURANT_ID, currentRestaurantId);
                 mListViewModel.requestAllWorkmates();
                 startAlarm();
         });
@@ -115,8 +109,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
             public void onClick(View view) {
                 if (ActivityCompat.checkSelfPermission(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
                     Intent callIntent = new Intent(Intent.ACTION_CALL);
-                    if (restaurantWithDetails.getFormattedPhoneNumber() != null) {
-                        callIntent.setData(Uri.parse("tel:+"+restaurantWithDetails.getFormattedPhoneNumber()));
+                    if (currentRestaurant.getFormattedPhoneNumber() != null) {
+                        callIntent.setData(Uri.parse("tel:+"+currentRestaurant.getFormattedPhoneNumber()));
                         startActivity(callIntent);
                     }
                 }else if(ActivityCompat.shouldShowRequestPermissionRationale(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE)){
@@ -139,8 +133,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         restaurantDetailsWebsiteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (restaurantWithDetails.getWebsite() != null){
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(restaurantWithDetails.getWebsite()));
+                if (currentRestaurant.getWebsite() != null){
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(currentRestaurant.getWebsite()));
                     startActivity(browserIntent);
                 }else {
                     Toast.makeText(RestaurantDetailsActivity.this, "sorry, we could not find any website associate with this place.", Toast.LENGTH_SHORT).show();
@@ -158,7 +152,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
 
     private void setupRecyclerView(){
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        adapter = new WorkmatesAdapter();
+        adapter = new WorkmatesAdapter(true);
         recyclerView.setAdapter(adapter);
     }
 
@@ -166,87 +160,12 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public void subscribeObservers(){
 
-//        mFirestoreViewModel.receiveCurrentUserWithWorkmateId().observe(this, new Observer<Workmate>() {
-//            @Override
-//            public void onChanged(Workmate user) {
-//                if (user != null){
-//                    currentUserFromFirestore = user;
-//                    mSharedViewModel.setCurrentUserId(user);
-//                    if (isYourLunch){
-//                        mGooglePlacesViewModel.restaurantDetails(user.getRestaurantId(), Constants.PLACES_TYPE, 0);
-//                        mFirestoreViewModel.requestWorkmatesWithRestaurantId(user.getRestaurantId());
-//                    }
-//                }
-//            }
-//        });
-//
-//        mGooglePlacesViewModel.getRestaurantDetails().observe(this, new Observer<Restaurant>() {
-//            @Override
-//            public void onChanged(Restaurant restaurant) {
-//                if (restaurant != null){
-//                    restaurantWithDetails = restaurant;
-//                    if (restaurantWithDetails.getPhotos() != null){
-//                        Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
-//                                + "key=" + Constants.API_KEY
-//                                + "&maxwidth=200"
-//                                + "&maxheight=200"
-//                                + "&photoreference=" + (restaurantWithDetails.getPhotos().get(0).getPhotoReference()))
-//                                .resize(200, 200)
-//                                .centerCrop()
-//                                .into(restaurantImg);
-//                    }
-//                    restaurantDetailsName.setText(restaurantWithDetails.getName());
-//                    restaurantDetailsAddress.setText(restaurantWithDetails.getTypes().get(0)+" - "+restaurantWithDetails.getVicinity());
-//                }
-//            }
-//        });
-//
-//        mGooglePlacesViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
-//            @Override
-//            public void onChanged(List<Restaurant> restaurants) {
-//                adapter.setRestaurantList(restaurants);
-//            }
-//        });
-//
-//        mFirestoreViewModel.receiveAllWorkmates4ThisRestaurant().observe(this, new Observer<List<Workmate>>() {
-//            @Override
-//            public void onChanged(List<Workmate> workmateList) {
-//                adapter.setAllWorkmates(workmateList);
-//            }
-//        });
-//
-//        mFirestoreViewModel.receiveAllRatings4ThisRestaurant().observe(this, new Observer<List<Rating>>() {
-//            @Override
-//            public void onChanged(List<Rating> ratings) {
-//                double ratingsSum = 0;
-//                if (!ratings.isEmpty() && ratings != null){
-//                    for (Rating rating : ratings){
-//                        ratingsSum = ratingsSum + rating.getRating();
-//                    }
-//                    GlobalRating globalRating = new GlobalRating((float)ratingsSum/ratings.size(), restaurantId);
-//                    mFirestoreViewModel.addOrUpdateGlobalRating(globalRating);
-//                    mFirestoreViewModel.requestAllGlobalRatings();
-//                }
-//            }
-//        });
-//
-//        mFirestoreViewModel.receiveGlobalRating4ThisRestaurant().observe(this, new Observer<GlobalRating>() {
-//            @Override
-//            public void onChanged(GlobalRating globalRating) {
-//                if (globalRating != null){
-//                    mRatingBar.setRating((float) globalRating.getGlobalRating());
-//                }else {
-//                    mRatingBar.setVisibility(View.GONE);
-//                }
-//            }
-//        });
-
         mDetailViewModel.getCurrentRestaurant().observe(this, new Observer<Pair<Restaurant, List<Rating>>>() {
             @Override
             public void onChanged(Pair<Restaurant, List<Rating>> listPair) {
                 if (listPair.first != null){
 
-                    Restaurant restaurant = listPair.first;
+                    currentRestaurant = listPair.first;
 
                     if (listPair.second != null){
                         double sum = 0;
@@ -254,29 +173,29 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
                         for (Rating rating : restaurantRatings){
                             sum = sum + rating.getRating();
                         }
-                        mDetailViewModel.setGlobalRating(new GlobalRating(sum, restaurant.getPlaceId()));
-
+                        sum = sum / restaurantRatings.size();
+                        mDetailViewModel.setGlobalRating(new GlobalRating(sum, currentRestaurant.getPlaceId()));
                     }
 
-                    if (restaurant.getPhotos() != null){
+                    if (currentRestaurant.getPhotos() != null){
                         Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
                                 + "key=" + Constants.API_KEY
                                 + "&maxwidth=200"
                                 + "&maxheight=200"
-                                + "&photoreference=" + (restaurant.getPhotos().get(0).getPhotoReference()))
+                                + "&photoreference=" + (currentRestaurant.getPhotos().get(0).getPhotoReference()))
                                 .resize(200, 200)
                                 .centerCrop()
                                 .into(restaurantImg);
                     }
-                    restaurantDetailsName.setText(restaurant.getName());
-                    restaurantDetailsAddress.setText(restaurant.getTypes().get(0)+" - "+restaurant.getVicinity());
+                    restaurantDetailsName.setText(currentRestaurant.getName());
+                    restaurantDetailsAddress.setText(currentRestaurant.getTypes().get(0)+" - "+ currentRestaurant.getVicinity());
 
-                    if (restaurant.getGlobalRating() != 0){
-                        mRatingBar.setRating((float) restaurant.getGlobalRating());
+                    if (currentRestaurant.getGlobalRating() != 0){
+                        mRatingBar.setRating((float) currentRestaurant.getGlobalRating());
                     }else {
                         mRatingBar.setVisibility(View.GONE);
                     }
-                    adapter.setAllWorkmates(restaurant.getWorkmatesJoining());
+                    adapter.setAllWorkmates(currentRestaurant.getWorkmatesJoining());
                 }
             }
         });
@@ -296,15 +215,15 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
     }
 
     private void getIncomingIntent(){
-        if (getIntent().hasExtra(Constants.INTENT_CURRENT_USER_ID) && getIntent().hasExtra(Constants.INTENT_CURRENT_RESTAURANT_ID)){
+        if (getIntent().hasExtra(Constants.INTENT_CURRENT_USER_ID) && getIntent().hasExtra(Constants.INTENT_CURRENT_RESTAURANT_ID)) {
             currentUserId = getIntent().getStringExtra(Constants.INTENT_CURRENT_USER_ID);
             currentRestaurantId = getIntent().getStringExtra(Constants.INTENT_CURRENT_RESTAURANT_ID);
-            if (currentRestaurantId.equals("")){
-                displayNoRestaurantFound();
-            }else {
-                mDetailViewModel.searchRestaurantDetails(currentRestaurantId, Constants.PLACES_TYPE, 0);
-                mDetailViewModel.requestWorkmatesJoining(currentRestaurantId);
-            }
+            mDetailViewModel.searchRestaurantDetails(currentRestaurantId, Constants.PLACES_TYPE, 0);
+            mDetailViewModel.requestWorkmatesJoining(currentRestaurantId);
+            mDetailViewModel.requestGlobalRating(currentRestaurantId);
+            mDetailViewModel.requestAllRestaurantRatings(currentRestaurantId);
+        }else {
+            displayNoRestaurantFound();
         }
     }
 

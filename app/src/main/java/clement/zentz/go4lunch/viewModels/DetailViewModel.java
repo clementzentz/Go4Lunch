@@ -12,7 +12,6 @@ import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.repository.DetailRepository;
-import clement.zentz.go4lunch.repository.ListRepository;
 
 public class DetailViewModel extends ViewModel {
 
@@ -44,6 +43,10 @@ public class DetailViewModel extends ViewModel {
 
     public void requestCurrentUser(String currentUserId){
         mDetailRepository.requestCurrentUser(currentUserId);
+    }
+
+    public void updatedCurrentUserField(String currentUserId, String fieldName, String value){
+        mDetailRepository.updateCurrentUserField(currentUserId, fieldName, value);
     }
 
     public void searchRestaurantDetails(String restaurantId, String type, int code){

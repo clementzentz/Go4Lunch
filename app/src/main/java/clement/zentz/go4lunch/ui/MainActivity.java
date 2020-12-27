@@ -30,9 +30,16 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
 import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.rating.GlobalRating;
+import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
+import clement.zentz.go4lunch.util.fakeData.DataAssetHelper;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
 import clement.zentz.go4lunch.viewModels.ListViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
@@ -82,7 +89,7 @@ public class MainActivity extends BaseActivity {
         mListViewModel.requestAllWorkmates();
         mListViewModel.requestAllGlobalRatings();
 
-//        getDataFromJsonFile();
+//        retrieveDataFromAssets();
 
         BottomNavigationView bottomNavView = findViewById(R.id.bottom_nav_view);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -145,6 +152,9 @@ public class MainActivity extends BaseActivity {
                 if (workmate != null){
                     configureNavDrawer(workmate);
                     mSharedViewModel.setCurrentUserId(workmate.getWorkmateId());
+                }else {
+                    configureNavDrawer(workmate);
+                    displayErrorScreen("error");
                 }
             }
         });
@@ -161,7 +171,6 @@ public class MainActivity extends BaseActivity {
 //        showParent();
         showProgressBar(false);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -244,8 +253,37 @@ public class MainActivity extends BaseActivity {
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
         }
+    }
+
+    private void retrieveDataFromAssets(){
+
+        DataAssetHelper dataAssetHelper = new DataAssetHelper();
+        InputStream inputStreamWorkmates = null, inputStreamRatings = null, inputStreamGlobalRatings = null;
+
+        try {
+            inputStreamWorkmates = this.getAssets().open("fake_workmates.json");
+            inputStreamRatings = this.getAssets().open("fake_workmates_ratings.json");
+            inputStreamGlobalRatings = this.getAssets().open("fake_workmates_global_ratings.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<Workmate> fakeWorkmateList = (List<Workmate>) dataAssetHelper.getDataFromJsonFile(inputStreamWorkmates, Constants.FAKE_WORKMATES);
+        List<Rating> fakeRatingList = (List<Rating>) dataAssetHelper.getDataFromJsonFile(inputStreamRatings, Constants.FAKE_RATINGS);
+        List<GlobalRating> fakeGlobalRatingList = (List<GlobalRating>) dataAssetHelper.getDataFromJsonFile(inputStreamGlobalRatings, Constants.FAKE_GLOBAL_RATINGS);
+
+        for (Workmate workmate : fakeWorkmateList){
+            mDetailViewModel.setCurrentUser(workmate);
+        }
+        for (Rating rating : fakeRatingList){
+            mDetailViewModel.setUserRating(rating);
+        }
+        for (GlobalRating globalRating : fakeGlobalRatingList)
+        mDetailViewModel.setGlobalRating(globalRating);
     }
     //power mockito
 }

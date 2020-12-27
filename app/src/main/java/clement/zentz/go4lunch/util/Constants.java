@@ -50,4 +50,9 @@ public abstract class Constants  {
     public static final int RESTAURANT_TYPE = 1;
     public static final int LOADING_TYPE = 2;
     public static final int EXHAUSTED_TYPE = 3;
+
+    //Data Asset
+    public static final String FAKE_WORKMATES = "fakeWorkmates";
+    public static final String FAKE_RATINGS = "fakeRatings";
+    public static final String FAKE_GLOBAL_RATINGS = "fakeGlobalRatings";
 }

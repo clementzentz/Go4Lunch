@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -28,8 +29,8 @@ public class FirestoreApiClient {
     private static final String TAG = "FirestoreApiClient";
 
     private final MutableLiveData<List<Workmate>> allWorkmates;
-    private final MutableLiveData<List<Workmate>> workmatesWithRestaurantId;
-    private final MutableLiveData<Workmate> currentUserWithWorkmateId;
+    private final MutableLiveData<List<Workmate>> workmatesJoining;
+    private final MutableLiveData<Workmate> currentUser;
 
     private final MutableLiveData<List<Rating>> allRatings;
     private final MutableLiveData<GlobalRating> globalRating;
@@ -43,8 +44,8 @@ public class FirestoreApiClient {
         convertUtil = new ConvertUtil();
         db = FirebaseFirestore.getInstance();
         allWorkmates = new MutableLiveData<>();
-        workmatesWithRestaurantId = new MutableLiveData<>();
-        currentUserWithWorkmateId = new MutableLiveData<>();
+        workmatesJoining = new MutableLiveData<>();
+        currentUser = new MutableLiveData<>();
         allRatings = new MutableLiveData<>();
         globalRating = new MutableLiveData<>();
         allGlobalRatings = new MutableLiveData<>();
@@ -62,11 +63,11 @@ public class FirestoreApiClient {
     }
 
     public LiveData<List<Workmate>> receiveWorkmatesJoining(){
-        return workmatesWithRestaurantId;
+        return workmatesJoining;
     }
 
     public LiveData<Workmate> receiveCurrentUser(){
-        return currentUserWithWorkmateId;
+        return currentUser;
     }
 
     public LiveData<List<Rating>> receiveAllRestaurantRatings(){
@@ -93,10 +94,10 @@ public class FirestoreApiClient {
                             Log.d(TAG, document.getId() + " => " + document.getData());
                             workmateList.add(convertUtil.convertMapToWorkmate(document.getData()));
                         }
-                        allWorkmates.postValue(workmateList);
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
+                    allWorkmates.postValue(workmateList);
                 });
     }
 
@@ -113,16 +114,15 @@ public class FirestoreApiClient {
                             Log.d(TAG, document.getId() + " => " + document.getData());
                             workmateList.add(convertUtil.convertMapToWorkmate(document.getData()));
                         }
-                        workmatesWithRestaurantId.postValue(workmateList);
+                        workmatesJoining.postValue(workmateList);
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
+                        workmatesJoining.postValue(workmateList);
                     }
                 });
     }
 
     public void requestCurrentUser(String workmateId){
-
-        List<Workmate> workmateList = new ArrayList<>();
 
         db.collection(Constants.WORKMATES_COLLECTION)
                 .whereEqualTo(Constants.WORKMATE_ID, workmateId)
@@ -131,19 +131,19 @@ public class FirestoreApiClient {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Log.d(TAG, document.getId() + " => " + document.getData());
-                            workmateList.add(convertUtil.convertMapToWorkmate(document.getData()));
-                        }if (!workmateList.isEmpty()){
-                            currentUserWithWorkmateId.postValue(workmateList.get(0));
+                            currentUser.postValue(convertUtil.convertMapToWorkmate(document.getData()));
                         }
-                    } else {
+                    }else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
-                        currentUserWithWorkmateId.postValue(null);
+                        currentUser.postValue(null);
                     }
                 });
     }
 
     public void requestAllRestaurantRatings(String restaurantId){
+
         List<Rating> ratingList = new ArrayList<>();
+
         db.collection(Constants.RATINGS_COLLECTION)
                 .whereEqualTo(Constants.RESTAURANT_ID, restaurantId)
                 .get()
@@ -154,11 +154,10 @@ public class FirestoreApiClient {
                             for (QueryDocumentSnapshot document : task.getResult()){
                                 ratingList.add(convertUtil.convertMapToRating(document.getData()));
                             }
-                            allRatings.postValue(ratingList);
                         }else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
-                            allRatings.postValue(null);
                         }
+                        allRatings.postValue(ratingList);
                     }
                 });
     }
@@ -172,7 +171,6 @@ public class FirestoreApiClient {
                     if (task.isSuccessful()){
                         for (QueryDocumentSnapshot document : task.getResult()){
                             Log.e(TAG, document.getId() + " => "+document.getData());
-                            Log.e(TAG, "onComplete: test2");
                             globalRating.postValue(convertUtil.convertMapToGlobalRating(document.getData()));
                         }
                     }else {
@@ -196,10 +194,10 @@ public class FirestoreApiClient {
                                 Log.e(TAG, "onComplete: test");
                                 globalRatingList.add(convertUtil.convertMapToGlobalRating(document.getData()));
                             }
-                            allGlobalRatings.postValue(globalRatingList);
                         }else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
+                        allGlobalRatings.postValue(globalRatingList);
                     }
                 });
     }
@@ -218,6 +216,16 @@ public class FirestoreApiClient {
                 .set(user)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
+    }
+
+    public void updateCurrentUserField(String currentUserId, String fieldName, String value){
+        db.collection(Constants.WORKMATES_COLLECTION)
+                .document(currentUserId)
+                .update(
+                        fieldName, value,
+                        Constants.TIMESTAMP, Timestamp.now())
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully updated!"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error updating document", e));
     }
 
     public void setUserRating(Rating rating){
