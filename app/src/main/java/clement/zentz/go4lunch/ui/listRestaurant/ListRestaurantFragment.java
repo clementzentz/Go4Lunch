@@ -30,7 +30,7 @@ import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.viewModels.ListViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
 
-public class ListRestaurantFragment extends Fragment implements ListRestaurantFragmentToListRestaurantAdapter {
+public class ListRestaurantFragment extends Fragment implements ListInterfaceToAdapter {
 
     private SharedViewModel mSharedViewModel;
     private ListViewModel mListViewModel;
@@ -79,7 +79,9 @@ public class ListRestaurantFragment extends Fragment implements ListRestaurantFr
         mSharedViewModel.getCurrentUserId().observe(getViewLifecycleOwner(), new Observer<String>() {
                     @Override
                     public void onChanged(String s) {
-                        currentUserId = s;
+                        if (s != null){
+                            currentUserId = s;
+                        }
                     }
                 });
 

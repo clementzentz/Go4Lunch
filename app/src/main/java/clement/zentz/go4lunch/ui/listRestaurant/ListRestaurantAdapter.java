@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.interfaces.SearchViewListDialogToListRestaurantAdapter;
 
@@ -29,13 +27,13 @@ import static clement.zentz.go4lunch.util.Constants.RESTAURANT_TYPE;
 
 public class ListRestaurantAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public ListRestaurantFragmentToListRestaurantAdapter mListRestaurantFragmentToListRestaurantAdapter;
+    public ListInterfaceToAdapter mListInterfaceToAdapter;
     public SearchViewListDialogToListRestaurantAdapter mSearchViewListDialogToListRestaurantAdapter;
 
     private List<Restaurant> allRestaurants;
 
-    public ListRestaurantAdapter(ListRestaurantFragmentToListRestaurantAdapter listRestaurantFragmentToListRestaurantAdapter) {
-        mListRestaurantFragmentToListRestaurantAdapter = listRestaurantFragmentToListRestaurantAdapter;
+    public ListRestaurantAdapter(ListInterfaceToAdapter listInterfaceToAdapter) {
+        mListInterfaceToAdapter = listInterfaceToAdapter;
         allRestaurants = new ArrayList<>();
     }
 
@@ -77,8 +75,8 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         holder.itemView.setOnClickListener(view -> {
             if (allRestaurants.get(position) != null){
-                if (mListRestaurantFragmentToListRestaurantAdapter != null){
-                    mListRestaurantFragmentToListRestaurantAdapter.launchDetailRestaurantActivity(allRestaurants.get(position));
+                if (mListInterfaceToAdapter != null){
+                    mListInterfaceToAdapter.launchDetailRestaurantActivity(allRestaurants.get(position));
                 }else if (mSearchViewListDialogToListRestaurantAdapter != null){
                     mSearchViewListDialogToListRestaurantAdapter.onRecyclerViewItemClick(allRestaurants.get(position));
                 }

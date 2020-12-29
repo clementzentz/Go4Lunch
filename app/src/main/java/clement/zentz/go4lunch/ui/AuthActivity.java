@@ -19,12 +19,18 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import clement.zentz.go4lunch.R;
+import clement.zentz.go4lunch.models.rating.GlobalRating;
+import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
+import clement.zentz.go4lunch.util.fakeData.DataAssetHelper;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
 
 public class AuthActivity extends BaseActivity {
@@ -32,61 +38,18 @@ public class AuthActivity extends BaseActivity {
     private static final String TAG = "AuthActivity";
     private static final int RC_SIGN_IN = 123;
 
+    private DetailViewModel mDetailViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        retrieveDataFromAssets();
+
+        mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
+
         startAuthUIActivityForResult();
-
-//        List<AuthUI.IdpConfig> providers = Arrays.asList(
-//                new AuthUI.IdpConfig.EmailBuilder().build(),
-//                new AuthUI.IdpConfig.GoogleBuilder().build(),
-//                new AuthUI.IdpConfig.FacebookBuilder().build(),
-//                new AuthUI.IdpConfig.TwitterBuilder().build());
-//
-//        startActivityForResult(
-//                AuthUI.getInstance()
-//                        .createSignInIntentBuilder()
-//                        .setAvailableProviders(providers)
-//                        .build(),
-//                RC_SIGN_IN);
     }
-
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        if (requestCode == RC_SIGN_IN) {
-//            IdpResponse response = IdpResponse.fromResultIntent(data);
-//
-//            if (resultCode == RESULT_OK) {
-//                // Successfully signed in
-//                Intent intent = new Intent(this, MainActivity.class);
-//                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//
-//                String userPhotoUrl = null;
-//                if (user.getPhotoUrl() != null){
-//                    userPhotoUrl = user.getPhotoUrl().toString();
-//                }
-//                Workmate workmate = new Workmate(
-//                        user.getUid(),
-//                        user.getDisplayName(),
-//                        user.getEmail(),
-//                        userPhotoUrl,
-//                        "",
-//                        Timestamp.now());
-//
-//                intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, workmate);
-//                startActivity(intent);
-//                // ...
-//            }else {
-//                // Sign in failed. If response is null the user canceled the
-//                // sign-in flow using the back button. Otherwise check
-//                // response.getError().getErrorCode() and handle the error.
-//                // ...
-//            }
-//        }
-//    }
 
     private void startAuthUIActivityForResult(){
 
@@ -105,10 +68,26 @@ public class AuthActivity extends BaseActivity {
                         IdpResponse response = IdpResponse.fromResultIntent(result.getData());
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             // Handle the Intent
-                            String currentUserId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-                            Intent intent = new Intent(AuthActivity.this, MainActivity.class);
-                            intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, currentUserId);
-                            startActivity(intent);
+                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            Workmate currentUser;
+                            String userPhotoUrl = null;
+                            if (user != null) {
+                                if (user.getPhotoUrl() != null) {
+                                    userPhotoUrl = user.getPhotoUrl().toString();
+                                }
+                                currentUser = new Workmate(
+                                        user.getUid(),
+                                        user.getDisplayName(),
+                                        user.getEmail(),
+                                        userPhotoUrl,
+                                        "",
+                                        Timestamp.now());
+
+                                mDetailViewModel.setCurrentUser(currentUser);
+                                Intent intent = new Intent(AuthActivity.this, MainActivity.class);
+                                intent.putExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY, currentUser.getWorkmateId());
+                                startActivity(intent);
+                            }
 
                         }else if (result.getResultCode() == Activity.RESULT_CANCELED){
                             Log.d(TAG, "onActivityResult: user canceled the authentication process.");
@@ -131,4 +110,30 @@ public class AuthActivity extends BaseActivity {
 
     }
 
+    private void retrieveDataFromAssets(){
+
+        DataAssetHelper dataAssetHelper = new DataAssetHelper();
+        InputStream inputStreamWorkmates = null, inputStreamRatings = null, inputStreamGlobalRatings = null;
+
+        try {
+            inputStreamWorkmates = this.getAssets().open("fake_workmates.json");
+            inputStreamRatings = this.getAssets().open("fake_workmates_ratings.json");
+            inputStreamGlobalRatings = this.getAssets().open("fake_workmates_global_ratings.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<Workmate> fakeWorkmateList = (List<Workmate>) dataAssetHelper.getDataFromJsonFile(inputStreamWorkmates, Constants.FAKE_WORKMATES);
+        List<Rating> fakeRatingList = (List<Rating>) dataAssetHelper.getDataFromJsonFile(inputStreamRatings, Constants.FAKE_RATINGS);
+        List<GlobalRating> fakeGlobalRatingList = (List<GlobalRating>) dataAssetHelper.getDataFromJsonFile(inputStreamGlobalRatings, Constants.FAKE_GLOBAL_RATINGS);
+
+        for (Workmate workmate : fakeWorkmateList){
+            mDetailViewModel.setCurrentUser(workmate);
+        }
+        for (Rating rating : fakeRatingList){
+            mDetailViewModel.setUserRating(rating);
+        }
+        for (GlobalRating globalRating : fakeGlobalRatingList)
+            mDetailViewModel.setGlobalRating(globalRating);
+    }
 }

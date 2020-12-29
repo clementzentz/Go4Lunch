@@ -68,16 +68,20 @@ public class MainActivity extends BaseActivity {
     private ImageView currentUserImage;
     private TextView currentUserName;
     private TextView currentUserEmail;
+    private DrawerLayout drawer;
+    private NavigationView navigationView;
+
+    //bottom nav
+    BottomNavigationView bottomNavView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        createNotificationChannel();
+        initViews();
 
-        toolbar = findViewById(R.id.main_activity_toolbar);
-        mSearchView = findViewById(R.id.main_activity_search_view);
+        createNotificationChannel();
 
         setSupportActionBar(toolbar);
         toolbar.setTitle(getString(R.string.app_name));
@@ -86,13 +90,14 @@ public class MainActivity extends BaseActivity {
         mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
         mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
 
+        subscribeObservers();
+
         mListViewModel.requestAllWorkmates();
         mListViewModel.requestAllGlobalRatings();
+        getIncomingIntentFromAuthActivity();
 
-//        retrieveDataFromAssets();
-
-        BottomNavigationView bottomNavView = findViewById(R.id.bottom_nav_view);
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        bottomNavView = findViewById(R.id.bottom_nav_view);
+        drawer = findViewById(R.id.drawer_layout);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -104,10 +109,25 @@ public class MainActivity extends BaseActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
 
-        showProgressBar(true);
-        subscribeObservers();
-        getIncomingIntentFromAuthActivity();
         initSearchView();
+        showProgressBar(true);
+    }
+
+    private void initViews(){
+        //Nav Drawer
+        drawer = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        View navHeader = navigationView.getHeaderView(0);
+        currentUserImage = navHeader.findViewById(R.id.user_img);
+        currentUserName = navHeader.findViewById(R.id.displayName_user_txt);
+        currentUserEmail = navHeader.findViewById(R.id.email_user_txt);
+
+        //appbar
+        toolbar = findViewById(R.id.main_activity_toolbar);
+        mSearchView = findViewById(R.id.main_activity_search_view);
+
+        //bottom nav
+        bottomNavView = findViewById(R.id.bottom_nav_view);
     }
 
     private void initSearchView(){
@@ -151,9 +171,7 @@ public class MainActivity extends BaseActivity {
             public void onChanged(Workmate workmate) {
                 if (workmate != null){
                     configureNavDrawer(workmate);
-                    mSharedViewModel.setCurrentUserId(workmate.getWorkmateId());
                 }else {
-                    configureNavDrawer(workmate);
                     displayErrorScreen("error");
                 }
             }
@@ -194,21 +212,13 @@ public class MainActivity extends BaseActivity {
     private void getIncomingIntentFromAuthActivity(){
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
             currentUserId = getIntent().getStringExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
+            mSharedViewModel.setCurrentUserId(currentUserId);
             mDetailViewModel.requestCurrentUser(currentUserId);
         }
     }
 
     //configure nav drawer
     private void configureNavDrawer(Workmate currentUser){
-        //Nav Drawer
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        View navHeader = navigationView.getHeaderView(0);
-
-        //nav header
-        currentUserImage = navHeader.findViewById(R.id.user_img);
-        currentUserName = navHeader.findViewById(R.id.displayName_user_txt);
-        currentUserEmail = navHeader.findViewById(R.id.email_user_txt);
 
         currentUserName.setText(currentUser.getWorkmateName());
         currentUserEmail.setText(currentUser.getEmail());
@@ -221,6 +231,7 @@ public class MainActivity extends BaseActivity {
                 case R.id.nav_drawer_lunch_item :
                     Intent intent = new Intent(this, RestaurantDetailsActivity.class);
                     intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUser.getWorkmateId());
+                    intent.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, currentUser.getRestaurantId());
                     intent.putExtra(Constants.IS_YOUR_LUNCH, true);
                     startActivity(intent);
                     break;
@@ -257,33 +268,6 @@ public class MainActivity extends BaseActivity {
                 notificationManager.createNotificationChannel(channel);
             }
         }
-    }
-
-    private void retrieveDataFromAssets(){
-
-        DataAssetHelper dataAssetHelper = new DataAssetHelper();
-        InputStream inputStreamWorkmates = null, inputStreamRatings = null, inputStreamGlobalRatings = null;
-
-        try {
-            inputStreamWorkmates = this.getAssets().open("fake_workmates.json");
-            inputStreamRatings = this.getAssets().open("fake_workmates_ratings.json");
-            inputStreamGlobalRatings = this.getAssets().open("fake_workmates_global_ratings.json");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        List<Workmate> fakeWorkmateList = (List<Workmate>) dataAssetHelper.getDataFromJsonFile(inputStreamWorkmates, Constants.FAKE_WORKMATES);
-        List<Rating> fakeRatingList = (List<Rating>) dataAssetHelper.getDataFromJsonFile(inputStreamRatings, Constants.FAKE_RATINGS);
-        List<GlobalRating> fakeGlobalRatingList = (List<GlobalRating>) dataAssetHelper.getDataFromJsonFile(inputStreamGlobalRatings, Constants.FAKE_GLOBAL_RATINGS);
-
-        for (Workmate workmate : fakeWorkmateList){
-            mDetailViewModel.setCurrentUser(workmate);
-        }
-        for (Rating rating : fakeRatingList){
-            mDetailViewModel.setUserRating(rating);
-        }
-        for (GlobalRating globalRating : fakeGlobalRatingList)
-        mDetailViewModel.setGlobalRating(globalRating);
     }
     //power mockito
 }

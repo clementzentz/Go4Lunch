@@ -120,7 +120,9 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         mSharedViewModel.getCurrentUserId().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(String s) {
-                currentUserId = s;
+                if(s != null){
+                    currentUserId = s;
+                }
             }
         });
     }

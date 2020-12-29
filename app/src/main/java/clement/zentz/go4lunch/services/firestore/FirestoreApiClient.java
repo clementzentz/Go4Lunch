@@ -12,6 +12,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -213,7 +214,7 @@ public class FirestoreApiClient {
         user.put(Constants.TIMESTAMP, currentUser.getTimestamp());
         // Add a new document with a generated ID
         db.collection(Constants.WORKMATES_COLLECTION).document(currentUser.getWorkmateId())
-                .set(user)
+                .set(user, SetOptions.mergeFields())
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
     }
@@ -221,8 +222,7 @@ public class FirestoreApiClient {
     public void updateCurrentUserField(String currentUserId, String fieldName, String value){
         db.collection(Constants.WORKMATES_COLLECTION)
                 .document(currentUserId)
-                .update(
-                        fieldName, value,
+                .update(fieldName, value,
                         Constants.TIMESTAMP, Timestamp.now())
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully updated!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error updating document", e));

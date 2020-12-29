@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +36,7 @@ import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.dialogs.PermissionRationaleDialogFragment;
@@ -56,6 +58,10 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
     private RatingBar mRatingBar;
     private TextView restaurantDetailsName;
     private TextView restaurantDetailsAddress;
+    private FloatingActionButton fab;
+    private ImageButton restaurantDetailsCallBtn;
+    private ImageButton restaurantDetailsStarsBtn;
+    private ImageButton restaurantDetailsWebsiteBtn;
 
     //values
     private String currentUserId;
@@ -71,6 +77,9 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_restaurant);
 
+        initViews();
+        setupRecyclerView();
+
         mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
         mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
 
@@ -84,19 +93,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
-        restaurantDetailsName = findViewById(R.id.restaurant_details_name_txt);
-        restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
-        mRatingBar = findViewById(R.id.rating_bar_indicator_details);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        restaurantImg = findViewById(R.id.restaurant_detail_img);
-        ImageButton restaurantDetailsCallBtn = findViewById(R.id.restaurant_details_call_btn);
-        ImageButton restaurantDetailsStarsBtn = findViewById(R.id.restaurant_details_stars_btn);
-        ImageButton restaurantDetailsWebsiteBtn = findViewById(R.id.restaurant_details_website_btn);
-
-        recyclerView = findViewById(R.id.restaurantDetail_workmates_rv);
-        setupRecyclerView();
 
         fab.setOnClickListener(view -> {
                 mDetailViewModel.updatedCurrentUserField(currentUserId, Constants.RESTAURANT_ID, currentRestaurantId);
@@ -141,6 +137,18 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
                 }
             }
         });
+    }
+
+    private void initViews(){
+        restaurantDetailsName = findViewById(R.id.restaurant_details_name_txt);
+        restaurantDetailsAddress = findViewById(R.id.restaurant_details_address_txt);
+        mRatingBar = findViewById(R.id.rating_bar_indicator_details);
+        fab = findViewById(R.id.fab);
+        restaurantImg = findViewById(R.id.restaurant_detail_img);
+        restaurantDetailsCallBtn = findViewById(R.id.restaurant_details_call_btn);
+        restaurantDetailsStarsBtn = findViewById(R.id.restaurant_details_stars_btn);
+        restaurantDetailsWebsiteBtn = findViewById(R.id.restaurant_details_website_btn);
+        recyclerView = findViewById(R.id.restaurantDetail_workmates_rv);
     }
 
     @Override
@@ -202,7 +210,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
     }
 
     private void displayNoRestaurantFound(){
-        Picasso.get().load("")
+        Picasso.get().load(R.drawable.ic_launcher_background)
                 .placeholder(R.drawable.ic_launcher_background)
                 .resize(200, 200)
                 .centerCrop()
@@ -211,7 +219,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         restaurantDetailsName.setText("No Restaurant Found.");
         restaurantDetailsAddress.setText("Please check network connexion.");
         mRatingBar.setVisibility(View.GONE);
-        adapter.setAllWorkmates(null);
+        adapter.setAllWorkmates(new ArrayList<>());
     }
 
     private void getIncomingIntent(){

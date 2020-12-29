@@ -15,6 +15,7 @@ import java.util.List;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.workmate.Workmate;
+import clement.zentz.go4lunch.ui.listRestaurant.ListInterfaceToAdapter;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.WorkmateViewHolder> {
@@ -23,9 +24,16 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
 
     private final boolean isDetailActivity;
 
+    public ListInterfaceToAdapter mListInterfaceToAdapter;
+
 
     public WorkmatesAdapter(boolean isDetailActivity){
         this.isDetailActivity = isDetailActivity;
+    }
+
+    public WorkmatesAdapter(boolean isDetailActivity, ListInterfaceToAdapter listInterfaceToAdapter){
+        this.isDetailActivity = isDetailActivity;
+        mListInterfaceToAdapter = listInterfaceToAdapter;
     }
 
     @NonNull
@@ -38,29 +46,43 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
     @Override
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
 
-        if (!allWorkmates.get(position).getPhotoUrl().isEmpty()){
-            Picasso.get().load(allWorkmates.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
+        if (allWorkmates.get(position).getPhotoUrl() != null){
+            if (!allWorkmates.get(position).getPhotoUrl().isEmpty()){
+                Picasso.get().load(allWorkmates.get(position).getPhotoUrl()).into(holder.workmateProfileImg);
+            }
         }
 
         if (!isDetailActivity){
             for (Workmate workmate : allWorkmates) {
                 if (workmate.getRestaurantId().equals(allWorkmates.get(position).getRestaurantId())){
-                    holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " is eating at " +workmate.getRestaurant().getName());
+                    if (allWorkmates.get(position).getWorkmateName() != null){
+                        holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " is eating at " +workmate.getRestaurant().getName());
+                    }else {
+                        holder.workmateTxt.setText("No account name found is eating at " +workmate.getRestaurant().getName());
+                    }
                 }else if (allWorkmates.get(position).getRestaurantId().isEmpty()){
                     holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " hasn't decided yet...");
                 }
             }
         }else {
-            holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " is joining!");
+            if (allWorkmates.get(position).getWorkmateName() != null){
+                holder.workmateTxt.setText(allWorkmates.get(position).getWorkmateName()+ " is joining!");
+            }else {
+                holder.workmateTxt.setText("No account name found is joining!");
+            }
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mListInterfaceToAdapter.launchDetailRestaurantActivity(allWorkmates.get(position).getRestaurant());
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        if (allWorkmates != null){
-            return allWorkmates.size();
-        }
-        return 0;
+        return allWorkmates.size();
     }
 
     public void setAllWorkmates(List<Workmate> workmates){
