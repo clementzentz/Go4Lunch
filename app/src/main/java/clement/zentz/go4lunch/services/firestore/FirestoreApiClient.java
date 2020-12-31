@@ -192,7 +192,6 @@ public class FirestoreApiClient {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()){
                             for (QueryDocumentSnapshot document : task.getResult()){
-                                Log.e(TAG, "onComplete: test");
                                 globalRatingList.add(convertUtil.convertMapToGlobalRating(document.getData()));
                             }
                         }else {

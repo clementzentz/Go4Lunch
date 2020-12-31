@@ -10,6 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -17,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,10 +32,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
+
+import java.security.Permission;
 import java.util.List;
+import java.util.Objects;
+
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.util.dialogs.MapPermissionRationale;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.viewModels.ListViewModel;
@@ -51,7 +60,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     //google map
     private GoogleMap map;
     private boolean locationPermissionGranted;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastKnownLocation;
     private static final float DEFAULT_ZOOM = 14; //zoom
@@ -59,6 +67,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+
         //setup location
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
@@ -158,27 +167,20 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
         map = googleMap;
-
-        if (map!= null) {
+        if (map != null) {
             map.setOnMyLocationButtonClickListener(this);
             map.setOnMyLocationClickListener(this);
-
             map.setOnMarkerClickListener(this);
-
-            updateLocationUI();
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
 
             subscribeObservers();
-
-            getDeviceLocation();
         }
     }
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
         Toast.makeText(getContext(), "Current location: " + location, Toast.LENGTH_LONG).show();
-        getDeviceLocation();
     }
 
     @Override
@@ -186,52 +188,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
         Toast.makeText(getContext(), "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
-        getDeviceLocation();
         return false;
-    }
-
-    private void getLocationPermission() {
-        /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         */
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationPermissionGranted = true;
-        } else {
-            // Permission to access the location is missing. Show rationale and request permission
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    private void updateLocationUI() {
-            try {
-                if (locationPermissionGranted) {
-                    map.setMyLocationEnabled(true);
-                    map.getUiSettings().setMyLocationButtonEnabled(true);
-
-                } else {
-                    map.setMyLocationEnabled(false);
-                    map.getUiSettings().setMyLocationButtonEnabled(false);
-                    lastKnownLocation = null;
-                    getLocationPermission();
-                }
-            } catch (SecurityException e) {
-                Log.e("Exception: %s", e.getMessage());
-            }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        locationPermissionGranted = false;
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            // If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                locationPermissionGranted = true;
-            }
-        }
-        updateLocationUI();
     }
 
     private void getDeviceLocation() {
@@ -275,19 +232,29 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
                 Constants.PLACES_TYPE, "");
     }
 
-    private void getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        }else {
-            fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(requireActivity(), location -> {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            // Logic to handle location object
-                            lastKnownLocation = location;
-                        }
-                    });
+    // Register the permissions callback, which handles the user's response to the
+    // system permissions dialog. Save the return value, an instance of
+    // ActivityResultLauncher, as an instance variable.
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), this::onActivityResult);
+
+    private void onActivityResult(Boolean isGranted) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // You can use the API that requires the permission.
+            map.setMyLocationEnabled(true);
+            map.getUiSettings().setMyLocationButtonEnabled(true);
+            locationPermissionGranted = true;
+            getDeviceLocation();
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // In an educational UI, explain to the user why your app requires this
+            // permission for a specific feature to behave as expected. In this UI,
+            // include a "cancel" or "no thanks" button that allows the user to
+            // continue using your app without granting the permission.
+            MapPermissionRationale mapPermissionDialog = new MapPermissionRationale(requestPermissionLauncher);
+            mapPermissionDialog.show(getChildFragmentManager(), TAG);
+        } else {
+            // You can directly ask for the permission.
+            // The registered ActivityResultCallback gets the result of this request.
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
 }

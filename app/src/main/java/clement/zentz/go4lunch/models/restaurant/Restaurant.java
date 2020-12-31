@@ -3,6 +3,7 @@ package clement.zentz.go4lunch.models.restaurant;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
@@ -90,7 +91,7 @@ public class Restaurant implements Parcelable {
     @Expose
     private String website;
 
-    private List<Workmate> workmatesJoining;
+    private List<Workmate> workmatesJoining = new ArrayList<>();
     private double globalRating;
 
     public List<Workmate> getWorkmatesJoining(){

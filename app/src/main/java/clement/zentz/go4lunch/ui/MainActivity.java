@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -30,16 +31,9 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.models.rating.GlobalRating;
-import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
-import clement.zentz.go4lunch.util.fakeData.DataAssetHelper;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
 import clement.zentz.go4lunch.viewModels.ListViewModel;
 import clement.zentz.go4lunch.viewModels.SharedViewModel;
@@ -51,8 +45,6 @@ import static clement.zentz.go4lunch.util.Constants.CHANNEL_ID;
 public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
-
-    private String currentUserId;
 
     private Location locationUser;
 
@@ -79,6 +71,12 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
+        mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+        mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
+        mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
+
+        subscribeObservers();
+
         initViews();
 
         createNotificationChannel();
@@ -86,18 +84,8 @@ public class MainActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getString(R.string.app_name));
 
-        mSharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
-        mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
-        mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
-
-        subscribeObservers();
-
-        mListViewModel.requestAllWorkmates();
-        mListViewModel.requestAllGlobalRatings();
         getIncomingIntentFromAuthActivity();
 
-        bottomNavView = findViewById(R.id.bottom_nav_view);
-        drawer = findViewById(R.id.drawer_layout);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -109,8 +97,15 @@ public class MainActivity extends BaseActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNavView, navController);
 
-        initSearchView();
+        setupSearchView();
         showProgressBar(true);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mListViewModel.requestAllWorkmates();
+        mListViewModel.requestAllGlobalRatings();
     }
 
     private void initViews(){
@@ -130,7 +125,7 @@ public class MainActivity extends BaseActivity {
         bottomNavView = findViewById(R.id.bottom_nav_view);
     }
 
-    private void initSearchView(){
+    private void setupSearchView(){
 
         SearchViewListDialogFragment searchViewListDialogFragment = new SearchViewListDialogFragment();
 
@@ -147,7 +142,7 @@ public class MainActivity extends BaseActivity {
                         mListViewModel.searchPlaceAutocompletePredictions(
                                 s,
                                 "establishment",
-                                "500",
+                                "1000",
                                 locationUser.getLatitude()+","+locationUser.getLongitude()
                         );
                     }
@@ -162,7 +157,9 @@ public class MainActivity extends BaseActivity {
         mSharedViewModel.getLocationUser().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
-                locationUser = location;
+                if (location != null){
+                    locationUser = location;
+                }
             }
         });
 
@@ -171,24 +168,31 @@ public class MainActivity extends BaseActivity {
             public void onChanged(Workmate workmate) {
                 if (workmate != null){
                     configureNavDrawer(workmate);
-                }else {
-                    displayErrorScreen("error");
+                }
+            }
+        });
+
+        mListViewModel.isRestaurantNearbySearchTimeout().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean){
+                   Toast.makeText(getApplicationContext(), "sorry we could not find the restaurants, please check network connexion.", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-    private void displayErrorScreen(String errorMessage){
-        currentUserName.setText("Error retrieving user...");
-        currentUserEmail.setText("");
-
-        Picasso.get().load("")
-                .placeholder(R.drawable.ic_launcher_background)
-                .into(currentUserImage);
-
-//        showParent();
-        showProgressBar(false);
-    }
+//    private void displayErrorScreen(String errorMessage){
+//        currentUserName.setText("Error retrieving user...");
+//        currentUserEmail.setText("");
+//
+//        Picasso.get().load("")
+//                .placeholder(R.drawable.ic_launcher_background)
+//                .into(currentUserImage);
+//
+////      showParent();
+//        showProgressBar(false);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -211,7 +215,7 @@ public class MainActivity extends BaseActivity {
 
     private void getIncomingIntentFromAuthActivity(){
         if (getIntent().hasExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY)){
-            currentUserId = getIntent().getStringExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
+            String currentUserId = getIntent().getStringExtra(Constants.AUTH_ACTIVITY_TO_MAIN_ACTIVITY);
             mSharedViewModel.setCurrentUserId(currentUserId);
             mDetailViewModel.requestCurrentUser(currentUserId);
         }

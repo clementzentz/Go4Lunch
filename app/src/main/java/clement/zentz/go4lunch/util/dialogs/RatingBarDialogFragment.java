@@ -36,7 +36,7 @@ public class RatingBarDialogFragment extends DialogFragment {
         LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.custom_rating_dialog, null);
         RatingBar ratingBar = linearLayout.findViewById(R.id.rating_bar_dialog);
 
-        builder.setTitle("Noter ce restaurant :")
+        builder.setTitle("Rate this restaurant :")
                 .setView(linearLayout)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override

@@ -69,49 +69,53 @@ public class ListRestaurantAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-        ((ListRestaurantViewHolder)holder).restaurantName.setText(allRestaurants.get(position).getName());
+        int itemViewType = getItemViewType(position);
 
-        ((ListRestaurantViewHolder)holder).restaurantTypeAddress.setText(allRestaurants.get(position).getVicinity());
+        if (itemViewType == RESTAURANT_TYPE){
+            ((ListRestaurantViewHolder)holder).restaurantName.setText(allRestaurants.get(position).getName());
 
-        holder.itemView.setOnClickListener(view -> {
-            if (allRestaurants.get(position) != null){
-                if (mListInterfaceToAdapter != null){
-                    mListInterfaceToAdapter.launchDetailRestaurantActivity(allRestaurants.get(position));
-                }else if (mSearchViewListDialogToListRestaurantAdapter != null){
-                    mSearchViewListDialogToListRestaurantAdapter.onRecyclerViewItemClick(allRestaurants.get(position));
+            ((ListRestaurantViewHolder)holder).restaurantTypeAddress.setText(allRestaurants.get(position).getVicinity());
+
+            holder.itemView.setOnClickListener(view -> {
+                if (allRestaurants.get(position) != null){
+                    if (mListInterfaceToAdapter != null){
+                        mListInterfaceToAdapter.launchDetailRestaurantActivity(allRestaurants.get(position));
+                    }else if (mSearchViewListDialogToListRestaurantAdapter != null){
+                        mSearchViewListDialogToListRestaurantAdapter.onRecyclerViewItemClick(allRestaurants.get(position));
+                    }
+                }
+            });
+
+            String photoRef = null;
+            if (allRestaurants.get(position).getPhotos() != null){
+                for (int i = 0; i< allRestaurants.get(position).getPhotos().size() && photoRef == null; i++){
+                    if (allRestaurants.get(position).getPhotos().get(i) != null){
+                        photoRef = allRestaurants.get(position).getPhotos().get(i).getPhotoReference();
+                    }
+                }
+                if (photoRef != null){
+                    Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
+                            + "key=" + Constants.API_KEY
+                            + "&maxwidth="+Constants.MAX_WIDTH_PHOTO
+                            + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
+                            + "&photoreference=" + (photoRef))
+                            .into(((ListRestaurantViewHolder)holder).restaurantPhoto);
+                }else {
+                    ((ListRestaurantViewHolder)holder).restaurantPhoto.setVisibility(View.GONE);
                 }
             }
-        });
 
-        String photoRef = null;
-        if (allRestaurants.get(position).getPhotos() != null){
-            for (int i = 0; i< allRestaurants.get(position).getPhotos().size() && photoRef == null; i++){
-                if (allRestaurants.get(position).getPhotos().get(i) != null){
-                    photoRef = allRestaurants.get(position).getPhotos().get(i).getPhotoReference();
-                }
-            }
-            if (photoRef != null){
-                Picasso.get().load(Constants.BASE_URL_PHOTO_PLACE
-                        + "key=" + Constants.API_KEY
-                        + "&maxwidth="+Constants.MAX_WIDTH_PHOTO
-                        + "&maxheight="+Constants.MAX_HEIGHT_PHOTO
-                        + "&photoreference=" + (photoRef))
-                        .into(((ListRestaurantViewHolder)holder).restaurantPhoto);
+            ((ListRestaurantViewHolder)holder).workmatesCount.setText(String.valueOf(allRestaurants.get(position).getWorkmatesJoining().size()));
+
+            ((ListRestaurantViewHolder)holder).ratingBar.setRating((float) allRestaurants.get(position).getGlobalRating());
+
+            if (allRestaurants.get(position).getOpeningHours() == null) {
+                ((ListRestaurantViewHolder)holder).restaurantOpenNow.setVisibility(View.GONE);
+            }else if (allRestaurants.get(position).getOpeningHours().getOpenNow()){
+                ((ListRestaurantViewHolder)holder).restaurantOpenNow.setText("Opened now.");
             }else {
-                ((ListRestaurantViewHolder)holder).restaurantPhoto.setVisibility(View.GONE);
+                ((ListRestaurantViewHolder)holder).restaurantOpenNow.setText("Closed now.");
             }
-        }
-
-        ((ListRestaurantViewHolder)holder).workmatesCount.setText(String.valueOf(allRestaurants.get(position).getWorkmatesJoining().size()));
-
-        ((ListRestaurantViewHolder)holder).ratingBar.setRating((float) allRestaurants.get(position).getGlobalRating());
-
-        if (allRestaurants.get(position).getOpeningHours() == null) {
-            ((ListRestaurantViewHolder)holder).restaurantOpenNow.setVisibility(View.GONE);
-        }else if (allRestaurants.get(position).getOpeningHours().getOpenNow()){
-            ((ListRestaurantViewHolder)holder).restaurantOpenNow.setText("Opened now.");
-        }else {
-            ((ListRestaurantViewHolder)holder).restaurantOpenNow.setText("Closed now.");
         }
     }
 

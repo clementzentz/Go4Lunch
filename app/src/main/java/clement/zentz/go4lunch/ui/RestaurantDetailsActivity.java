@@ -16,7 +16,6 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
 import androidx.annotation.VisibleForTesting;
@@ -36,10 +35,9 @@ import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.rating.GlobalRating;
 import clement.zentz.go4lunch.models.rating.Rating;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
-import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.workmates.WorkmatesAdapter;
 import clement.zentz.go4lunch.util.Constants;
-import clement.zentz.go4lunch.util.dialogs.PermissionRationaleDialogFragment;
+import clement.zentz.go4lunch.util.dialogs.PhoneCallPermissionRationale;
 import clement.zentz.go4lunch.util.dialogs.RatingBarDialogFragment;
 import clement.zentz.go4lunch.util.notification.AlertReceiver;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
@@ -70,7 +68,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
 
     //viewModels
     private DetailViewModel mDetailViewModel;
-    private ListViewModel mListViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +78,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         setupRecyclerView();
 
         mDetailViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
-        mListViewModel = new ViewModelProvider(this).get(ListViewModel.class);
 
         subscribeObservers();
 
@@ -96,7 +92,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
 
         fab.setOnClickListener(view -> {
                 mDetailViewModel.updatedCurrentUserField(currentUserId, Constants.RESTAURANT_ID, currentRestaurantId);
-                mListViewModel.requestAllWorkmates();
+                mDetailViewModel.requestWorkmatesJoining(currentRestaurantId);
                 startAlarm();
         });
 
@@ -110,8 +106,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
                         startActivity(callIntent);
                     }
                 }else if(ActivityCompat.shouldShowRequestPermissionRationale(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE)){
-                    PermissionRationaleDialogFragment permissionRationaleDialogFragment = new PermissionRationaleDialogFragment();
-                    permissionRationaleDialogFragment.show(getSupportFragmentManager() , TAG);
+                    PhoneCallPermissionRationale phoneCallPermissionRationale = new PhoneCallPermissionRationale();
+                    phoneCallPermissionRationale.show(getSupportFragmentManager() , TAG);
                 }else{
                     ActivityCompat.requestPermissions(RestaurantDetailsActivity.this, new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
                 }

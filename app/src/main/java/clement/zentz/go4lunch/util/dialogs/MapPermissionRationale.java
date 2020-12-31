@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -15,22 +16,28 @@ import androidx.fragment.app.DialogFragment;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.util.Constants;
 
-public class PermissionRationaleDialogFragment extends DialogFragment {
+public class MapPermissionRationale extends DialogFragment {
+
+    private final ActivityResultLauncher<String> mActivityResultLauncher;
+
+    public MapPermissionRationale(ActivityResultLauncher<String> activityResultLauncher){
+        mActivityResultLauncher = activityResultLauncher;
+    }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(R.string.permission_rationale_call_phone_dialog)
-                .setPositiveButton(R.string.permission_rationale_allow, new DialogInterface.OnClickListener() {
+        builder.setMessage("We need the access of your location to search the places nearby you.")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
+                        mActivityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
                     }
                 })
-                .setNegativeButton(R.string.permission_rationale_cancel, new DialogInterface.OnClickListener() {
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Toast.makeText(getContext(), R.string.permission_denied, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(),"Permission denied.", Toast.LENGTH_SHORT).show();
                     }
                 });
         // Create the AlertDialog object and return it

@@ -33,6 +33,7 @@ public class GooglePlacesAPIClient {
     private final MutableLiveData<List<Restaurant>> mRestaurants;
     private final MutableLiveData<String> mPageToken;
     private RetrieveNearbyRestaurantsRunnable mRetrieveNearbyRestaurantsRunnable;
+    private final MutableLiveData<Boolean> mIsRestaurantNearbySearchTimeout = new MutableLiveData<>();
 
     //placeDetailsRequest
     private final MutableLiveData<Restaurant> mRestaurantDetails;
@@ -62,6 +63,10 @@ public class GooglePlacesAPIClient {
         return  mRestaurants;
     }
 
+    public LiveData<Boolean> isRestaurantNearbySearchTimeout(){
+        return mIsRestaurantNearbySearchTimeout;
+    }
+
     public LiveData<String> getNextPageToken(){
         return mPageToken;
     }
@@ -88,6 +93,7 @@ public class GooglePlacesAPIClient {
 
         AppExecutors.getInstance().getNetworkIO().schedule(() -> {
             //let the user know it's timed out
+            mIsRestaurantNearbySearchTimeout.postValue(true);
             handler.cancel(true);
 
         }, NETWORK_TIMEOUT, TimeUnit.MILLISECONDS);

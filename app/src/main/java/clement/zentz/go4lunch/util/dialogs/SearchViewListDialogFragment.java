@@ -19,6 +19,7 @@ import java.util.List;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.placeAutocomplete.Prediction;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
+import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.ui.listRestaurant.ListRestaurantAdapter;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.interfaces.SearchViewListDialogToListRestaurantAdapter;
@@ -33,6 +34,7 @@ public class SearchViewListDialogFragment extends DialogFragment implements Sear
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         mDetailViewModel = new ViewModelProvider(requireActivity()).get(DetailViewModel.class);
         mListViewModel = new ViewModelProvider(requireActivity()).get(ListViewModel.class);

@@ -77,6 +77,10 @@ public class ListViewModel extends ViewModel {
        return mListRepository.getRestaurants();
     }
 
+    public LiveData<Boolean> isRestaurantNearbySearchTimeout(){
+        return mListRepository.isRestaurantNearbySearchTimeout();
+    }
+
     public LiveData<List<Workmate>> getWorkmates(){
         return mListRepository.getWorkmates();
     }

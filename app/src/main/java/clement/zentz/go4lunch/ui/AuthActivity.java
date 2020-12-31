@@ -107,7 +107,6 @@ public class AuthActivity extends BaseActivity {
                 .createSignInIntentBuilder()
                 .setAvailableProviders(providers)
                 .build());
-
     }
 
     private void retrieveDataFromAssets(){

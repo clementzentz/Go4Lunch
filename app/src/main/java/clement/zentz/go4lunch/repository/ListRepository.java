@@ -128,6 +128,10 @@ public class ListRepository {
         return allRestaurants;
     }
 
+    public LiveData<Boolean> isRestaurantNearbySearchTimeout(){
+        return mGooglePlacesAPIClient.isRestaurantNearbySearchTimeout();
+    }
+
     public LiveData<List<Workmate>> getWorkmates(){
         return allWorkmates;
     }
