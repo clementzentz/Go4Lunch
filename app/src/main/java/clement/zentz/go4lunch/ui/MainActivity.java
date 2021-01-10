@@ -3,6 +3,7 @@ package clement.zentz.go4lunch.ui;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,9 +31,11 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.preference.PreferenceManager;
 
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.workmate.Workmate;
+import clement.zentz.go4lunch.ui.Settings.SettingsActivity;
 import clement.zentz.go4lunch.util.dialogs.SearchViewListDialogFragment;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
 import clement.zentz.go4lunch.viewModels.ListViewModel;
@@ -127,6 +130,9 @@ public class MainActivity extends BaseActivity {
 
     private void setupSearchView(){
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String radius = sharedPreferences.getString("radius", "1000");
+
         SearchViewListDialogFragment searchViewListDialogFragment = new SearchViewListDialogFragment();
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -142,7 +148,7 @@ public class MainActivity extends BaseActivity {
                         mListViewModel.searchPlaceAutocompletePredictions(
                                 s,
                                 "establishment",
-                                "1000",
+                                radius,
                                 locationUser.getLatitude()+","+locationUser.getLongitude()
                         );
                     }
@@ -152,12 +158,12 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-    private void subscribeObservers(){
+    private void subscribeObservers() {
 
         mSharedViewModel.getLocationUser().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
-                if (location != null){
+                if (location != null) {
                     locationUser = location;
                 }
             }
@@ -166,7 +172,7 @@ public class MainActivity extends BaseActivity {
         mDetailViewModel.getCurrentUser().observe(this, new Observer<Workmate>() {
             @Override
             public void onChanged(Workmate workmate) {
-                if (workmate != null){
+                if (workmate != null) {
                     configureNavDrawer(workmate);
                 }
             }
@@ -175,24 +181,12 @@ public class MainActivity extends BaseActivity {
         mListViewModel.isRestaurantNearbySearchTimeout().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                if (aBoolean){
-                   Toast.makeText(getApplicationContext(), "sorry we could not find the restaurants, please check network connexion.", Toast.LENGTH_LONG).show();
+                if (aBoolean) {
+                    Toast.makeText(getApplicationContext(), "sorry we could not find the restaurants, please check network connexion.", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
-
-//    private void displayErrorScreen(String errorMessage){
-//        currentUserName.setText("Error retrieving user...");
-//        currentUserEmail.setText("");
-//
-//        Picasso.get().load("")
-//                .placeholder(R.drawable.ic_launcher_background)
-//                .into(currentUserImage);
-//
-////      showParent();
-//        showProgressBar(false);
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -233,7 +227,7 @@ public class MainActivity extends BaseActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()){
                 case R.id.nav_drawer_lunch_item :
-                    Intent intent = new Intent(this, RestaurantDetailsActivity.class);
+                    Intent intent = new Intent(this, DetailActivity.class);
                     intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUser.getWorkmateId());
                     intent.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, currentUser.getRestaurantId());
                     intent.putExtra(Constants.IS_YOUR_LUNCH, true);

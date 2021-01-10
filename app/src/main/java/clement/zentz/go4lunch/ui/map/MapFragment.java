@@ -2,6 +2,7 @@ package clement.zentz.go4lunch.ui.map;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -15,11 +16,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -33,12 +34,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 
-import java.security.Permission;
 import java.util.List;
-import java.util.Objects;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
+import clement.zentz.go4lunch.ui.DetailActivity;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.util.dialogs.MapPermissionRationale;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
@@ -138,7 +137,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+        Intent intent = new Intent(getContext(), DetailActivity.class);
         if (marker.getTag() != null){
             intent.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, (String) marker.getTag());
             intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUserId);
@@ -226,9 +225,13 @@ public class MapFragment extends Fragment implements GoogleMap.OnMyLocationButto
     }
 
     private void searchNearbyRestaurants() {
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String radius = sharedPreferences.getString("radius", "1000");
+
         mListViewModel.searchNearbyRestaurants(
                 lastKnownLocation.getLatitude() + ", " + lastKnownLocation.getLongitude(),
-                String.valueOf(Constants.RADIUS),
+                radius,
                 Constants.PLACES_TYPE, "");
     }
 

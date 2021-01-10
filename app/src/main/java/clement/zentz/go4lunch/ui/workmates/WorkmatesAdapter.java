@@ -75,7 +75,9 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.Work
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListInterfaceToAdapter.launchDetailRestaurantActivity(allWorkmates.get(position).getRestaurant());
+                if(allWorkmates.get(position).getRestaurant() != null){
+                    mListInterfaceToAdapter.launchDetailRestaurantActivity(allWorkmates.get(position).getRestaurant());
+                }
             }
         });
     }

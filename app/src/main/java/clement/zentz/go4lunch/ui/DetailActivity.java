@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,11 +43,10 @@ import clement.zentz.go4lunch.util.dialogs.PhoneCallPermissionRationale;
 import clement.zentz.go4lunch.util.dialogs.RatingBarDialogFragment;
 import clement.zentz.go4lunch.util.notification.AlertReceiver;
 import clement.zentz.go4lunch.viewModels.DetailViewModel;
-import clement.zentz.go4lunch.viewModels.ListViewModel;
 
-public class RestaurantDetailsActivity extends BaseActivity implements RatingBarDialogFragment.RatingBarDialogListener {
+public class DetailActivity extends BaseActivity implements RatingBarDialogFragment.RatingBarDialogListener {
 
-    private static final String TAG = "RestaurantDetailsActivity";
+    private static final String TAG = "DetailActivity";
 
     //adapter
     private WorkmatesAdapter adapter;
@@ -64,7 +65,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
     //values
     private String currentUserId;
     private String currentRestaurantId;
-    Restaurant currentRestaurant;
+    private Restaurant currentRestaurant;
+    private boolean isNotificationEnabled;
 
     //viewModels
     private DetailViewModel mDetailViewModel;
@@ -73,6 +75,9 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_restaurant);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isNotificationEnabled = sharedPreferences.getBoolean("notification", true);
 
         initViews();
         setupRecyclerView();
@@ -93,23 +98,25 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
         fab.setOnClickListener(view -> {
                 mDetailViewModel.updatedCurrentUserField(currentUserId, Constants.RESTAURANT_ID, currentRestaurantId);
                 mDetailViewModel.requestWorkmatesJoining(currentRestaurantId);
-                startAlarm();
+                if (isNotificationEnabled){
+                    startAlarm();
+                }
         });
 
         restaurantDetailsCallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.checkSelfPermission(DetailActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
                     Intent callIntent = new Intent(Intent.ACTION_CALL);
                     if (currentRestaurant.getFormattedPhoneNumber() != null) {
                         callIntent.setData(Uri.parse("tel:+"+currentRestaurant.getFormattedPhoneNumber()));
                         startActivity(callIntent);
                     }
-                }else if(ActivityCompat.shouldShowRequestPermissionRationale(RestaurantDetailsActivity.this, Manifest.permission.CALL_PHONE)){
+                }else if(ActivityCompat.shouldShowRequestPermissionRationale(DetailActivity.this, Manifest.permission.CALL_PHONE)){
                     PhoneCallPermissionRationale phoneCallPermissionRationale = new PhoneCallPermissionRationale();
                     phoneCallPermissionRationale.show(getSupportFragmentManager() , TAG);
                 }else{
-                    ActivityCompat.requestPermissions(RestaurantDetailsActivity.this, new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
+                    ActivityCompat.requestPermissions(DetailActivity.this, new String[]{Manifest.permission.CALL_PHONE}, Constants.CALL_PERMISSION_REQUEST_CODE);
                 }
             }
         });
@@ -129,7 +136,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingBar
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(currentRestaurant.getWebsite()));
                     startActivity(browserIntent);
                 }else {
-                    Toast.makeText(RestaurantDetailsActivity.this, "sorry, we could not find any website associate with this place.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DetailActivity.this, "sorry, we could not find any website associate with this place.", Toast.LENGTH_SHORT).show();
                 }
             }
         });

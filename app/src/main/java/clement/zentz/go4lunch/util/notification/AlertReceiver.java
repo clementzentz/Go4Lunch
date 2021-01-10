@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import clement.zentz.go4lunch.R;
-import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
+import clement.zentz.go4lunch.ui.DetailActivity;
 import clement.zentz.go4lunch.models.workmate.Workmate;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.util.convert.ConvertUtil;
@@ -68,7 +68,7 @@ public class AlertReceiver extends BroadcastReceiver {
                 @Override
                 public void onSuccess(Void aVoid) {
                     // Create an explicit intent for an Activity in your app
-                    Intent intentNotification = new Intent(context, RestaurantDetailsActivity.class);
+                    Intent intentNotification = new Intent(context, DetailActivity.class);
                     intentNotification.putExtra(Constants.INTENT_CURRENT_USER_ID, userId);
                     intentNotification.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, restaurantId);
                     intentNotification.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

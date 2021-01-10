@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        app:icon="@drawable/ic_baseline_location_on_24"
+        app:title="@string/location_header">
+
+        <DropDownPreference
+            app:defaultValue="1000"
+            app:key="radius"
+            app:title="radius"
+            android:entries="@array/radius_entries"
+            app:entryValues="@array/radius_values"
+            app:useSimpleSummaryProvider="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:icon="@drawable/ic_baseline_notifications_24"
+        app:title="@string/notification_header">
+
+        <SwitchPreferenceCompat
+            app:key="notification"
+            app:title="@string/notification_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

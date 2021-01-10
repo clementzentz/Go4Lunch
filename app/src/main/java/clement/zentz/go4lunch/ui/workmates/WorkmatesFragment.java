@@ -19,7 +19,7 @@ import java.util.List;
 import clement.zentz.go4lunch.R;
 import clement.zentz.go4lunch.models.restaurant.Restaurant;
 import clement.zentz.go4lunch.models.workmate.Workmate;
-import clement.zentz.go4lunch.ui.RestaurantDetailsActivity;
+import clement.zentz.go4lunch.ui.DetailActivity;
 import clement.zentz.go4lunch.ui.listRestaurant.ListInterfaceToAdapter;
 import clement.zentz.go4lunch.util.Constants;
 import clement.zentz.go4lunch.viewModels.ListViewModel;
@@ -80,7 +80,7 @@ public class WorkmatesFragment extends Fragment implements ListInterfaceToAdapte
 
     @Override
     public void launchDetailRestaurantActivity(Restaurant currentRestaurant) {
-        Intent intent = new Intent(getActivity(), RestaurantDetailsActivity.class);
+        Intent intent = new Intent(getActivity(), DetailActivity.class);
         intent.putExtra(Constants.INTENT_CURRENT_RESTAURANT_ID, currentRestaurant.getPlaceId());
         intent.putExtra(Constants.INTENT_CURRENT_USER_ID, currentUserId);
         intent.putExtra(Constants.IS_YOUR_LUNCH, false);
